@@ -1,7 +1,7 @@
 \chapter{Implementierung des DDQN-Ansatzes}
 \label{chap:implementierung}
 
-Dieses Kapitel beschreibt, wie der in Kapitel~\ref{sec:ansatz_vergleich} gewählte Double-DQN-Agent (DDQN) in PyTorch umgesetzt ist. Die Implementierung besteht aus drei Teilen: einer Gymnasium-Umgebung, die Netzwerkflüsse als Merkmalsvektoren erzeugt und über einen AWGN-Kanal stört, dem DDQN-Agenten mit Replay-Puffer und Zielnetz sowie einer GPU-basierten Trainingsschleife. Alle Größen stammen aus dem Quelltext (\texttt{train\_eval.py}).
+Dieses Kapitel beschreibt, wie der in Abschnitt~\ref{sec:ansatz_vergleich} gewählte Double-DQN-Agent (DDQN) in PyTorch umgesetzt ist. Die Implementierung besteht aus drei Teilen: einer Gymnasium-Umgebung, die Netzwerkflüsse als Merkmalsvektoren erzeugt und über einen AWGN-Kanal stört, dem DDQN-Agenten mit Replay-Puffer und Zielnetz sowie einer vektorisierten Trainingsschleife, die standardmäßig auf einer CUDA-GPU läuft. Alle Größen stammen aus dem Quelltext (\texttt{train\_eval.py}).
 
 \section{Systemarchitektur und Gesamtüberblick}
 \label{sec:systemarchitektur}
@@ -21,46 +21,46 @@ Abbildung~\ref{fig:blockschaltbild} zeigt die Wirkungskette vom Flussgenerator b
 	\centering
 	\begin{tikzpicture}[
 		font=\small,
-		blk/.style={draw, rectangle, rounded corners=2pt, minimum height=1.5cm, text width=2.6cm, align=center, thick},
-		ch/.style={blk, fill=blue!8},
+		blk/.style={draw, rectangle, rounded corners=2pt, minimum height=1.35cm, text width=2.7cm, align=center, thick},
+		ch/.style={blk, fill=blue!8, text width=3.0cm},
 		ag/.style={blk, fill=green!10},
-		rw/.style={blk, fill=orange!12},
-		sub/.style={draw, rectangle, minimum height=0.55cm, text width=2.3cm, align=center, font=\scriptsize, fill=white},
-		arr/.style={-{Stealth[length=2.2mm]}, thick},
-		node distance=0.8cm and 0.9cm
+		rw/.style={blk, fill=orange!12, text width=3.0cm},
+		sub/.style={draw, rectangle, minimum height=0.5cm, text width=2.4cm, align=center, font=\scriptsize, fill=white},
+		arr/.style={-{Stealth[length=2.2mm]}, thick}
 	]
-		% Zeile 1
-		\node[blk] (gen) {Flussgenerator\\ $\mathbf{x}\in\mathbb{R}^{8}$, Label $c$};
-		\node[ch, right=of gen] (awgn) {AWGN-Kanal\\ $\sigma_{n,j}^{2}=P_j/10^{\mathrm{SNR}/10}$};
-		\node[blk, right=of awgn] (env) {Gymnasium-Umgebung\\ \texttt{DDoSFlowEnv}};
+		% Umgebung: Generator, Kanal, Reward
+		\node[blk] (gen) at (0,0) {Flussgenerator\\ {\scriptsize $\mathbf{x}\in\mathbb{R}^{8}$, Label $c$}};
+		\node[ch] (awgn) at (4.4,0) {AWGN-Kanal\\ {\scriptsize $\sigma_{n,j}^{2}=P_j/10^{\mathrm{SNR}/10}$\\ SNR $30$ bis $5$\,dB}};
+		\node[rw] (rew) at (11.4,0) {Reward-Matrix\\ {\scriptsize asymmetrisch, $r(a,c)$}};
 		\draw[arr] (gen) -- node[above, font=\scriptsize] {$\mathbf{x}$} (awgn);
-		\draw[arr] (awgn) -- node[above, font=\scriptsize] {$\mathbf{y}$} (env);
-		\node[above=0.45cm of awgn, font=\scriptsize] (snr) {SNR $\in\{30,20,10,5\}$\,dB};
-		\draw[arr] (snr) -- (awgn);
+		\draw[arr] (gen.north) -- ++(0,0.45) -| node[pos=0.25, above, font=\scriptsize] {Label $c$} (rew.north);
+		\begin{scope}[on background layer]
+			\node[draw=black!55, dashed, rounded corners=3pt, fit=(gen)(awgn)(rew), inner xsep=0.25cm, inner ysep=0.95cm, yshift=0.4cm,
+				label={[font=\scriptsize, black!70, anchor=north west, inner sep=2pt]north west:Gymnasium-Umgebung \texttt{DDoSFlowEnv}}] (gym) {};
+		\end{scope}
 
-		% Zeile 2
-		\node[ag, below=1.9cm of gen] (agent) {DDQN-Agent};
-		\node[rw, right=of agent] (rew) {Asymmetrische Reward-Matrix $r(a,c)$};
-		\node[blk, right=of rew] (dec) {Entscheidung\\ $a\in\{0,1\}$};
-
-		% Agent-Innenleben
-		\node[sub, below=0.35cm of agent, yshift=-0.1cm] (onl) {Online-Netz $\theta$};
-		\node[sub, below=0.12cm of onl] (tgt) {Target-Netz $\bar\theta$};
-		\node[sub, below=0.12cm of tgt] (rb) {Replay-Puffer};
+		% Agent mit Innenleben
+		\node[ag] (agent) at (4.4,-3.3) {DDQN-Agent\\ {\scriptsize $\epsilon$-greedy}};
+		\node[sub, below=0.3cm of agent] (onl) {Online-Netz $\theta$};
+		\node[sub, below=0.1cm of onl] (tgt) {Zielnetz $\bar\theta$};
+		\node[sub, below=0.1cm of tgt] (rb) {Replay-Puffer};
 		\begin{scope}[on background layer]
 			\node[draw, dashed, fit=(agent)(onl)(tgt)(rb), inner sep=4pt, fill=green!5] (agbox) {};
 		\end{scope}
 
-		\draw[arr] (env.south) -- ++(0,-0.7) -| node[pos=0.25, above, font=\scriptsize] {$\mathbf{y}$} (agbox.north);
-		\draw[arr] (agent) -- node[above, font=\scriptsize] {$a$} (rew);
-		\draw[arr] (rew) -- node[above, font=\scriptsize] {$a$} (dec);
-		\draw[arr, dashed] (rew.south) -- ++(0,-1.0) -| node[pos=0.25, below, font=\scriptsize] {$r$} (rb.east);
+		% Entscheidung
+		\node[blk] (dec) at (11.4,-3.3) {Entscheidung\\ {\scriptsize $a\in\{0,1\}$}};
+
+		\draw[arr] (awgn) -- node[pos=0.72, right, font=\scriptsize] {Beobachtung $\mathbf{y}$} (agbox.north);
+		\draw[arr] (agent) -- node[above, font=\scriptsize] {$a$} (dec);
+		\draw[arr] (dec) -- node[right, font=\scriptsize] {$a$} (rew);
+		\draw[arr, dashed] (rew.east) -- ++(0.45,0) |- node[pos=0.75, below, font=\scriptsize] {Reward $r$} (rb.east);
 	\end{tikzpicture}
-	\caption[Blockschaltbild der Wirkungskette]{Blockschaltbild der Wirkungskette. Der Generator liefert $\mathbf{x}$ mit Label $c$, der AWGN-Kanal erzeugt die Beobachtung $\mathbf{y}$, der Agent entscheidet, und die Reward-Matrix bewertet $a$ gegen $c$. Gestrichelt: Rückführung der Belohnung in den Replay-Puffer.}
+	\caption[Blockschaltbild der Wirkungskette]{Blockschaltbild der Wirkungskette. Die Gymnasium-Umgebung (gestrichelter Rahmen) erzeugt $\mathbf{x}$ mit Label $c$, stört $\mathbf{x}$ über den AWGN-Kanal und bewertet die Entscheidung $a$ des Agenten über die Reward-Matrix gegen $c$. Der Reward $r$ gelangt nur als Trainingssignal in den Replay-Puffer (gestrichelter Pfeil), nie als Eingabe des Agenten.}
 	\label{fig:blockschaltbild}
 \end{figure}
 
-Es gibt weder ein Gitter noch eine Bewegungsaktion. Der Zustand ist direkt der Merkmalsvektor, der Aktionsraum hat zwei Elemente. Diese Vereinfachung hält die Umgebung schnell: Der Flussgenerator erzeugt 32 Flüsse pro Iteration vektorisiert in NumPy, und Puffer, Netze und Rewards liegen auf der GPU, sodass beim Sampling kein Transfer zwischen Host und Gerät anfällt.
+Der Zustand ist direkt der Merkmalsvektor, der Aktionsraum hat zwei Elemente. Diese Vereinfachung hält die Umgebung schnell: Der Flussgenerator erzeugt 32 Flüsse pro Iteration vektorisiert in NumPy, und Puffer, Netze und Rewards liegen auf demselben Rechengerät (standardmäßig eine CUDA-GPU), sodass beim Sampling kein Transfer zwischen Host und Gerät anfällt.
 
 \section{Gymnasium-Umgebung und Zustandsraum}
 \label{sec:gymnasium_umgebung}
@@ -86,7 +86,7 @@ Der Gymnasium-Umgebungsprüfer (\texttt{check\_env}) validiert die Schnittstelle
 	\end{cases}
 \end{equation}
 
-Ein verpasster Angriff kostet doppelt so viel wie ein Fehlalarm. Diese Asymmetrie wirkt als kostensensitives Lernziel anstelle eines Resamplings (Abschnitt~\ref{sec:imbalanced_data}). Für die Evaluation in Kapitel~\ref{chap:ergebnisse} hat sie eine konkrete Folge, nämlich die Verschiebung der Entscheidungsschwelle auf $p>1/3$.
+Ein verpasster Angriff kostet doppelt so viel wie ein Fehlalarm. Diese Asymmetrie wirkt als kostensensitives Lernziel anstelle eines Resamplings (Abschnitt~\ref{sec:imbalanced_data}). Für die Evaluation in Kapitel~\ref{chap:ergebnisse} hat sie eine konkrete Folge, nämlich die Verschiebung der Soll-Schwelle auf $p>1/3$ (Abschnitt~\ref{sec:mdp_definition}).
 
 \subsection{Formale Definition als Markov-Entscheidungsprozess}
 \label{sec:mdp_definition}
@@ -101,7 +101,7 @@ Das Entscheidungsproblem ist ein Markov-Entscheidungsprozess $(\mathcal{S},\math
 		\mathcal{P}(\mathbf{y}'\mid\mathbf{y},a)=\delta(\mathbf{y}'-\mathbf{0}),\qquad d=1 .
 	\end{equation}
 	Der Folgezustand ist die Null-Beobachtung aus \texttt{step}. Der nächste Fluss entsteht erst im \texttt{reset}. Im vektorisierten Training speichert der Replay-Puffer als Folgebeobachtung stattdessen die aktuelle Beobachtung $\mathbf{y}$. Wegen $d=1$ geht dieser Wert in keines der Lernziele ein.
-	\item \textbf{Belohnung:} $\mathcal{R}(a,c)$ als Kostenmatrix mit Zeilen $c$ und Spalten $a$:
+	\item \textbf{Belohnung:} $\mathcal{R}(a,c)$ als Reward-Matrix mit Zeilen $c$ und Spalten $a$:
 	\begin{equation}
 		\mathcal{R}=
 		\begin{pmatrix}
@@ -123,9 +123,9 @@ Das Entscheidungsproblem ist ein Markov-Entscheidungsprozess $(\mathcal{S},\math
 	\item \textbf{Diskontierung:} $\gamma=0{,}99$. Wegen $d=1$ geht $\gamma$ nicht in das Ziel ein.
 \end{itemize}
 
-Die optimale Politik maximiert den erwarteten Sofort-Reward $\mathbb{E}[\mathcal{R}(a,c)\mid\mathbf{y}]$. Mit $p=P(c=1\mid\mathbf{y})$ gilt $a=1$ genau dann, wenn $p\,R_{TP}+(1-p)\,R_{FP}>p\,R_{FN}+(1-p)\,R_{TN}$, also $p>1/3$. Elkans Schwelle $p^*=(c_{10}-c_{00})/(c_{10}-c_{00}+c_{01}-c_{11})$ liefert mit den negierten Rewards als Kosten denselben Wert \autocite{elkanFoundationsCostSensitiveLearning2001}. Das ist die in Kapitel~\ref{chap:ergebnisse} erwartete Schwelle.
+Die optimale Politik maximiert den erwarteten Sofort-Reward $\mathbb{E}[\mathcal{R}(a,c)\mid\mathbf{y}]$. Mit $p=P(c=1\mid\mathbf{y})$ gilt $a=1$ genau dann, wenn $p\,R_{TP}+(1-p)\,R_{FP}>p\,R_{FN}+(1-p)\,R_{TN}$, also $p>1/3$. Elkans Schwelle $p^*=(c_{10}-c_{00})/(c_{10}-c_{00}+c_{01}-c_{11})$ liefert mit den negierten Rewards als Kosten denselben Wert \autocite{elkanFoundationsCostSensitiveLearning2001}. Das ist die Soll-Schwelle für exakt gelernte Q-Werte. Gemessen entscheidet der Agent bei impliziten Schwellen von $0{,}38$ bis $0{,}43$ (Abschnitt~\ref{sec:reward_recall}).
 
-Im Training werden die Flüsse nicht einzeln über \texttt{step} erzeugt, sondern als Batch von 32 Flüssen pro Iteration, wobei das SNR jedes Flusses zufällig aus $\{30,20,10,5\}$\,dB gezogen wird. Der Rewardvektor entsteht durch eine Tabellenabfrage \texttt{REWARD\_TABLE[label, action]} direkt auf der GPU.
+Im Training werden die Flüsse nicht einzeln über \texttt{step} erzeugt, sondern als Batch von 32 Flüssen pro Iteration, wobei das SNR jedes Flusses zufällig aus $\{30,20,10,5\}$\,dB gezogen wird. Der Rewardvektor entsteht durch eine Tabellenabfrage \texttt{REWARD\_TABLE[label, action]} direkt auf dem Rechengerät.
 
 \section{DDQN-Architektur in PyTorch}
 \label{sec:dqn_architektur}
@@ -225,7 +225,7 @@ Für die Parameter aus \texttt{train\_eval.py} liefert die Auswertung die Werte 
 	\end{tabular}
 \end{table}
 
-Zwischen $30$ und $20$\,dB ändert sich die Überlappung kaum, weil das Rauschen ($\sigma_{n,j}\le0{,}056$) neben $\sigma=0{,}20$ vernachlässigbar bleibt. Bei $5$\,dB sinkt $D$ auf $1{,}78$, die effektive Streuung steigt auf etwa $0{,}32$ je Merkmal, und die Fehlerwahrscheinlichkeit des Bayes-Klassifikators steigt gegenüber $30$\,dB auf fast das Dreifache. Beim tatsächlichen Angriffsanteil $\pi=0{,}3$ liegt sie auf jeder Stufe etwas niedriger, von $6{,}2\,\%$ bei $30$\,dB bis $16{,}2\,\%$ bei $5$\,dB. Diese Spalte ist die Referenz für alle weiteren Vergleiche mit der Bayes-Grenze. Das Training mit gemischtem SNR zwingt das Q-Netz auf eine Kompromiss-Entscheidungsgrenze, die für kein SNR exakt optimal ist.
+Zwischen $30$ und $20$\,dB ändert sich die Überlappung kaum, weil das Rauschen ($\sigma_{n,j}\le0{,}056$) neben $\sigma=0{,}20$ vernachlässigbar bleibt. Bei $5$\,dB sinkt $D$ auf $1{,}78$, die effektive Streuung steigt je nach Merkmal auf $0{,}30$ bis $0{,}37$, und die Fehlerwahrscheinlichkeit des Bayes-Klassifikators steigt gegenüber $30$\,dB auf fast das Dreifache. Beim tatsächlichen Angriffsanteil $\pi=0{,}3$ liegt sie auf jeder Stufe etwas niedriger, von $6{,}2\,\%$ bei $30$\,dB bis $16{,}2\,\%$ bei $5$\,dB. Diese Spalte ist die Referenz für alle weiteren Vergleiche mit der Bayes-Grenze. Das Training mit gemischtem SNR zwingt das Q-Netz auf eine Kompromiss-Entscheidungsgrenze, die für kein SNR exakt optimal ist.
 
 Im Training trifft der Agent pro Fluss auf ein zufällig gewähltes SNR. Er lernt dadurch eine einzige Entscheidungsfunktion für alle vier Kanalqualitäten, ohne das SNR als Eingabe zu erhalten. Die Evaluation erfolgt dagegen getrennt je SNR-Stufe (Kapitel~\ref{chap:evaluierung}).
 
@@ -256,7 +256,7 @@ Tabelle~\ref{tab:dqn_hyperparameters} fasst die Hyperparameter zusammen, Tabelle
 		Lernrate & $1\cdot10^{-4}$ & Adam-Optimierer \\
 		Diskontierungsfaktor $\gamma$ & $0{,}99$ & Ohne Wirkung, da alle Episoden nach einem Schritt enden \\
 		Batch-Größe & $64$ & Stichprobe pro Lernschritt \\
-		Puffergröße & $50\,000$ & Ringpuffer auf der GPU \\
+		Puffergröße & $50\,000$ & Ringpuffer auf dem Rechengerät \\
 		Explorationsrate $\epsilon$ & $1{,}0 \to 0{,}02$ & Linear über $40\,\%$ der Iterationen \\
 		Lernstart & $1000$ Einträge & Mindestfüllung des Puffers \\
 		Zielnetz-Update & alle $250$ Lernschritte & Harte Synchronisation \\
@@ -275,7 +275,7 @@ Tabelle~\ref{tab:dqn_hyperparameters} fasst die Hyperparameter zusammen, Tabelle
 		\toprule
 		\textbf{Parameter} & \textbf{Wert} & \textbf{Bedeutung} \\
 		\midrule
-		Zustandsraum & $\mathbb{R}^{8}$ & Direkter Merkmalsvektor, kein Gitter \\
+		Zustandsraum & $\mathbb{R}^{8}$ & Verrauschter Merkmalsvektor $\mathbf{y}$ \\
 		Aktionsraum & $2$ diskrete Aktionen & Normal (0), DDoS (1) \\
 		Klassenstreuung $\sigma$ & $0{,}20$ & Je Merkmal, klassenbedingt gaußverteilt \\
 		Angriffsanteil $\pi$ & $0{,}3$ & Klassenungleichgewicht \\

@@ -145,6 +145,17 @@ hängen von den Vorgaben der Prüfungsordnung ab.
 - Gegen Code und Saif-PDF geprüft: Mittelwertabstände, P_j-Formel, Test-Seeds, 20 000 Trainingsflüsse, Skalierung, Early Stopping,
   IoT-DH-Angaben (10 000 Einträge, 80/20, 98 %, 748/2000).
 
+### Kap. 5 (PDF-Seiten 26–33) – behoben
+
+- **Abb. 5.1 neu gezeichnet:** Ein Gymnasium-Rahmen umschließt Generator, AWGN und Reward-Matrix. a und c führen in die Reward-Matrix,
+  r läuft gestrichelt eindeutig in den Replay-Puffer.
+- σ_eff bei 5 dB „0,30 bis 0,37 je Merkmal“ (vorher pauschal 0,32). In 5.2/5.2.1 steht jetzt die Soll-Schwelle 1/3 mit Verweis auf
+  die gemessenen 0,38–0,43.
+- Der Verweis „Kapitel 3.6“ heißt jetzt „Abschnitt 3.6“. Die Gridworld-Reste (Gitter, Bewegungsaktion) sind gestrichen.
+  „Kostenmatrix“ heißt in Kap. 5/7/8 einheitlich „Reward-Matrix“.
+- GPU neutral formuliert („standardmäßig CUDA-GPU“), weil nicht belegt ist, auf welchem Gerät die Läufe liefen.
+- Alle Hyperparameter und abgeleiteten Zahlen stimmen mit `train_eval.py` überein.
+
 ### Offene Frage an den Betreuer (Prof. Seitz)
 
 - **Aufgabenstellung vs. synthetisches Modell:** Die Aufgabenstellung verlangt, „an einem Data Set, das den Netzverkehr mit einem
@@ -155,13 +166,14 @@ hängen von den Vorgaben der Prüfungsordnung ab.
 
 ### Vorgemerkt für das Ende des Seiten-Checks
 
+- **K5-8:** Tab. 5.3 steht allein auf einer Gleitseite, beim globalen Umbruch-Check mitbehandeln.
 - **K2-7 Seitenumbruch:** Wegen `\raggedbottom` und KOMAs negativer Penalty vor Überschriften bricht LaTeX bevorzugt vor
   Abschnitten um und lässt Weißraum am Seitenende. Nach dem letzten Kapitel einmal global entscheiden
   (`\flushbottom` oder eine angepasste Überschriften-Penalty), danach alle Umbrüche einmal prüfen.
 
 ### Nächste Seiten
 
-Einzelseiten-Check ab PDF-Seite 26 (Kap. 5) fortsetzen.
+Einzelseiten-Check ab PDF-Seite 34 (Kap. 6) fortsetzen.
 
 ## Arbeitsweise
 
