@@ -79,10 +79,10 @@ Der Gymnasium-Umgebungsprüfer (\texttt{check\_env}) validiert die Schnittstelle
 \begin{equation}
 	r(a,c)=
 	\begin{cases}
-		R_{TP}=+1{,}0, & a=1,\ c=1 \\
-		R_{TN}=+0{,}5, & a=0,\ c=0 \\
-		R_{FP}=-1{,}0, & a=1,\ c=0 \\
-		R_{FN}=-2{,}0, & a=0,\ c=1 .
+		R_{\mathrm{TP}}=+1{,}0, & a=1,\ c=1 \\
+		R_{\mathrm{TN}}=+0{,}5, & a=0,\ c=0 \\
+		R_{\mathrm{FP}}=-1{,}0, & a=1,\ c=0 \\
+		R_{\mathrm{FN}}=-2{,}0, & a=0,\ c=1 .
 	\end{cases}
 \end{equation}
 
@@ -110,8 +110,8 @@ Das Entscheidungsproblem ist ein Markov-Entscheidungsprozess $(\mathcal{S},\math
 		\end{pmatrix}
 		=
 		\begin{pmatrix}
-			R_{TN} & R_{FP}\\
-			R_{FN} & R_{TP}
+			R_{\mathrm{TN}} & R_{\mathrm{FP}}\\
+			R_{\mathrm{FN}} & R_{\mathrm{TP}}
 		\end{pmatrix}
 		=
 		\begin{pmatrix}
@@ -123,7 +123,7 @@ Das Entscheidungsproblem ist ein Markov-Entscheidungsprozess $(\mathcal{S},\math
 	\item \textbf{Diskontierung:} $\gamma=0{,}99$. Wegen $d=1$ geht $\gamma$ nicht in das Ziel ein.
 \end{itemize}
 
-Die optimale Politik maximiert den erwarteten Sofort-Reward $\mathbb{E}[\mathcal{R}(a,c)\mid\mathbf{y}]$. Mit $p=P(c=1\mid\mathbf{y})$ gilt $a=1$ genau dann, wenn $p\,R_{TP}+(1-p)\,R_{FP}>p\,R_{FN}+(1-p)\,R_{TN}$, also $p>1/3$. Elkans Schwelle $p^*=(c_{10}-c_{00})/(c_{10}-c_{00}+c_{01}-c_{11})$ liefert mit den negierten Rewards als Kosten denselben Wert \autocite{elkanFoundationsCostSensitiveLearning2001}. Das ist die Soll-Schwelle für exakt gelernte Q-Werte. Gemessen entscheidet der Agent bei impliziten Schwellen von $0{,}38$ bis $0{,}43$ (Abschnitt~\ref{sec:reward_recall}).
+Die optimale Politik maximiert den erwarteten Sofort-Reward $\mathbb{E}[\mathcal{R}(a,c)\mid\mathbf{y}]$. Mit $p=P(c=1\mid\mathbf{y})$ gilt $a=1$ genau dann, wenn $p\,R_{\mathrm{TP}}+(1-p)\,R_{\mathrm{FP}}>p\,R_{\mathrm{FN}}+(1-p)\,R_{\mathrm{TN}}$, also $p>1/3$. Elkans Schwelle $p^*=(c_{10}-c_{00})/(c_{10}-c_{00}+c_{01}-c_{11})$ liefert mit den negierten Rewards als Kosten denselben Wert \autocite{elkanFoundationsCostSensitiveLearning2001}. Das ist die Soll-Schwelle für exakt gelernte Q-Werte. Gemessen entscheidet der Agent bei impliziten Schwellen von $0{,}38$ bis $0{,}43$ (Abschnitt~\ref{sec:reward_recall}).
 
 Im Training werden die Flüsse nicht einzeln über \texttt{step} erzeugt, sondern als Batch von 32 Flüssen pro Iteration, wobei das SNR jedes Flusses zufällig aus $\{30,20,10,5\}$\,dB gezogen wird. Der Rewardvektor entsteht durch eine Tabellenabfrage \texttt{REWARD\_TABLE[label, action]} direkt auf dem Rechengerät.
 
@@ -281,7 +281,7 @@ Tabelle~\ref{tab:dqn_hyperparameters} fasst die Hyperparameter zusammen, Tabelle
 		Angriffsanteil $\pi$ & $0{,}3$ & Klassenungleichgewicht \\
 		Kanalmodell & AWGN, $h=1$ & Varianz $P_j/10^{\mathrm{SNR}/10}$ je Merkmal \\
 		Evaluierte SNR-Werte & $30,\,20,\,10,\,5$\,dB & Abstufungen der Kanalqualität \\
-		Reward\newline $(R_{TP},R_{TN},R_{FP},R_{FN})$ & $(+1;\,+0{,}5;\,-1;\,-2)$ & Asymmetrisch zulasten verpasster Angriffe \\
+		Reward\newline $(R_{\mathrm{TP}},R_{\mathrm{TN}},R_{\mathrm{FP}},R_{\mathrm{FN}})$ & $(+1;\,+0{,}5;\,-1;\,-2)$ & Asymmetrisch zulasten verpasster Angriffe \\
 		Seeds & $0,\,1,\,2$ & Je ein vollständiger Trainings- und Testlauf \\
 		Testflüsse & $20\,000$ je SNR und Seed & Frisch erzeugt, nicht im Training \\
 		\bottomrule

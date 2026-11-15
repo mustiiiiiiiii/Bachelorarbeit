@@ -39,7 +39,7 @@ Die Streuung über die Seeds bleibt klein ($\sigma\le 0{,}0048$ bei allen Metrik
 \subsection{Wirkung der asymmetrischen Reward-Funktion}
 \label{sec:reward_recall}
 
-Der Recall liegt auf allen vier SNR-Stufen über der Precision, am deutlichsten bei 5\,dB ($0{,}7583$ gegenüber $0{,}6963$). Das ist die direkte Folge der Belohnungsstruktur $R_{TP}=+1$, $R_{TN}=+0{,}5$, $R_{FP}=-1$, $R_{FN}=-2$. Da jeder Fluss eine Ein-Schritt-Episode ist, lernt die Q-Funktion den erwarteten Reward der Sofortentscheidung. Für die Angriffs-Posterior $p=P(\text{DDoS}\mid\mathbf{y})$ gilt
+Der Recall liegt auf allen vier SNR-Stufen über der Precision, am deutlichsten bei 5\,dB ($0{,}7583$ gegenüber $0{,}6963$). Das ist die direkte Folge der Belohnungsstruktur $R_{\mathrm{TP}}=+1$, $R_{\mathrm{TN}}=+0{,}5$, $R_{\mathrm{FP}}=-1$, $R_{\mathrm{FN}}=-2$. Da jeder Fluss eine Ein-Schritt-Episode ist, lernt die Q-Funktion den erwarteten Reward der Sofortentscheidung. Für die Angriffs-Posterior $p=P(\text{DDoS}\mid\mathbf{y})$ gilt
 \begin{equation}
 	Q(\mathbf{y},1)=p\cdot 1+(1-p)(-1)=2p-1,\qquad
 	Q(\mathbf{y},0)=p\cdot(-2)+(1-p)\cdot 0{,}5=0{,}5-2{,}5\,p .

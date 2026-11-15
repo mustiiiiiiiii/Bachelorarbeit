@@ -156,6 +156,17 @@ hängen von den Vorgaben der Prüfungsordnung ab.
 - GPU neutral formuliert („standardmäßig CUDA-GPU“), weil nicht belegt ist, auf welchem Gerät die Läufe liefen.
 - Alle Hyperparameter und abgeleiteten Zahlen stimmen mit `train_eval.py` überein.
 
+### Kap. 6 (PDF-Seiten 34–36) – behoben
+
+- **Abb. 6.1:** Aus dem gemischten SNR führen zwei parallele Trainingsstränge (DDQN; RF/SVM/MLP), der irreführende Pfeil
+  DDQN → Baselines ist weg. Die Überschriften stehen auf gleicher Höhe.
+- Bishop-Regularisierung nur für differenzierbare Modelle (Q-Netz, MLP), nicht für den RF, wie in 2.4.4.
+- „1 − Precision“ ist jetzt als Anteil der Fehlalarme unter allen Alarmen formuliert (vorher ungenau „Fehlalarmrate“).
+- TP, FP, FN, F1 und die Reward-Indizes R_TP … R_FN stehen in der ganzen Arbeit aufrecht. RLA in %, ELA als Verhältniszahl.
+- Kurzformen SVM und MLP, Floskeln (Nominal-/Robustheitsbedingung, Referenzrahmen) gestrichen.
+- Gegen den Code geprüft: gamma=scale (≈ 1/8), MLP 2 × 128/Adam/200/Early Stopping, `numpy.std` in Populationsform,
+  Bayes-Fehler 6,15 % ohne Rauschen und 6,20 % bei 30 dB.
+
 ### Offene Frage an den Betreuer (Prof. Seitz)
 
 - **Aufgabenstellung vs. synthetisches Modell:** Die Aufgabenstellung verlangt, „an einem Data Set, das den Netzverkehr mit einem
@@ -173,7 +184,7 @@ hängen von den Vorgaben der Prüfungsordnung ab.
 
 ### Nächste Seiten
 
-Einzelseiten-Check ab PDF-Seite 34 (Kap. 6) fortsetzen.
+Einzelseiten-Check ab PDF-Seite 37 (Kap. 7) fortsetzen.
 
 ## Arbeitsweise
 

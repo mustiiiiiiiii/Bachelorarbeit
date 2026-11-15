@@ -6,7 +6,7 @@ Dieses Kapitel legt fest, wie der in Kapitel~\ref{chap:implementierung} beschrie
 \section{Evaluationsprotokoll und Versuchsaufbau}
 \label{sec:eval_protokoll}
 
-Die Evaluation folgt einem reproduzierbaren zweistufigen Protokoll aus Training und Test. Einen separaten Validierungs-Split für die Modellwahl gibt es nicht: Die Hyperparameter in Tabelle~\ref{tab:dqn_hyperparameters} wurden vorab festgelegt und nicht anhand von Validierungsdaten nachgestellt. Einzige Ausnahme ist das Early Stopping des MLP, das intern $10\,\%$ seiner Trainingsflüsse zurückhält (Abschnitt~\ref{sec:datenvorverarbeitung}). Die Datenbasis folgt dem Flussmodell aus Kapitel~\ref{chap:datensatz}. Der DDQN-Agent wurde in der in Abschnitt~\ref{sec:dqn_architektur} beschriebenen Konfiguration trainiert, wobei das SNR jedes Trainingsflusses zufällig aus $\{30,20,10,5\}$\,dB gezogen wurde (Abschnitt~\ref{sec:awgn_kanal}). Das Rauschen liegt damit in Training und Test an. Kein Modell wird auf sauberen Merkmalen trainiert und erst im Test mit Rauschen konfrontiert. Das Training mit gestörten Eingaben wirkt als Regularisierung \autocite{bishopTrainingNoiseEquivalent1995, apruzzeseDeepReinforcementAdversarial2020} und gilt für alle vier Verfahren gleichermaßen (Abschnitt~\ref{sec:merkmalsrauschen}). Der Test erfolgt für jede SNR-Stufe getrennt auf 20\,000 frisch erzeugten Flüssen, die ein eigener Zufallsgenerator liefert und die im Training nie auftraten. Um die Abhängigkeit von einzelnen Initialisierungen zu reduzieren, wurde das Protokoll für die Seeds $0$, $1$ und $2$ mit identischer Hyperparameterkonfiguration durchlaufen und über die Seeds gemittelt. Als Streuung dient die Standardabweichung über die drei Seeds in Populationsform, also ohne Bessel-Korrektur (\texttt{numpy.std}).
+Die Evaluation folgt einem reproduzierbaren zweistufigen Protokoll aus Training und Test. Einen separaten Validierungs-Split für die Modellwahl gibt es nicht: Die Hyperparameter in Tabelle~\ref{tab:dqn_hyperparameters} wurden vorab festgelegt und nicht anhand von Validierungsdaten nachgestellt. Einzige Ausnahme ist das Early Stopping des MLP, das intern $10\,\%$ seiner Trainingsflüsse zurückhält (Abschnitt~\ref{sec:datenvorverarbeitung}). Die Datenbasis folgt dem Flussmodell aus Kapitel~\ref{chap:datensatz}. Der DDQN-Agent wurde in der in Abschnitt~\ref{sec:dqn_architektur} beschriebenen Konfiguration trainiert, wobei das SNR jedes Trainingsflusses zufällig aus $\{30,20,10,5\}$\,dB gezogen wurde (Abschnitt~\ref{sec:awgn_kanal}). Das Rauschen liegt damit in Training und Test an. Kein Modell wird auf sauberen Merkmalen trainiert und erst im Test mit Rauschen konfrontiert. Das verrauschte Training gilt für alle vier Verfahren gleichermaßen. Als Regularisierung im Sinne von Bishop wirkt es nur bei den differenzierbaren Modellen, also beim Q-Netz und beim MLP, nicht beim Random Forest (Abschnitt~\ref{sec:merkmalsrauschen}) \autocite{bishopTrainingNoiseEquivalent1995}. Der Test erfolgt für jede SNR-Stufe getrennt auf 20\,000 frisch erzeugten Flüssen, die ein eigener Zufallsgenerator liefert und die im Training nie auftraten. Um die Abhängigkeit von einzelnen Initialisierungen zu reduzieren, wurde das Protokoll für die Seeds $0$, $1$ und $2$ mit identischer Hyperparameterkonfiguration durchlaufen und über die Seeds gemittelt. Als Streuung dient die Standardabweichung über die drei Seeds in Populationsform, also ohne Bessel-Korrektur (\texttt{numpy.std}).
 
 Abbildung~\ref{fig:eval_protokoll} stellt den Ablauf dar. Trainings- und Testflüsse stammen aus getrennten Zufallsgeneratoren, das Training mischt die SNR-Stufen, der Test isoliert sie.
 
@@ -14,44 +14,38 @@ Abbildung~\ref{fig:eval_protokoll} stellt den Ablauf dar. Trainings- und Testfl�
 	\centering
 	\begin{tikzpicture}[
 		font=\small,
-		blk/.style={draw, rectangle, rounded corners=2pt, minimum height=1.1cm, text width=3.6cm, align=center, thick},
-		arr/.style={-{Stealth[length=2.2mm]}, thick},
-		node distance=0.7cm
+		blk/.style={draw, rectangle, rounded corners=2pt, minimum height=1.1cm, text width=3.3cm, align=center, thick},
+		arr/.style={-{Stealth[length=2.2mm]}, thick}
 	]
+		% Überschriften auf gleicher Höhe
+		\node[font=\scriptsize\bfseries] at (0,1.05) {Trainingsphase};
+		\node[font=\scriptsize\bfseries] at (7.6,1.05) {Testphase (keine Überschneidung)};
 		% Training
-		\node[blk, fill=blue!8] (trn) {Training mit gemischtem SNR\\ je Fluss $\mathrm{SNR}\sim\mathcal{U}\{30,20,10,5\}$\,dB};
-		\node[blk, below=of trn] (ddqn) {DDQN\\ $20\,000\times32$ Flüsse, Reward-Signal};
-		\node[blk, below=of ddqn] (base) {RF, SVM, MLP\\ $20\,000$ Flüsse, Labels};
-		\draw[arr] (trn) -- (ddqn);
-		\draw[arr] (ddqn) -- (base);
+		\node[blk, fill=blue!8, text width=7.2cm] (trn) at (0,0) {Training mit gemischtem SNR\\ je Fluss $\mathrm{SNR}\sim\mathcal{U}\{30,20,10,5\}$\,dB};
+		\node[blk] (ddqn) at (-1.95,-2.0) {DDQN\\ $20\,000\times32$ Flüsse, Reward-Signal};
+		\node[blk] (base) at (1.95,-2.0) {RF, SVM, MLP\\ $20\,000$~Flüsse,\\ Labels};
+		\draw[arr] (trn.south -| ddqn) -- (ddqn);
+		\draw[arr] (trn.south -| base) -- (base);
 		% Test
-		\node[blk, fill=green!10, right=3.2cm of trn] (tst) {Je SNR $\in\{30,20,10,5\}$\,dB isoliert};
-		\node[blk, below=of tst] (flows) {$20\,000$ frische Flüsse\\ RNG-Seed $=1\,000\,003\,s+\mathrm{SNR}$};
-		\node[blk, below=of flows] (pred) {Greedy-Entscheidung bzw. \texttt{predict}\\ $\to$ TP, FP, FN};
-		\node[blk, below=of pred] (met) {Precision, Recall, F1\\ Mittel $\pm$ Std über Seeds $0,1,2$};
+		\node[blk, fill=green!10, text width=3.6cm] (tst) at (7.6,0) {Je SNR $\in\{30,20,10,5\}$\,dB isoliert};
+		\node[blk, text width=3.6cm] (flows) at (7.6,-2.0) {$20\,000$ frische Flüsse\\ RNG-Seed $=1\,000\,003\,s+\mathrm{SNR}$};
+		\node[blk, text width=3.6cm] (pred) at (7.6,-4.0) {Greedy-Entscheidung bzw. \texttt{predict}\\ $\to\mathrm{TP},\mathrm{FP},\mathrm{FN}$};
+		\node[blk, text width=3.6cm] (met) at (7.6,-6.0) {Precision, Recall, F1\\ Mittel $\pm$ Std über Seeds $0,1,2$};
 		\draw[arr] (tst) -- (flows);
 		\draw[arr] (flows) -- (pred);
 		\draw[arr] (pred) -- (met);
-		\coordinate (join) at ($(ddqn.east)+(1.1,0)$);
-		\draw (ddqn.east) -- (join);
-		\draw (base.east) -| (join);
-		\draw[arr] (join) |- (pred.west);
-		\node[font=\scriptsize, above] at ($(ddqn.east)+(0.55,0)$) {Modelle};
-		\node[above=0.15cm of trn, font=\scriptsize\bfseries] {Trainingsphase};
-		\node[above=0.15cm of tst, font=\scriptsize\bfseries] {Testphase (keine Überschneidung)};
+		% trainierte Modelle in den gemeinsamen Testpfad
+		\draw[thick] (ddqn.south) -- (ddqn.south |- pred.west);
+		\draw[thick] (base.south) -- (base.south |- pred.west);
+		\draw[arr] (ddqn.south |- pred.west) -- node[pos=0.72, above, font=\scriptsize] {trainierte Modelle} (pred.west);
 	\end{tikzpicture}
 	\caption[Evaluationsprotokoll aus Training und Test]{Evaluationsprotokoll. Links: Training aller Modelle mit pro Fluss gemischtem SNR. Rechts: getrennte Testauswertung je SNR-Stufe auf $20\,000$ frischen Flüssen, wiederholt für drei Seeds. Die trainierten Modelle (DDQN, RF, SVM, MLP) laufen über denselben Testpfad und sehen identische Testflüsse.}
 	\label{fig:eval_protokoll}
 \end{figure}
 
-Das Evaluationsszenario umfasst zwei komplementäre Blickwinkel:
+Die Stufe $30$\,dB dient als Referenz, die Stufen $20$ bis $5$\,dB zeigen die Degradation unter zunehmendem Rauschen.
 
-\begin{itemize}
-	\item \textbf{Nominalbedingung}: Bewertung unter hoher Kanalqualität (hohes SNR), um die bestmögliche Trennleistung des Agenten zu bestimmen.
-	\item \textbf{Robustheitsbedingung}: Bewertung unter abgestuften SNR-Werten, um die Stabilität der Entscheidungen bei verrauschten Beobachtungen zu erfassen.
-\end{itemize}
-
-Als Vergleichsmodelle wurden ein Random-Forest-Klassifikator, eine Support-Vector-Machine und ein mehrschichtiges Perceptron (MLP) ausgewählt. Sie erhalten dieselben verrauschten Merkmale und werden auf denselben Testflüssen bewertet, trainieren aber überwacht auf 20\,000 Flüssen mit gemischtem SNR. Die Konfiguration stammt aus \texttt{eval\_baselines.py}, alle drei Modelle sind Implementierungen aus scikit-learn \autocite{pedregosaScikitlearnMachineLearning2011}. Der Random Forest besteht aus 200 Bäumen mit mindestens fünf Trainingsbeispielen je Blatt. Die SVM nutzt einen RBF-Kernel mit $C=1$ und \texttt{gamma="scale"}, nach der Standardisierung also $\gamma\approx1/8$. Das MLP hat zwei verdeckte Schichten mit je 128 ReLU-Neuronen und wird mit Adam über höchstens 200 Epochen mit Early Stopping trainiert. SVM und MLP erhalten standardisierte Eingaben (Abschnitt~\ref{sec:datenvorverarbeitung}), keines der drei Verfahren verwendet Klassengewichte. Diese Baselines decken etablierte Klassen aus der DDoS-Literatur ab und stellen damit einen belastbaren Referenzrahmen für die Einordnung des RL-Ansatzes bereit \autocite{koComparativeStudyAIEnabled2023, razaFeatureSelectionBasedDDoSAttack2024}.
+Als Vergleichsmodelle dienen ein Random Forest, eine SVM und ein MLP. Sie erhalten dieselben verrauschten Merkmale und werden auf denselben Testflüssen bewertet, trainieren aber überwacht auf 20\,000 Flüssen mit gemischtem SNR. Die Konfiguration stammt aus \texttt{eval\_baselines.py}, alle drei Modelle sind Implementierungen aus scikit-learn \autocite{pedregosaScikitlearnMachineLearning2011}. Der Random Forest besteht aus 200 Bäumen mit mindestens fünf Trainingsbeispielen je Blatt. Die SVM nutzt einen RBF-Kernel mit $C=1$ und \texttt{gamma="scale"}, nach der Standardisierung also $\gamma\approx1/8$. Das MLP hat zwei verdeckte Schichten mit je 128 ReLU-Neuronen und wird mit Adam über höchstens 200 Epochen mit Early Stopping trainiert. SVM und MLP erhalten standardisierte Eingaben (Abschnitt~\ref{sec:datenvorverarbeitung}), keines der drei Verfahren verwendet Klassengewichte. Sie decken die in Kapitel~\ref{chap:related_work} genannten Verfahrensklassen ab \autocite{koComparativeStudyAIEnabled2023, razaFeatureSelectionBasedDDoSAttack2024}.
 
 \section{Bewertungsmetriken}
 \label{sec:eval_metriken}
@@ -59,27 +53,27 @@ Als Vergleichsmodelle wurden ein Random-Forest-Klassifikator, eine Support-Vecto
 Da in der Angriffserkennung Klassenungleichgewichte zu erwarten sind (Abschnitt~\ref{sec:imbalanced_data}), werden Precision, Recall und F1-Score als primäre Metriken verwendet. Diese Metriken basieren auf den Komponenten der Konfusionsmatrix mit True Positives (TP), False Positives (FP) und False Negatives (FN):
 
 \begin{equation}
-\mathrm{Precision} = \frac{TP}{TP+FP},
+\mathrm{Precision} = \frac{\mathrm{TP}}{\mathrm{TP}+\mathrm{FP}},
 \end{equation}
 
 \begin{equation}
-\mathrm{Recall} = \frac{TP}{TP+FN},
+\mathrm{Recall} = \frac{\mathrm{TP}}{\mathrm{TP}+\mathrm{FN}},
 \end{equation}
 
 \begin{equation}
 \mathrm{F1} = 2 \cdot \frac{\mathrm{Precision} \cdot \mathrm{Recall}}{\mathrm{Precision} + \mathrm{Recall}}.
 \end{equation}
 
-Precision bewertet die Zuverlässigkeit der als Angriff klassifizierten Ereignisse und ist somit direkt mit der Fehlalarmrate verknüpft. Recall bewertet den Anteil korrekt erkannter Angriffe und ist für den operativen Sicherheitsnutzen besonders kritisch. Der F1-Score fasst beide Aspekte harmonisch zusammen und dient als zentrale Vergleichsmetrik zwischen DDQN und Baselines.
+Precision bewertet die Zuverlässigkeit der als Angriff klassifizierten Ereignisse: \mbox{$1-\mathrm{Precision}$} ist der Anteil der Fehlalarme unter allen Alarmen und bestimmt die Fehlalarmlast für den Betreiber. Recall bewertet den Anteil korrekt erkannter Angriffe und ist für den operativen Sicherheitsnutzen besonders kritisch. Der F1-Score fasst beide Aspekte harmonisch zusammen und dient als zentrale Vergleichsmetrik zwischen DDQN und Baselines.
 
 \subsection{Robustheitsmaße RLA und ELA}
 \label{sec:robustheitsmetriken}
 
 Ein F1-Verlauf über vier SNR-Stufen zeigt, wie stark ein Modell degradiert. Ob es robuster ist als ein anderes, zeigt er nur bedingt, denn die Modelle starten bei 30\,dB auf unterschiedlichem Niveau. Sáez et al. definieren für diesen Vergleich zwei Maße \autocite{saezEvaluatingClassifierBehavior2016}. Übertragen auf den F1-Score einer SNR-Stufe $s$ lauten sie
 \begin{equation}
-	\mathrm{RLA}_{s}=\frac{F1_{30}-F1_{s}}{F1_{30}},\qquad
-	\mathrm{ELA}_{s}=\frac{1-F1_{s}}{F1_{30}} .
+	\mathrm{RLA}_{s}=\frac{\mathrm{F1}_{30}-\mathrm{F1}_{s}}{\mathrm{F1}_{30}},\qquad
+	\mathrm{ELA}_{s}=\frac{1-\mathrm{F1}_{s}}{\mathrm{F1}_{30}} .
 \end{equation}
-Die Relative Loss of Accuracy (RLA) misst den Verlust relativ zur Ausgangsleistung. Allein ist sie trügerisch: Ein Modell mit niedrigem $F1_{30}$ hat wenig zu verlieren und erhält dadurch eine kleine RLA, ohne dass es besser wäre. Die Equalized Loss of Accuracy (ELA) bezieht dagegen den verbleibenden Fehler $1-F1_s$ auf die Ausgangsleistung. Sie bestraft sowohl hohen Restfehler als auch niedrige Ausgangsleistung. In beiden Maßen gilt: kleiner ist besser.
+Die Relative Loss of Accuracy (RLA) misst den Verlust relativ zur Ausgangsleistung. Allein ist sie trügerisch: Ein Modell mit niedrigem $\mathrm{F1}_{30}$ hat wenig zu verlieren und erhält dadurch eine kleine RLA, ohne dass es besser wäre. Die Equalized Loss of Accuracy (ELA) bezieht dagegen den verbleibenden Fehler $1-\mathrm{F1}_s$ auf die Ausgangsleistung. Sie bestraft sowohl hohen Restfehler als auch niedrige Ausgangsleistung. In beiden Maßen gilt: kleiner ist besser. Die RLA wird im Folgenden in Prozent angegeben, die ELA als Verhältniszahl.
 
 Die Übertragung weicht an zwei Stellen von Sáez et al. ab. Erstens tritt der F1-Score an die Stelle der Accuracy, weil die Accuracy bei einem Angriffsanteil von $\pi=0{,}3$ die Mehrheitsklasse übergewichtet (Abschnitt~\ref{sec:imbalanced_data}). Zweitens dient die Stufe $30$\,dB als Referenz statt eines rauschfreien Laufs, den es in dieser Arbeit nicht gibt. Der Fehler dieser Näherung ist klein: Beim Angriffsanteil $\pi=0{,}3$ beträgt die Bayes-Fehlerwahrscheinlichkeit des Generatormodells ohne Rauschen $6{,}15\,\%$ und bei $30$\,dB $6{,}20\,\%$ (vgl. Tabelle~\ref{tab:klassenueberlappung}). Die Auswertung beider Maße folgt in Abschnitt~\ref{sec:robustheit_rla_ela}.
