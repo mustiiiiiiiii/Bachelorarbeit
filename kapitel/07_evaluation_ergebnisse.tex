@@ -112,7 +112,7 @@ Tabelle~\ref{tab:rla_ela} wendet die Maße aus Abschnitt~\ref{sec:robustheitsmet
 	\end{tabular}
 \end{table}
 
-Die ELA ordnet die Modelle auf jeder Stufe gleich: DDQN vor MLP, SVM und Random Forest. Bei der RLA ist das nicht durchgehend so. Bei 20\,dB verliert die SVM relativ weniger als das MLP ($0{,}70$ gegenüber $0{,}77\,\%$), obwohl ihr F1-Score auf beiden Stufen niedriger liegt. Genau diesen Effekt korrigiert die ELA, indem sie den verbleibenden Fehler statt der Differenz bewertet.
+Die ELA ordnet die Modelle auf jeder Stufe gleich: DDQN vor MLP, SVM und Random Forest. Bei der RLA ist das nicht durchgehend so. Bei 20\,dB verliert die SVM relativ weniger als das MLP ($0{,}70$ gegenüber $0{,}77\,\%$), obwohl ihr F1-Score auf beiden Stufen niedriger liegt. Genau diesen Effekt korrigiert die ELA, indem sie den verbleibenden Fehler statt der Differenz bewertet. Weil die Ausgangswerte $A_0$ der vier Modelle bei 30\,dB nur $0{,}02$ auseinanderliegen ($0{,}874$ bis $0{,}894$), ordnet die ELA hier praktisch nach dem F1-Score der gestörten Stufe. Die abweichende RLA-Rangfolge bei 20\,dB entsteht allein daraus, dass die RLA ein hohes $A_0$ bestraft.
 
 Auffälliger als die Rangfolge ist die Spannweite. Bei 10\,dB liegen DDQN, MLP und SVM in der RLA nur $0{,}16$ Prozentpunkte auseinander, der Random Forest $0{,}9$ Prozentpunkte hinter dem DDQN. Bei 5\,dB verlieren alle vier Modelle zwischen $18{,}8$ und $20{,}2\,\%$ ihrer Ausgangsleistung. Im selben Intervall steigt die Bayes-Fehlerwahrscheinlichkeit beim Angriffsanteil $\pi=0{,}3$ von $6{,}2$ auf $16{,}2\,\%$ (Tabelle~\ref{tab:klassenueberlappung}).
 

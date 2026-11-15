@@ -45,6 +45,10 @@ Stilregeln für alle Texte: `CLAUDE.md`.
 - `pr_ebene_plot.py` → `pr_ebene_plot.pdf` (Abb. 7.3): Precision-Recall-Ebene je SNR mit Bayes-Grenze, Bayes-Arbeitspunkten,
   Elkan-Pfeil und Modellpunkten (Mittelwert ± Std). Importiert die Generatorparameter aus `train_eval.py`, Stil wie `generate_plot.py`.
   Bayes-F1 aus dem Skript stimmt auf vier Stellen mit Tab. `tab:bayes_grenze` überein.
+- **ELA-Höhenlinien (nach Sáez et al. 2016, Fig. 1): geprüft und verworfen, weil A₀ der Modelle zu eng beieinanderliegt.**
+  Die A₀-Werte (F1 bei 30 dB) liegen nur 0,02 auseinander (0,874–0,894). Die Trajektorien werden dadurch zu senkrechten Strichen,
+  und die ELA-Isolinien verlaufen fast waagrecht. Die ELA ordnet damit praktisch nach dem F1-Score der gestörten Stufe,
+  was Abb. 7.2 schon zeigt. Die Erkenntnis steht stattdessen als Satz nach Tab. `tab:rla_ela` in Kap. 7.
 
 ## Build
 
@@ -55,11 +59,6 @@ Stilregeln für alle Texte: `CLAUDE.md`.
 ## Offen
 
 1. Optional: Seitenzahlen für Henderson 2018 (AAAI-18) im Browser auf ojs.aaai.org oder dblp.org prüfen und nachtragen.
-2. Optional, Abbildung „ELA-Höhenlinien“ (Kap. 7, zu Tab. `tab:rla_ela`): In der Ebene A₀ = F1 bei 30 dB × Aₓ = F1 bei x dB
-   die Isolinien ELA = (1 − Aₓ)/A₀ zeichnen, dazu je Modell die Trajektorie 20 → 10 → 5 dB. Vorbild ist Sáez et al. 2016, Fig. 1,
-   aber in 2D statt als 3D-Fläche. Sie soll zeigen, warum die ELA die Modelle konsistent ordnet und die RLA nicht
-   (SVM vor MLP bei 20 dB). Daten aus den CSVs, Matplotlib wie `pr_ebene_plot.py`. Die F1-Werte liegen eng (0,72–0,89),
-   ein Zoom-Ausschnitt ist daher wahrscheinlich nötig.
 
 ## Arbeitsweise
 
