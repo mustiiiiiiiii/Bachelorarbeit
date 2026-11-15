@@ -44,6 +44,10 @@
 \setcounter{biburlnumpenalty}{100}
 \setcounter{biburlucpenalty}{100}
 \setcounter{biburllcpenalty}{100}
+% Einheitliche Literaturangaben: ISSN nicht ausgeben (nicht bei allen Quellen vorhanden),
+% Artikelnummern (eid) als solche kennzeichnen
+\AtEveryBibitem{\clearfield{issn}}
+\DeclareFieldFormat{eid}{Art.~#1}
 % Mehr Dehnungsspielraum gegen über den Rand ragende Zeilen
 \setlength{\emergencystretch}{2em}
 % Keine Hurenkinder (letzte Absatzzeile oben) und Schusterjungen (erste Absatzzeile unten)
