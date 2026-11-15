@@ -244,7 +244,7 @@ Tabelle~\ref{tab:dqn_hyperparameters} fasst die Hyperparameter zusammen, Tabelle
 	\renewcommand{\arraystretch}{1.25}
 	\caption{Hyperparameter des DDQN-Agenten.}
 	\label{tab:dqn_hyperparameters}
-	\begin{tabular}{llp{6.2cm}}
+	\begin{tabular}{llL{6.2cm}}
 		\toprule
 		\textbf{Hyperparameter} & \textbf{Wert} & \textbf{Beschreibung} \\
 		\midrule
@@ -267,7 +267,7 @@ Tabelle~\ref{tab:dqn_hyperparameters} fasst die Hyperparameter zusammen, Tabelle
 	\renewcommand{\arraystretch}{1.25}
 	\caption{System- und Kanalparameter der Simulationsumgebung.}
 	\label{tab:system_parameters}
-	\begin{tabular}{llp{6.2cm}}
+	\begin{tabular}{L{4.4cm}L{3.6cm}L{5.0cm}}
 		\toprule
 		\textbf{Parameter} & \textbf{Wert} & \textbf{Bedeutung} \\
 		\midrule
@@ -277,7 +277,7 @@ Tabelle~\ref{tab:dqn_hyperparameters} fasst die Hyperparameter zusammen, Tabelle
 		Angriffsanteil $\pi$ & $0{,}3$ & Klassenungleichgewicht \\
 		Kanalmodell & AWGN, $h=1$ & Varianz $P_j/10^{\mathrm{SNR}/10}$ je Merkmal \\
 		Evaluierte SNR-Werte & $30,\,20,\,10,\,5$\,dB & Abstufungen der Kanalqualität \\
-		Reward $(R_{TP},R_{TN},R_{FP},R_{FN})$ & $(+1;\,+0{,}5;\,-1;\,-2)$ & Asymmetrisch zulasten verpasster Angriffe \\
+		Reward\newline $(R_{TP},R_{TN},R_{FP},R_{FN})$ & $(+1;\,+0{,}5;\,-1;\,-2)$ & Asymmetrisch zulasten verpasster Angriffe \\
 		Seeds & $0,\,1,\,2$ & Je ein vollständiger Trainings- und Testlauf \\
 		Testflüsse & $20\,000$ je SNR und Seed & Frisch erzeugt, nicht im Training \\
 		\bottomrule
@@ -287,4 +287,4 @@ Tabelle~\ref{tab:dqn_hyperparameters} fasst die Hyperparameter zusammen, Tabelle
 \section{Zusammenfassung der Implementierung}
 \label{sec:implementierung_zusammenfassung}
 
-Die Implementierung bildet die DDoS-Erkennung als Ein-Schritt-Entscheidungsproblem mit acht verrauschten Merkmalen und zwei Aktionen ab. Das DDQN-Gerüst aus Online-Netz, Zielnetz, Double-Q-Ziel und Replay-Puffer ist vollständig umgesetzt. Die Kosten der Fehlerarten stecken in der Reward-Matrix, die Kanalqualität im AWGN-Modell mit SNR-Werten von $30$ bis $5$\,dB. Weil die Entscheidungen unabhängig sind, reduziert sich das Lernziel auf die Schätzung des erwarteten Sofort-Rewards. Kapitel~\ref{chap:ergebnisse} wertet die Läufe quantitativ aus.
+Die Implementierung bildet die DDoS-Erkennung als Entscheidungsproblem mit acht verrauschten Merkmalen und zwei Aktionen ab, dessen Episoden nach einem Schritt enden. Das DDQN-Gerüst aus Online-Netz, Zielnetz, Double-Q-Ziel und Replay-Puffer ist vollständig umgesetzt. Die Kosten der Fehlerarten stecken in der Reward-Matrix, die Kanalqualität im AWGN-Modell mit SNR-Werten von $30$ bis $5$\,dB. Weil die Entscheidungen unabhängig sind, reduziert sich das Lernziel auf die Schätzung des erwarteten Sofort-Rewards. Kapitel~\ref{chap:ergebnisse} wertet die Läufe quantitativ aus.

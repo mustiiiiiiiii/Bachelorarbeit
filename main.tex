@@ -10,6 +10,9 @@
 \usepackage{graphicx}
 \usepackage{xcolor}
 \usepackage{booktabs}
+\usepackage{array}
+% Linksbündige Absatzspalte für Tabellen (vermeidet gedehnte Wortabstände)
+\newcolumntype{L}[1]{>{\raggedright\arraybackslash}p{#1}}
 \usepackage{csquotes}
 \usepackage{listings}
 \usepackage{tikz}
@@ -85,7 +88,7 @@
 
     \vfill
 
-    \begin{tabular}{lp{8cm}}
+    \begin{tabular}{ll}
         \textbf{Vorgelegt von:} & \myAutor \\[0.2cm]
         \textbf{Matrikelnummer:} & \myMatrikelnr \\[0.2cm]
         \textbf{Studiengang:} & \myStudiengang \\[0.6cm]
