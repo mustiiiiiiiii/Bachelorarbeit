@@ -192,10 +192,10 @@ hängen von den Vorgaben der Prüfungsordnung ab.
 
 - **Literaturverzeichnis (29 Einträge, alle zitiert):** URL und Abrufdatum bei Einträgen mit DOI entfernt, lokale Zotero-Pfade entfernt,
   ISSN global unterdrückt (`\AtEveryBibitem{\clearfield{issn}}`). Tagesdaten auf Monat gekürzt, AAAI-Heftnummern entfernt
-  (vorher „Bd. 30. 1.“), Merzouk als „Art. 31“. Verzeichnis im Flattersatz (`ppto{ibsetup}{aggedright}`), DOIs brechen
+  (vorher „Bd. 30. 1.“), Merzouk als „Art. 31“. Verzeichnis im Flattersatz (`\appto{\bibsetup}{\raggedright}`), DOIs brechen
   nicht mehr mitten in Zahlenfolgen um.
 - **K2-7:** Durch die Textänderungen erledigt. Nach Messung des Weißraums aller Seiten (Kontaktabzug) bleiben außerhalb von
-  Kapitelenden höchstens etwa 26 mm, unauffällig bei `aggedbottom`. `aggedbottom` bleibt bewusst (Standard für einseitigen Satz).
+  Kapitelenden höchstens etwa 26 mm, unauffällig bei `\raggedbottom`. `\raggedbottom` bleibt bewusst (Standard für einseitigen Satz).
 - **K5-8:** Tab. 5.2 und 5.3 stehen in einer gemeinsamen Gleitumgebung `[tbp]` auf einer Seite direkt nach ihrem Verweis.
 - Hurenkinder und Schusterjungen sind global unterbunden (Penalties 10000). Die Gesamtsicht aller 50 Seiten ist unauffällig.
 
@@ -209,7 +209,7 @@ hängen von den Vorgaben der Prüfungsordnung ab.
 
 ### Vorgemerkt für das Ende des Seiten-Checks
 
-- K2-7 und K5-8 erledigt (siehe unten).
+- K2-7 und K5-8 erledigt (siehe Abschnitt „Literaturverzeichnis und globaler Umbruch“).
 
 ### Nächste Seiten
 
