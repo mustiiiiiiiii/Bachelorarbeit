@@ -112,9 +112,24 @@ hängen von den Vorgaben der Prüfungsordnung ab.
 - `\mbox{DDoS-AT-2022}` und `\mbox{IoT-DH}` stehen in allen Kapiteln. Die Kapitelübersicht ist linksbündig gesetzt.
 - In `main.tex` sind Hurenkinder und Schusterjungen global unterbunden (`\widowpenalty`, `\clubpenalty`, `\displaywidowpenalty` = 10000).
 
+### Kap. 2 (PDF-Seiten 8–12) – behoben
+
+- Gl. 2.1 schreibt die Dimension aus (σ²ₙ,₈), weil `d` in Kap. 5/8 für das Done-Flag steht. Gl. 2.2 unterscheidet die Dichten p_x und p_y.
+- „Beide Werte“ heißt jetzt „Beide Ergebnisse“ (Raza et al. liefern eine Rangfolge, keinen Wert).
+- CNN, SDN und k-NN werden beim ersten Auftreten aufgelöst.
+- Die Floskel-Einleitung von 2.4 ist gestrichen. Die Überschriften lauten jetzt „2.4 Maschinelles Lernen: Training, Evaluierung und
+  Klassenungleichgewicht“ und „2.4.2 Klassenungleichgewicht“.
+- Bala (1,4 Tbit/s) und Zhu & Wu (17 Datensätze, C4.5) sind gegen die PDFs geprüft.
+
+### Vorgemerkt für das Ende des Seiten-Checks
+
+- **K2-7 Seitenumbruch:** Wegen `\raggedbottom` und KOMAs negativer Penalty vor Überschriften bricht LaTeX bevorzugt vor
+  Abschnitten um und lässt Weißraum am Seitenende. Nach dem letzten Kapitel einmal global entscheiden
+  (`\flushbottom` oder eine angepasste Überschriften-Penalty), danach alle Umbrüche einmal prüfen.
+
 ### Nächste Seiten
 
-Einzelseiten-Check ab PDF-Seite 8 (Kap. 2) fortsetzen.
+Einzelseiten-Check ab PDF-Seite 13 (Kap. 3) fortsetzen.
 
 ## Arbeitsweise
 
