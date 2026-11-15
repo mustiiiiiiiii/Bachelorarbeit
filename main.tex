@@ -37,6 +37,12 @@
     giveninits=true
 ]{biblatex}
 \addbibresource{literatur.bib}
+% Zeilenumbrüche in langen URLs des Literaturverzeichnisses erlauben
+\setcounter{biburlnumpenalty}{100}
+\setcounter{biburlucpenalty}{100}
+\setcounter{biburllcpenalty}{100}
+% Mehr Dehnungsspielraum gegen über den Rand ragende Zeilen
+\setlength{\emergencystretch}{2em}
 
 % ---------------------------------------------------------------
 % Seitenlayout & Hyperlinks
