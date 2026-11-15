@@ -59,7 +59,19 @@ Stilregeln für alle Texte: `CLAUDE.md`.
 
 ## Offen
 
-Keine offenen Punkte. Hinweis: Henderson 2018 bleibt ohne Seitenzahlen (siehe Literatur), das Zitat ist über die DOI vollständig.
+Inhaltlich und technisch keine offenen Punkte: Quellen geprüft, Kap. 7 und Fazit konsistent, Build sauber (50 Seiten, 0 Fehler, 0 Warnungen).
+Hinweis: Henderson 2018 bleibt ohne Seitenzahlen (siehe Literatur), das Zitat ist über die DOI vollständig.
+
+### Vor der Abgabe (manuell)
+
+1. **Deckblatt:** In `main.tex` gibt es eine eigene `titlepage` (Z. 78–101). Sie ist gegen die Vorgaben des Fachgebiets
+   Kommunikationsnetze bzw. der Fakultät EI der TU Ilmenau zu prüfen (Titel laut `Aufgabenstellung_Bachelorarbeit.pdf`,
+   Betreuer, Matrikelnummer, Datum).
+2. **Eigenständigkeitserklärung:** Fehlt noch im LaTeX-Quelltext. Wortlaut und Position gemäß gültiger Prüfungsordnung
+   der TU Ilmenau einfügen und unterschreiben. Eine ggf. geforderte Erklärung zum Einsatz von KI-Werkzeugen gehört dazu.
+3. **Letzter Textdurchgang:** Korrekturlesen auf Rechtschreibung, Stil (`CLAUDE.md`) und Abbildungs- und Tabellenverweise.
+   Ein vollständiges Korrekturlesen fand in den Sitzungen nicht statt.
+4. Danach vollständig kompilieren und das PDF für die Abgabe erzeugen (`main.pdf` ist nicht versioniert).
 
 ## Arbeitsweise
 
