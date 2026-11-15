@@ -33,10 +33,18 @@ Stilregeln für alle Texte: `CLAUDE.md`.
 | Mittlerer Reward je Fluss | aus P/R je Lauf + rekonstruierter Zahl der Angriffsflüsse (deterministische Test-RNGs) | Kap. 7, `sec:baseline_vergleich` |
 | RLA / ELA | aus mittleren F1-Werten der CSVs | Tab. `tab:rla_ela` |
 | 19 969 Lernschritte, 79 Zielnetz-Syncs | aus `Config` in `train_eval.py` | Kap. 5, `sec:training_optimierung` |
+| Bayes-PR-Kurven, Bayes-Punkte p > 1/2 und p > 1/3 | geschlossen aus LLR ~ N(±D²/2, D²), `pr_ebene_plot.py` | Abb. `fig:pr_ebene` (Kap. 7) |
+| Implizite Schwelle t (Bayes-Schwelle mit gleichem Recall): DDQN 0,43 / 0,42 / 0,38 / 0,38; RF 0,68–0,50; SVM 0,61–0,47; MLP 0,54–0,41 | Nullstellensuche auf der Bayes-Recall-Kurve, mittlere P/R aus den CSVs | Kap. 7, `sec:reward_recall` |
+
+## Abbildungen
+
+- `pr_ebene_plot.py` → `pr_ebene_plot.pdf` (Abb. 7.3): Precision-Recall-Ebene je SNR mit Bayes-Grenze, Bayes-Arbeitspunkten,
+  Elkan-Pfeil und Modellpunkten (Mittelwert ± Std). Importiert die Generatorparameter aus `train_eval.py`, Stil wie `generate_plot.py`.
+  Bayes-F1 aus dem Skript stimmt auf vier Stellen mit Tab. `tab:bayes_grenze` überein.
 
 ## Build
 
-- `pdflatex → biber → pdflatex → pdflatex`, Ergebnis zuletzt: 48 Seiten, 0 Fehler, 0 Warnungen (LaTeX und biber), 0 Overfull, 0 Underfull.
+- `pdflatex → biber → pdflatex → pdflatex`, Ergebnis zuletzt: 50 Seiten, 0 Fehler, 0 Warnungen (LaTeX und biber), 0 Overfull, 0 Underfull.
 - `main.tex` enthält Spaltentyp `L{…}` (linksbündig, Paket `array`), URL-Umbrüche für biblatex und `\emergencystretch`.
 - `main.bcf` und `main.run.xml` sind nicht mehr versioniert (werden beim Kompilieren erzeugt). `main.pdf` ist noch versioniert.
 
@@ -45,6 +53,11 @@ Stilregeln für alle Texte: `CLAUDE.md`.
 1. Ran 2024 Metadaten auf IEEE Xplore bestätigen.
 2. Optional: Seitenzahlen für Henderson 2018 (AAAI) und Elkan 2001 (IJCAI) aus den Verlagsfassungen nachtragen.
 3. Optional: `main.pdf` ebenfalls aus Git nehmen, wenn nur noch lokal kompiliert wird.
+4. Optional, Abbildung „ELA-Höhenlinien“ (Kap. 7, zu Tab. `tab:rla_ela`): In der Ebene A₀ = F1 bei 30 dB × Aₓ = F1 bei x dB
+   die Isolinien ELA = (1 − Aₓ)/A₀ zeichnen, dazu je Modell die Trajektorie 20 → 10 → 5 dB. Vorbild ist Sáez et al. 2016, Fig. 1,
+   aber in 2D statt als 3D-Fläche. Sie soll zeigen, warum die ELA die Modelle konsistent ordnet und die RLA nicht
+   (SVM vor MLP bei 20 dB). Daten aus den CSVs, Matplotlib wie `pr_ebene_plot.py`. Die F1-Werte liegen eng (0,72–0,89),
+   ein Zoom-Ausschnitt ist daher wahrscheinlich nötig.
 
 ## Arbeitsweise
 
