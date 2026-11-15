@@ -11,3 +11,7 @@ __pycache__/
 *.lot
 *.bbl
 *.blg
+
+# Von biber erzeugte Hilfsdateien
+*.bcf
+*.run.xml
