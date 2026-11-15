@@ -1,0 +1,280 @@
+\chapter{Implementierung des DDQN-Ansatzes}
+\label{chap:implementierung}
+
+Dieses Kapitel beschreibt, wie der in Kapitel~\ref{sec:ansatz_vergleich} gewählte Double-DQN-Agent (DDQN) in PyTorch umgesetzt ist. Die Implementierung besteht aus drei Teilen: einer Gymnasium-Umgebung, die Netzwerkflüsse als Merkmalsvektoren erzeugt und über einen AWGN-Kanal stört, dem DDQN-Agenten mit Replay-Puffer und Zielnetz sowie einer GPU-basierten Trainingsschleife. Alle Größen stammen aus dem Quelltext (\texttt{train\_eval.py}).
+
+\section{Systemarchitektur und Gesamtüberblick}
+\label{sec:systemarchitektur}
+
+Jeder Netzwerkfluss ist eine eigene, unabhängige Entscheidung. Der Agent erhält einen verrauschten Merkmalsvektor, wählt \emph{Normal} oder \emph{DDoS} und bekommt sofort eine Belohnung. Der Folgefluss hängt weder von der Aktion noch vom aktuellen Fluss ab. Eine Episode umfasst deshalb genau einen Schritt (\texttt{terminated=True}). Die Pipeline lässt sich in vier Stufen gliedern:
+
+\begin{enumerate}
+	\item \textbf{Flussgenerator:} Aus dem Modell in Abschnitt~\ref{sec:generatormodell} entsteht pro Fluss ein Vektor $\mathbf{x}\in\mathbb{R}^8$ samt Label.
+	\item \textbf{AWGN-Kanal:} Auf $\mathbf{x}$ wird additives Rauschen entsprechend dem SNR addiert, der Agent sieht $\mathbf{y}$.
+	\item \textbf{DDQN-Agent:} Ein Q-Netz bewertet beide Aktionen, die Aktion mit dem größten Q-Wert (bzw. eine $\epsilon$-greedy-Aktion) wird ausgeführt.
+	\item \textbf{Lernschritt:} Die Transition wird im Replay-Puffer gespeichert, aus dem Mini-Batches das Online-Netz trainieren.
+\end{enumerate}
+
+Abbildung~\ref{fig:blockschaltbild} zeigt die Wirkungskette vom Flussgenerator bis zur Entscheidung. Der Rückpfad vom Reward in den Replay-Puffer schließt den Lernkreis, der Reward erreicht den Agenten also ausschließlich als Trainingssignal und nie als Eingabe.
+
+\begin{figure}[htbp]
+	\centering
+	\begin{tikzpicture}[
+		font=\small,
+		blk/.style={draw, rectangle, rounded corners=2pt, minimum height=1.5cm, text width=2.6cm, align=center, thick},
+		ch/.style={blk, fill=blue!8},
+		ag/.style={blk, fill=green!10},
+		rw/.style={blk, fill=orange!12},
+		sub/.style={draw, rectangle, minimum height=0.55cm, text width=2.3cm, align=center, font=\scriptsize, fill=white},
+		arr/.style={-{Stealth[length=2.2mm]}, thick},
+		node distance=0.8cm and 0.9cm
+	]
+		% Zeile 1
+		\node[blk] (gen) {Flussgenerator\\ $\mathbf{x}\in\mathbb{R}^{8}$, Label $c$};
+		\node[ch, right=of gen] (awgn) {AWGN-Kanal\\ $\sigma_{n,j}^{2}=P_j/10^{\mathrm{SNR}/10}$};
+		\node[blk, right=of awgn] (env) {Gymnasium-Umgebung\\ \texttt{DDoSFlowEnv}};
+		\draw[arr] (gen) -- node[above, font=\scriptsize] {$\mathbf{x}$} (awgn);
+		\draw[arr] (awgn) -- node[above, font=\scriptsize] {$\mathbf{y}$} (env);
+		\node[above=0.45cm of awgn, font=\scriptsize] (snr) {SNR $\in\{30,20,10,5\}$\,dB};
+		\draw[arr] (snr) -- (awgn);
+
+		% Zeile 2
+		\node[ag, below=1.9cm of gen] (agent) {DDQN-Agent};
+		\node[rw, right=of agent] (rew) {Asymmetrische Reward-Matrix $r(a,c)$};
+		\node[blk, right=of rew] (dec) {Entscheidung\\ $a\in\{0,1\}$};
+
+		% Agent-Innenleben
+		\node[sub, below=0.35cm of agent, yshift=-0.1cm] (onl) {Online-Netz $\theta$};
+		\node[sub, below=0.12cm of onl] (tgt) {Target-Netz $\bar\theta$};
+		\node[sub, below=0.12cm of tgt] (rb) {Replay-Puffer};
+		\begin{scope}[on background layer]
+			\node[draw, dashed, fit=(agent)(onl)(tgt)(rb), inner sep=4pt, fill=green!5] (agbox) {};
+		\end{scope}
+
+		\draw[arr] (env.south) -- ++(0,-0.7) -| node[pos=0.25, above, font=\scriptsize] {$\mathbf{y}$} (agbox.north);
+		\draw[arr] (agent) -- node[above, font=\scriptsize] {$a$} (rew);
+		\draw[arr] (rew) -- node[above, font=\scriptsize] {$a$} (dec);
+		\draw[arr, dashed] (rew.south) -- ++(0,-1.0) -| node[pos=0.25, below, font=\scriptsize] {$r$} (rb.east);
+	\end{tikzpicture}
+	\caption{Blockschaltbild der Wirkungskette. Der Generator liefert $\mathbf{x}$ mit Label $c$, der AWGN-Kanal erzeugt die Beobachtung $\mathbf{y}$, der Agent entscheidet, und die Reward-Matrix bewertet $a$ gegen $c$. Gestrichelt: Rückführung der Belohnung in den Replay-Puffer.}
+	\label{fig:blockschaltbild}
+\end{figure}
+
+Es gibt weder ein Gitter noch eine Bewegungsaktion. Der Zustand ist direkt der Merkmalsvektor, der Aktionsraum hat zwei Elemente. Diese Vereinfachung hält die Umgebung schnell: Der Flussgenerator erzeugt 32 Flüsse pro Iteration vektorisiert in NumPy, und Puffer, Netze und Rewards liegen auf der GPU, sodass beim Sampling kein Transfer zwischen Host und Gerät anfällt.
+
+\section{Gymnasium-Umgebung und Zustandsraum}
+\label{sec:gymnasium_umgebung}
+
+Die Klasse \texttt{DDoSFlowEnv} erbt von \texttt{gymnasium.Env} und definiert:
+
+\begin{itemize}
+	\item \textbf{Beobachtungsraum:} \texttt{Box}$(-\infty,\infty)^{8}$ vom Typ \texttt{float32}, der verrauschte Merkmalsvektor $\mathbf{y}$.
+	\item \textbf{Aktionsraum:} \texttt{Discrete}$(2)$ mit $a=0$ (Normal) und $a=1$ (DDoS).
+	\item \textbf{Reset:} zieht einen neuen Fluss mit Label $c\in\{0,1\}$ (Angriffsanteil $\pi=0{,}3$) beim fest eingestellten SNR der Umgebung.
+	\item \textbf{Step:} berechnet den Reward aus Aktion und Label, liefert eine Null-Beobachtung und setzt \texttt{terminated=True}. Die Terminal-Beobachtung geht nicht in das Lernen ein.
+\end{itemize}
+
+Der Gymnasium-Umgebungsprüfer (\texttt{check\_env}) validiert die Schnittstelle vor jedem Lauf. Die Belohnung hängt allein vom Zusammenspiel von Aktion und wahrem Label ab:
+
+\begin{equation}
+	r(a,c)=
+	\begin{cases}
+		R_{TP}=+1{,}0, & a=1,\ c=1 \\
+		R_{TN}=+0{,}5, & a=0,\ c=0 \\
+		R_{FP}=-1{,}0, & a=1,\ c=0 \\
+		R_{FN}=-2{,}0, & a=0,\ c=1 .
+	\end{cases}
+\end{equation}
+
+Ein verpasster Angriff kostet doppelt so viel wie ein Fehlalarm. Diese Asymmetrie wirkt als kostensensitives Lernziel anstelle eines Resamplings (Abschnitt~\ref{sec:imbalanced_data}). Für die Evaluation in Kapitel~\ref{chap:ergebnisse} hat sie eine konkrete Folge, nämlich die Verschiebung der Entscheidungsschwelle auf $p>1/3$.
+
+\subsection{Formale Definition als Markov-Entscheidungsprozess}
+\label{sec:mdp_definition}
+
+Das Entscheidungsproblem ist ein Markov-Entscheidungsprozess $(\mathcal{S},\mathcal{A},\mathcal{P},\mathcal{R},\gamma)$ mit folgenden Komponenten:
+
+\begin{itemize}
+	\item \textbf{Zustandsraum:} $\mathcal{S}=\mathbb{R}^{8}$. Ein Zustand ist die verrauschte Beobachtung $\mathbf{y}=\mathbf{x}+\mathbf{n}$ mit $n_j\sim\mathcal{N}(0,\sigma_{n,j}^2)$ aus Abschnitt~\ref{sec:awgn_kanal}. Das Label $c$ gehört nicht zum Zustand, der Prozess ist bezüglich $c$ nur teilbeobachtbar.
+	\item \textbf{Aktionsraum:} $\mathcal{A}=\{0,1\}$, mit $a=0$ für Normalverkehr und $a=1$ für DDoS.
+	\item \textbf{Transition:} $\mathcal{P}(\mathbf{y}'\mid\mathbf{y},a)$ ist deterministisch und von $(\mathbf{y},a)$ unabhängig. Jede Episode endet nach einem Schritt, das Terminal-Flag ist stets $d=1$:
+	\begin{equation}
+		\mathcal{P}(\mathbf{y}'\mid\mathbf{y},a)=\delta(\mathbf{y}'-\mathbf{0}),\qquad d=1 .
+	\end{equation}
+	Der Folgezustand ist die Null-Beobachtung aus \texttt{step}. Der nächste Fluss entsteht erst im \texttt{reset}.
+	\item \textbf{Belohnung:} $\mathcal{R}(a,c)$ als Kostenmatrix mit Zeilen $c$ und Spalten $a$:
+	\begin{equation}
+		\mathcal{R}=
+		\begin{pmatrix}
+			\mathcal{R}(0,0) & \mathcal{R}(1,0)\\
+			\mathcal{R}(0,1) & \mathcal{R}(1,1)
+		\end{pmatrix}
+		=
+		\begin{pmatrix}
+			R_{TN} & R_{FP}\\
+			R_{FN} & R_{TP}
+		\end{pmatrix}
+		=
+		\begin{pmatrix}
+			+0{,}5 & -1{,}0\\
+			-2{,}0 & +1{,}0
+		\end{pmatrix}.
+	\end{equation}
+	Das entspricht \texttt{REWARD\_TABLE[label, action]} im Quelltext.
+	\item \textbf{Diskontierung:} $\gamma=0{,}99$. Wegen $d=1$ geht $\gamma$ nicht in das Ziel ein.
+\end{itemize}
+
+Die optimale Politik maximiert den erwarteten Sofort-Reward $\mathbb{E}[\mathcal{R}(a,c)\mid\mathbf{y}]$. Mit $p=P(c=1\mid\mathbf{y})$ gilt $a=1$ genau dann, wenn $p\,R_{TP}+(1-p)\,R_{FP}>p\,R_{FN}+(1-p)\,R_{TN}$, also $p>1/3$. Das ist die in Kapitel~\ref{chap:ergebnisse} erwartete Schwelle.
+
+Im Training werden die Flüsse nicht einzeln über \texttt{step} erzeugt, sondern als Batch von 32 Flüssen pro Iteration, wobei der SNR jedes Flusses zufällig aus $\{30,20,10,5\}$\,dB gezogen wird. Der Rewardvektor entsteht durch eine Tabellenabfrage \texttt{REWARD\_TABLE[label, action]} direkt auf der GPU.
+
+\section{DDQN-Architektur in PyTorch}
+\label{sec:dqn_architektur}
+
+Das Q-Netz (\texttt{QNet}) ist ein vollständig verbundenes Netz mit zwei verdeckten Schichten:
+\begin{equation}
+	\mathbb{R}^{8}\ \to\ \underbrace{128}_{\text{ReLU}}\ \to\ \underbrace{128}_{\text{ReLU}}\ \to\ \mathbb{R}^{2}.
+\end{equation}
+Abbildung~\ref{fig:qnet_architektur} stellt die Struktur dar. Mit Gewichtsmatrizen $\mathbf{W}_1\in\mathbb{R}^{128\times8}$, $\mathbf{W}_2\in\mathbb{R}^{128\times128}$, $\mathbf{W}_3\in\mathbb{R}^{2\times128}$ und Biasvektoren $\mathbf{b}_i$ berechnet das Netz
+\begin{equation}
+	\mathbf{q}(\mathbf{y})=\mathbf{W}_3\,\mathrm{ReLU}\!\bigl(\mathbf{W}_2\,\mathrm{ReLU}(\mathbf{W}_1\mathbf{y}+\mathbf{b}_1)+\mathbf{b}_2\bigr)+\mathbf{b}_3 .
+\end{equation}
+Die Parameterzahl beträgt $(8\cdot128+128)+(128\cdot128+128)+(128\cdot2+2)=17\,922$ je Netz.
+
+\begin{figure}[htbp]
+	\centering
+	\begin{tikzpicture}[
+		font=\small,
+		lay/.style={draw, rectangle, rounded corners=2pt, minimum height=2.2cm, minimum width=1.5cm, align=center, thick},
+		arr/.style={-{Stealth[length=2.2mm]}, thick},
+		node distance=1.3cm
+	]
+		\node[lay, fill=gray!10] (in) {Eingabe\\ $\mathbf{y}\in\mathbb{R}^{8}$};
+		\node[lay, fill=blue!10, right=of in] (h1) {Linear\\ $8\to128$\\ ReLU};
+		\node[lay, fill=blue!10, right=of h1] (h2) {Linear\\ $128\to128$\\ ReLU};
+		\node[lay, fill=green!10, right=of h2] (out) {Linear\\ $128\to2$};
+		\node[right=1.0cm of out, align=left] (q) {$Q(\mathbf{y},0)$\\[2pt] $Q(\mathbf{y},1)$};
+		\draw[arr] (in) -- (h1);
+		\draw[arr] (h1) -- (h2);
+		\draw[arr] (h2) -- (out);
+		\draw[arr] (out) -- (q);
+	\end{tikzpicture}
+	\caption{Feedforward-Struktur des Q-Netzes ($8\to128\to128\to2$, ReLU in beiden verdeckten Schichten, lineare Ausgabe). Online- und Zielnetz teilen sich diese Struktur.}
+	\label{fig:qnet_architektur}
+\end{figure}
+
+Die Ausgabeschicht ist linear, die zwei Ausgaben sind die Q-Werte $Q(\mathbf{y},0)$ und $Q(\mathbf{y},1)$. Online-Netz und Zielnetz haben dieselbe Struktur, das Zielnetz startet mit den Gewichten des Online-Netzes und wird nur kopiert, nie per Gradient trainiert.
+
+Das DDQN-Ziel trennt Aktionsauswahl und Bewertung:
+\begin{equation}
+	Y = r + \gamma\,(1-d)\;Q\!\left(\mathbf{y}',\ \arg\max_{a'} Q(\mathbf{y}',a';\theta);\ \bar{\theta}\right),
+\end{equation}
+wobei $\theta$ die Parameter des Online-Netzes, $\bar\theta$ die des Zielnetzes und $d\in\{0,1\}$ das Terminal-Flag sind. Der Verlust ist die Huber-Funktion (\texttt{smooth\_l1\_loss}) zwischen $Q(\mathbf{y},a;\theta)$ und $Y$, die Gradientennorm wird auf $10$ begrenzt.
+
+Weil jede Episode nach einem Schritt endet, gilt für alle gespeicherten Transitionen $d=1$ und damit $Y=r$. Das Bootstrapping-Glied entfällt, der Diskontierungsfaktor $\gamma$ beeinflusst das Lernen nicht, und das Q-Netz schätzt den erwarteten Sofort-Reward je Aktion (ein kontextuelles Banditenproblem). Online-/Zielnetz, Double-Q-Ziel und Replay-Puffer sind vollständig implementiert und bleiben im Code aktiv. Unter diesem Problemzuschnitt geht das Zielnetz wegen $d=1$ jedoch nie in $Y$ ein. Das ist bei der Interpretation der Ergebnisse zu berücksichtigen.
+
+Der Replay-Puffer (\texttt{ReplayBuffer}) ist ein Ringpuffer mit $50\,000$ Einträgen. Er hält Beobachtung, Aktion, Reward, Folgebeobachtung und Terminal-Flag als Tensoren auf dem Zielgerät und zieht gleichverteilte Mini-Batches der Größe $64$.
+
+\section{AWGN-Kanalmodell im Lernprozess}
+\label{sec:awgn_kanal}
+
+Der Agent beobachtet $\mathbf{y}=\mathbf{x}+\mathbf{n}$ mit $n_j\sim\mathcal{N}(0,\sigma_{n,j}^2)$ je Merkmal $j$. Die Rauschvarianz richtet sich nach der Signalleistung $P_j=\mathbb{E}[x_j^2]$ des Merkmals und dem gewünschten SNR (Abschnitt~\ref{sec:generatormodell}):
+\begin{equation}
+	\sigma_{n,j}^2=\frac{P_j}{10^{\mathrm{SNR_{dB}}/10}}.
+\end{equation}
+Der Kanalfaktor ist $h=1$, es gibt keine Verstärkung oder Fading-Komponente. Bei $30$\,dB beträgt die Rauschvarianz $10^{-3}P_j$, bei $5$\,dB etwa $0{,}32\,P_j$. Die Rauschstandardabweichung beträgt damit etwa $3\,\%$ (bei $30$\,dB) bis $56\,\%$ (bei $5$\,dB) von $\sqrt{P_j}$. Bei $5$\,dB liegt die Rauschstandardabweichung mit $0{,}22$ bis $0{,}31$ je Merkmal über der intrinsischen Klassenstreuung $\sigma=0{,}20$.
+
+\subsection{Klassenüberlappung bei sinkendem SNR}
+\label{sec:klassenueberlappung}
+
+Das Rauschen verbreitert beide Klassenverteilungen. Die Beobachtung ist klassenbedingt wieder gaußverteilt, denn die Summe zweier unabhängiger Gauß-Terme bleibt gaußförmig:
+\begin{equation}
+	y_j\mid c\sim\mathcal{N}\!\bigl(\mu_{c,j},\ \sigma^2+\sigma_{n,j}^2\bigr).
+\end{equation}
+Die Klassenmittelwerte bleiben fest, nur die Varianz wächst von $\sigma^2=0{,}04$ auf $\sigma^2+\sigma_{n,j}^2$. Der Abstand der Mittelwerte $\Delta\mu_j=\mu_{\text{DDoS},j}-\mu_{\text{Normal},j}$ beträgt $\pm0{,}15$ bis $\pm0{,}25$. Bei gleicher Kovarianz beider Klassen (diagonal) ergibt sich der Mahalanobis-Abstand
+\begin{equation}
+	D^{2}=\sum_{j=1}^{8}\frac{\Delta\mu_j^{2}}{\sigma^{2}+\sigma_{n,j}^{2}},
+\end{equation}
+und die Bayes-Fehlerwahrscheinlichkeit für gleiche Priors ist $P_e=Q(D/2)$ mit der Gaußschen Q-Funktion. Für die Parameter aus \texttt{train\_eval.py} liefert die Auswertung die Werte in Tabelle~\ref{tab:klassenueberlappung}.
+
+\begin{table}[htbp]
+	\centering
+	\renewcommand{\arraystretch}{1.25}
+	\caption{Klassenseparierbarkeit der Beobachtung $\mathbf{y}$ in Abhängigkeit vom SNR ($\sigma=0{,}20$, $\pi=0{,}3$; $P_e$ bei gleichen Priors).}
+	\label{tab:klassenueberlappung}
+	\begin{tabular}{rrrrr}
+		\toprule
+		\textbf{SNR in dB} & $\max_j\sigma_{n,j}$ & $D^{2}$ & $D$ & $P_e=Q(D/2)$ \\
+		\midrule
+		$30$ & $0{,}018$ & $8{,}76$ & $2{,}96$ & $6{,}9\,\%$ \\
+		$20$ & $0{,}056$ & $8{,}33$ & $2{,}89$ & $7{,}4\,\%$ \\
+		$10$ & $0{,}176$ & $5{,}62$ & $2{,}37$ & $11{,}8\,\%$ \\
+		$5$  & $0{,}312$ & $3{,}17$ & $1{,}78$ & $18{,}7\,\%$ \\
+		\bottomrule
+	\end{tabular}
+\end{table}
+
+Zwischen $30$ und $20$\,dB ändert sich die Überlappung kaum, weil das Rauschen ($\sigma_{n,j}\le0{,}056$) neben $\sigma=0{,}20$ vernachlässigbar bleibt. Bei $5$\,dB sinkt $D$ auf $1{,}78$, die effektive Streuung steigt auf etwa $0{,}32$ je Merkmal, und die Fehlerwahrscheinlichkeit des Bayes-Klassifikators verdreifacht sich gegenüber $30$\,dB. Mit $\pi=0{,}3$ und der Schwelle $p>1/3$ aus Abschnitt~\ref{sec:mdp_definition} verschiebt sich die tatsächliche Fehlerrate zwar, die Rangfolge der SNR-Stufen bleibt aber erhalten. Das Training mit gemischtem SNR zwingt das Q-Netz auf eine Kompromiss-Entscheidungsgrenze, die für kein SNR exakt optimal ist.
+
+Im Training trifft der Agent pro Fluss auf einen zufällig gewählten SNR. Er lernt dadurch eine einzige Entscheidungsfunktion für alle vier Kanalqualitäten, ohne den SNR als Eingabe zu erhalten. Die Evaluation erfolgt dagegen getrennt je SNR-Stufe (Kapitel~\ref{chap:evaluierung}).
+
+\section{Trainings- und Optimierungsstrategie}
+\label{sec:training_optimierung}
+
+Das Training läuft über $20\,000$ Iterationen. In jeder Iteration entstehen $32$ Flüsse, der Agent wählt $\epsilon$-greedy Aktionen, die Transitionen gelangen in den Puffer, und es folgt ein Lernschritt, sobald der Puffer mindestens $1000$ Einträge enthält. Die Explorationsrate fällt linear von $1{,}0$ auf $0{,}02$ innerhalb der ersten $40\,\%$ der Iterationen ($8000$) und bleibt danach konstant. Der Optimierer ist Adam mit Lernrate $10^{-4}$. Das Zielnetz wird alle $250$ Lernschritte hart synchronisiert. Pro Seed (0, 1, 2) beginnt der Lauf mit neu initialisierten Netzen und eigenem Zufallsgenerator für die Flüsse. Die Seeds setzen Python-, NumPy- und PyTorch-Generatoren (inklusive CUDA).
+
+\section{Implementierung in der praktischen Pipeline}
+\label{sec:praktische_pipeline}
+
+Das Skript \texttt{train\_eval.py} führt für jeden Seed Training und Evaluation aus und schreibt \texttt{evaluation\_results.csv} mit Precision, Recall und F1-Score je Seed und SNR sowie Mittelwert und Standardabweichung. Die Baselines (Random Forest, SVM, MLP) laufen in \texttt{eval\_baselines.py} und importieren Flussgenerator und Kanalmodell unverändert aus \texttt{train\_eval.py}. Dadurch sehen alle Verfahren dieselbe Datenverteilung und exakt dieselben Testflüsse. Die Abbildungen entstehen in \texttt{generate\_plot.py} aus den beiden CSV-Dateien.
+
+Tabelle~\ref{tab:dqn_hyperparameters} fasst die Hyperparameter zusammen, Tabelle~\ref{tab:system_parameters} die Umgebungs- und Kanalparameter.
+
+\begin{table}[htbp]
+	\centering
+	\renewcommand{\arraystretch}{1.25}
+	\caption{Hyperparameter des DDQN-Agenten.}
+	\label{tab:dqn_hyperparameters}
+	\begin{tabular}{llp{6.2cm}}
+		\toprule
+		\textbf{Hyperparameter} & \textbf{Wert} & \textbf{Beschreibung} \\
+		\midrule
+		Netzstruktur & $8\to128\to128\to2$ & Zwei verdeckte Schichten mit ReLU \\
+		Lernrate & $1\cdot10^{-4}$ & Adam-Optimierer \\
+		Diskontierungsfaktor $\gamma$ & $0{,}99$ & Ohne Wirkung, da alle Episoden nach einem Schritt enden \\
+		Batch-Größe & $64$ & Stichprobe pro Lernschritt \\
+		Puffergröße & $50\,000$ & Ringpuffer auf der GPU \\
+		Explorationsrate $\epsilon$ & $1{,}0 \to 0{,}02$ & Linear über $40\,\%$ der Iterationen \\
+		Lernstart & $1000$ Einträge & Mindestfüllung des Puffers \\
+		Zielnetz-Update & alle $250$ Lernschritte & Harte Synchronisation \\
+		Verlustfunktion & Huber & Gradientennorm begrenzt auf $10$ \\
+		Iterationen & $20\,000$ & Je $32$ Flüsse, insgesamt $6{,}4\cdot10^{5}$ Flüsse \\
+		\bottomrule
+	\end{tabular}
+\end{table}
+
+\begin{table}[htbp]
+	\centering
+	\renewcommand{\arraystretch}{1.25}
+	\caption{System- und Kanalparameter der Simulationsumgebung.}
+	\label{tab:system_parameters}
+	\begin{tabular}{llp{6.2cm}}
+		\toprule
+		\textbf{Parameter} & \textbf{Wert} & \textbf{Bedeutung} \\
+		\midrule
+		Zustandsraum & $\mathbb{R}^{8}$ & Direkter Merkmalsvektor, kein Gitter \\
+		Aktionsraum & $2$ diskrete Aktionen & Normal (0), DDoS (1) \\
+		Klassenstreuung $\sigma$ & $0{,}20$ & Je Merkmal, klassenbedingt gaußverteilt \\
+		Angriffsanteil $\pi$ & $0{,}3$ & Klassenungleichgewicht \\
+		Kanalmodell & AWGN, $h=1$ & Varianz $P_j/10^{\mathrm{SNR}/10}$ je Merkmal \\
+		Evaluierte SNR-Werte & $30,\,20,\,10,\,5$\,dB & Abstufungen der Kanalqualität \\
+		Reward $(R_{TP},R_{TN},R_{FP},R_{FN})$ & $(+1;\,+0{,}5;\,-1;\,-2)$ & Asymmetrisch zulasten verpasster Angriffe \\
+		Seeds & $0,\,1,\,2$ & Je ein vollständiger Trainings- und Testlauf \\
+		Testflüsse & $20\,000$ je SNR und Seed & Frisch erzeugt, nicht im Training \\
+		\bottomrule
+	\end{tabular}
+\end{table}
+
+\section{Zusammenfassung der Implementierung}
+\label{sec:implementierung_zusammenfassung}
+
+Die Implementierung bildet die DDoS-Erkennung als Ein-Schritt-Entscheidungsproblem mit acht verrauschten Merkmalen und zwei Aktionen ab. Das DDQN-Gerüst aus Online-Netz, Zielnetz, Double-Q-Ziel und Replay-Puffer ist vollständig umgesetzt. Die Kosten der Fehlerarten stecken in der Reward-Matrix, die Kanalqualität im AWGN-Modell mit SNR-Werten von $30$ bis $5$\,dB. Weil die Entscheidungen unabhängig sind, reduziert sich das Lernziel auf die Schätzung des erwarteten Sofort-Rewards. Kapitel~\ref{chap:ergebnisse} wertet die Läufe quantitativ aus.

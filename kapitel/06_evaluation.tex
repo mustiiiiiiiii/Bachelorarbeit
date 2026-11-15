@@ -1,0 +1,73 @@
+\chapter{Evaluationsaufbau und Metriken}
+\label{chap:evaluierung}
+
+Dieses Kapitel legt fest, wie der in Kapitel~\ref{chap:implementierung} beschriebene Double-DQN-Agent (DDQN) bewertet wird. Es definiert das Evaluationsprotokoll, die Testbedingungen unter AWGN-Rauschen bei $\mathrm{SNR}\in\{30,20,10,5\}$\,dB, die Vergleichsmodelle und die Bewertungsmetriken Precision, Recall und F1-Score. Die Messergebnisse folgen in Kapitel~\ref{chap:ergebnisse}.
+
+\section{Evaluationsprotokoll und Versuchsaufbau}
+\label{sec:eval_protokoll}
+
+Die Evaluation folgt einem reproduzierbaren zweistufigen Protokoll aus Training und Test. Einen separaten Validierungs-Split gibt es nicht: Die Hyperparameter in Tabelle~\ref{tab:dqn_hyperparameters} wurden vorab festgelegt und nicht anhand von Validierungsdaten nachgestellt. Die Datenbasis folgt dem Flussmodell aus Kapitel~\ref{chap:datensatz}. Der DDQN-Agent wurde in der in Abschnitt~\ref{sec:dqn_architektur} beschriebenen Konfiguration trainiert, wobei der SNR jedes Trainingsflusses zufällig aus $\{30,20,10,5\}$\,dB gezogen wurde (Abschnitt~\ref{sec:awgn_kanal}). Der Test erfolgt für jede SNR-Stufe getrennt auf 20\,000 frisch erzeugten Flüssen, die ein eigener Zufallsgenerator liefert und die im Training nie auftraten. Um die Abhängigkeit von einzelnen Initialisierungen zu reduzieren, wurde das Protokoll für die Seeds $0$, $1$ und $2$ mit identischer Hyperparameterkonfiguration durchlaufen und über die Seeds gemittelt.
+
+Abbildung~\ref{fig:eval_protokoll} stellt den Ablauf dar. Trainings- und Testflüsse stammen aus getrennten Zufallsgeneratoren, das Training mischt die SNR-Stufen, der Test isoliert sie.
+
+\begin{figure}[htbp]
+	\centering
+	\begin{tikzpicture}[
+		font=\small,
+		blk/.style={draw, rectangle, rounded corners=2pt, minimum height=1.1cm, text width=3.6cm, align=center, thick},
+		arr/.style={-{Stealth[length=2.2mm]}, thick},
+		node distance=0.7cm
+	]
+		% Training
+		\node[blk, fill=blue!8] (trn) {Training mit gemischtem SNR\\ je Fluss $\mathrm{SNR}\sim\mathcal{U}\{30,20,10,5\}$\,dB};
+		\node[blk, below=of trn] (ddqn) {DDQN\\ $20\,000\times32$ Flüsse, Reward-Signal};
+		\node[blk, below=of ddqn] (base) {RF, SVM, MLP\\ $20\,000$ Flüsse, Labels};
+		\draw[arr] (trn) -- (ddqn);
+		\draw[arr] (ddqn) -- (base);
+		% Test
+		\node[blk, fill=green!10, right=3.2cm of trn] (tst) {Je SNR $\in\{30,20,10,5\}$\,dB isoliert};
+		\node[blk, below=of tst] (flows) {$20\,000$ frische Flüsse\\ RNG-Seed $=1\,000\,003\,s+\mathrm{SNR}$};
+		\node[blk, below=of flows] (pred) {Greedy-Entscheidung bzw. \texttt{predict}\\ $\to$ TP, FP, FN};
+		\node[blk, below=of pred] (met) {Precision, Recall, F1\\ Mittel $\pm$ Std über Seeds $0,1,2$};
+		\draw[arr] (tst) -- (flows);
+		\draw[arr] (flows) -- (pred);
+		\draw[arr] (pred) -- (met);
+		\coordinate (join) at ($(ddqn.east)+(1.1,0)$);
+		\draw (ddqn.east) -- (join);
+		\draw (base.east) -| (join);
+		\draw[arr] (join) |- (pred.west);
+		\node[font=\scriptsize, above] at ($(ddqn.east)+(0.55,0)$) {Modelle};
+		\node[above=0.15cm of trn, font=\scriptsize\bfseries] {Trainingsphase};
+		\node[above=0.15cm of tst, font=\scriptsize\bfseries] {Testphase (keine Überschneidung)};
+	\end{tikzpicture}
+	\caption{Evaluationsprotokoll. Links: Training aller Modelle mit pro Fluss gemischtem SNR. Rechts: getrennte Testauswertung je SNR-Stufe auf $20\,000$ frischen Flüssen, wiederholt für drei Seeds. Die trainierten Modelle (DDQN, RF, SVM, MLP) laufen über denselben Testpfad und sehen identische Testflüsse.}
+	\label{fig:eval_protokoll}
+\end{figure}
+
+Das Evaluationsszenario umfasst zwei komplementare Blickwinkel:
+
+\begin{itemize}
+	\item \textbf{Nominalbedingung}: Bewertung unter hoher Kanalqualitat (hohe SNR), um die bestmogliche Trennleistung des Agenten zu bestimmen.
+	\item \textbf{Robustheitsbedingung}: Bewertung unter abgestuften SNR-Werten, um die Stabilitat der Entscheidungen bei verrauschten Beobachtungen zu erfassen.
+\end{itemize}
+
+Als Vergleichsmodelle wurden ein Random-Forest-Klassifikator, eine Support-Vector-Machine und ein mehrschichtiges Perceptron (MLP) ausgewählt. Sie erhalten dieselben verrauschten Merkmale und werden auf denselben Testflüssen bewertet, trainieren aber überwacht auf 20\,000 Flüssen mit gemischtem SNR. Diese Baselines decken etablierte Klassen aus der DDoS-Literatur ab und stellen damit einen belastbaren Referenzrahmen fur die Einordnung des RL-Ansatzes bereit \autocite{koComparativeStudyAIEnabled2023, razaFeatureSelectionBasedDDoSAttack2024}.
+
+\section{Bewertungsmetriken}
+\label{sec:eval_metriken}
+
+Da in der Angriffserkennung Klassenungleichgewichte zu erwarten sind (Abschnitt~\ref{sec:imbalanced_data}), werden Precision, Recall und F1-Score als primare Metriken verwendet. Diese Metriken basieren auf den Komponenten der Konfusionsmatrix mit True Positives (TP), False Positives (FP) und False Negatives (FN):
+
+\begin{equation}
+\mathrm{Precision} = \frac{TP}{TP+FP},
+\end{equation}
+
+\begin{equation}
+\mathrm{Recall} = \frac{TP}{TP+FN},
+\end{equation}
+
+\begin{equation}
+\mathrm{F1} = 2 \cdot \frac{\mathrm{Precision} \cdot \mathrm{Recall}}{\mathrm{Precision} + \mathrm{Recall}}.
+\end{equation}
+
+Precision bewertet die Zuverlassigkeit der als Angriff klassifizierten Ereignisse und ist somit direkt mit der Fehlalarmrate verknupft. Recall bewertet den Anteil korrekt erkannter Angriffe und ist fur den operativen Sicherheitsnutzen besonders kritisch. Der F1-Score fasst beide Aspekte harmonisch zusammen und dient als zentrale Vergleichsmetrik zwischen DDQN und Baselines.

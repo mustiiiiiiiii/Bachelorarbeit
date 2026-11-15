@@ -1,0 +1,126 @@
+\documentclass[12pt, a4paper, ngerman]{scrreprt}
+
+% ---------------------------------------------------------------
+% Pakete & Grundlagen
+% ---------------------------------------------------------------
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{babel}
+\usepackage{amsmath, amssymb, amsfonts}
+\usepackage{graphicx}
+\usepackage{xcolor}
+\usepackage{booktabs}
+\usepackage{csquotes}
+\usepackage{listings}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta, positioning, fit, backgrounds, calc}
+
+\lstset{
+    basicstyle=\ttfamily\small,
+    breaklines=true,
+    frame=single,
+    captionpos=b,
+    numbers=left,
+    numberstyle=\tiny,
+    keywordstyle=\color{blue},
+    commentstyle=\color{green!50!black},
+    stringstyle=\color{orange}
+}
+
+% ---------------------------------------------------------------
+% Literaturverwaltung (BibLaTeX + Biber)
+% ---------------------------------------------------------------
+\usepackage[
+    backend=biber,
+    style=numeric-comp,
+    sorting=none,
+    giveninits=true
+]{biblatex}
+\addbibresource{literatur.bib}
+
+% ---------------------------------------------------------------
+% Seitenlayout & Hyperlinks
+% ---------------------------------------------------------------
+\usepackage[left=3cm, right=2.5cm, top=2.5cm, bottom=2.5cm]{geometry}
+\usepackage[hidelinks]{hyperref}
+\usepackage{scrlayer-scrpage}
+\pagestyle{scrheadings}
+\clearpairofpagestyles
+\ihead{\headmark}
+\ohead{\pagemark}
+
+% ---------------------------------------------------------------
+% Dokumenten-Informationen
+% ---------------------------------------------------------------
+\newcommand{\myTitel}{Entdeckung von Netzwerkangriffen durch Künstliche Intelligenz}
+\newcommand{\myAutor}{Mustafa Al Obaidi}
+\newcommand{\myMatrikelnr}{66085}
+\newcommand{\myStudiengang}{Elektrotechnik und Informationstechnik}
+\newcommand{\myErstpruefer}{Prof. Dr. rer. nat. Jochen Seitz}
+\newcommand{\myZweitpruefer}{Dr.-Ing. Maik Debes}
+\newcommand{\myAbgabedatum}{14. April 2027}
+
+\begin{document}
+
+% ---------------------------------------------------------------
+% Titelseite (TU Ilmenau Standard)
+% ---------------------------------------------------------------
+\setcounter{page}{0}
+\begin{titlepage}
+    \centering
+    \vspace*{1cm}
+    {\Large \textbf{TECHNISCHE UNIVERSITÄT ILMENAU}}\\[0.4cm]
+    {\large Fakultät für Elektrotechnik und Informationstechnik}\\[0.2cm]
+    {\large Institut für Informationstechnik}\\[1.5cm]
+
+    {\Large \textbf{BACHELORARBEIT}}\\[1.5cm]
+
+    {\huge \textbf{\myTitel}}\\[2cm]
+
+    \vfill
+
+    \begin{tabular}{lp{8cm}}
+        \textbf{Vorgelegt von:} & \myAutor \\[0.2cm]
+        \textbf{Matrikelnummer:} & \myMatrikelnr \\[0.2cm]
+        \textbf{Studiengang:} & \myStudiengang \\[0.6cm]
+        \textbf{Verantwortlicher Hochschullehrer:} & \myErstpruefer \\[0.2cm]
+        \textbf{2. Gutachter:} & \myZweitpruefer \\[0.6cm]
+        \textbf{Abgabedatum:} & \myAbgabedatum
+    \end{tabular}
+
+    \vspace*{1cm}
+\end{titlepage}
+
+% ---------------------------------------------------------------
+% Verzeichnisse & Struktur
+% ---------------------------------------------------------------
+\clearpage
+\pagenumbering{Roman}
+\setcounter{page}{1}
+\tableofcontents
+\clearpage
+\listoffigures
+\clearpage
+\listoftables
+\clearpage
+\pagenumbering{arabic}
+\setcounter{page}{2}
+
+% ---------------------------------------------------------------
+% Kapitel-Einbindungen
+% ---------------------------------------------------------------
+\include{kapitel/01_einleitung}
+\include{kapitel/02_grundlagen}
+\include{kapitel/03_related_work}
+\include{kapitel/04_dataset}
+\include{kapitel/05_implementierung}
+\include{kapitel/06_evaluation}
+\include{kapitel/07_evaluation_ergebnisse}
+\include{kapitel/08_fazit}
+
+% ---------------------------------------------------------------
+% Literaturverzeichnis
+% ---------------------------------------------------------------
+\printbibliography[heading=bibintoc, title={Literaturverzeichnis}]
+
+\end{document}

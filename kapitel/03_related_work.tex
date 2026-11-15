@@ -1,0 +1,115 @@
+\chapter{Related Work}
+
+\section{Einordnung des Forschungsfeldes}
+
+Die Erkennung von Distributed Denial-of-Service-Angriffen (DDoS) hat sich in den letzten Jahren von klassischen, regelbasierten Verfahren zu komplexeren datengetriebenen Ansätzen entwickelt. In der Literatur wird dabei zunehmend deutlich, dass die Identifikation von Angriffsströmen nicht allein auf statischen Schwellenwerten oder bekannten Signaturen beruht, sondern auf der Analyse zeitlicher Muster, Verhaltenscharakteristiken und abweichender Netzwerkkorrelationen. Diese Entwicklung ist vor dem Hintergrund zu verstehen, dass moderne DDoS-Angriffe nicht nur hinsichtlich ihrer Intensität, sondern auch hinsichtlich ihrer Anpassungsfähigkeit, ihrer Verteilung über mehrere Quellen und ihrer Fähigkeit zur Maskierung als legitimer Verkehr deutlich komplexer geworden sind.
+
+Im wissenschaftlichen Diskurs lassen sich mehrere zentrale Forschungsstränge unterscheiden. Ein prominenter Bereich umfasst traditionelle maschinelle Lernverfahren, die auf handgeschaffenen Netzwerkmerkmalen basieren und eine robuste Klassifikation zwischen normalem und anomalen Verhalten ermöglichen. Ein zweiter, stark wachsender Bereich befasst sich mit Deep-Learning-Methoden, insbesondere mit rekurrenten neuronalen Netzen, Convolutional Neural Networks und Autoencoder-Architekturen, die in der Lage sind, hochdimensionale Verkehrsmuster zu modellieren, ohne dass diese explizit manuell extrahiert werden müssen. Zusätzlich gewinnt die Nutzung von Reinforcement Learning und adaptiven Sicherheitsansätzen zunehmend an Bedeutung, da diese Ansätze auf dynamische Angriffsszenarien und sich verändernde Netzwerkkontexte reagieren können.
+
+Vor diesem Hintergrund ist das Ziel dieses Kapitels, die relevante Literatur zu KI-basierten DDoS-Erkennungskonzepten systematisch zu strukturieren und in Beziehung zur eigenen Methodik zu setzen. Dabei wird zunächst auf klassische Ansätze aus dem Bereich des maschinellen Lernens eingegangen, anschließend auf Deep-Learning-Modelle und schließlich auf Reinforcement-Learning- und hybride Architekturen. Diese Einordnung dient dazu, die Forschungslücke zu identifizieren, aus der die später vorgestellte Methodik hervorgeht.
+
+\section{Traditionelle Machine-Learning-Ansätze}
+
+Der überwiegende Teil der frühen Forschung zur DDoS-Erkennung basiert auf Verfahren des überwachten maschinellen Lernens, bei denen Merkmale aus NetFlow-Daten, Paketströmen oder TCP-Handshake-Informationen verwendet werden, um zwischen normalem und anomalen Verhalten zu unterscheiden. In dieser Klasse von Arbeiten stehen typischerweise Modelle wie Entscheidungsbäume, Random Forests, Support Vector Machines, k-Nächste-Nachbarn und logistische Regression im Mittelpunkt. Ein wesentlicher Vorteil dieser Ansätze liegt in ihrer interpretierbaren Struktur, ihrer relativ niedrigen Rechenanforderung und ihrer guten Eignung für kleine bis mittelgroße Datensätze.
+
+\subsection{Entscheidungsbäume und Random Forests}
+
+Entscheidungsbaum-basierte Verfahren sind in der DDoS-Forschung aufgrund ihrer einfachen Modellinterpretation und ihrer Fähigkeit, relevante Merkmale direkt aus Netzwerkaktivitäten zu extrahieren, häufig verwendet worden. In vielen Publikationen werden Entscheidungsbäume als geeignete Baseline für die Unterscheidung zwischen legitimen Verbindungen und Angriffsflüssen eingesetzt. Random Forests erweitern diese Idee, indem sie mehrere Entscheidungsbäume kombinieren und dadurch die Stabilität und Generalisierungsfähigkeit erhöhen. Diese Modelle leisten insbesondere dann gute Arbeit, wenn die Struktur der Merkmale gut verstanden ist und die Unterscheidung zwischen normalem und anomalen Verkehr auf klaren statistischen Kennwerten basiert.
+
+Die Literatur zeigt jedoch auch, dass solche Ansätze bei stark verrauschten, hochdimensionalen oder zeitlich stark korrelierten Netzwerkdaten schnell an ihre Grenzen kommen. Insbesondere wenn Angriffe durch komplexe Verkehrsmuster, abgestimmte Verhaltensweisen oder langsamere, adaptive DDoS-Varianten auftreten, können klassische Baum- und Forest-Modelle ihre Robustheit verlieren. Dennoch bleiben sie aufgrund ihrer Interpretierbarkeit und ihrer vergleichsweise geringen Trainingskomplexität wichtige Referenzmodelle in der Forschung.
+
+\subsection{Support Vector Machines und Klassifikationsansätze}
+
+Support Vector Machines (SVMs) bilden einen weiteren wichtigen Zweig der traditionellen ML-Literatur zur DDoS-Erkennung. Diese Methoden zeichnen sich durch ihre Fähigkeit aus, Entscheidungsgrenzen in hochdimensionalen Merkmalsräumen zu finden, auch wenn die Daten nicht linear separierbar sind. In mehreren Studien wurde gezeigt, dass SVM-Modelle bei der Erkennung von Anomalien in Netzwerkdaten gute Ergebnisse erzielen, sofern die Trainingsdaten repräsentativ sind und die Merkmalsauswahl sorgfältig erfolgt.
+
+Trotz ihrer guten Klassifikationsleistung ist die SVM-Architektur in der Praxis häufig durch hohe Rechenkosten und die starke Abhängigkeit von geeigneten Kernelfunktionen und Parameteroptimierung eingeschränkt. Zudem sind SVMs in ihrer Leistungsfähigkeit stark von der Qualität des Feature-Engineering abhängig. In kontextsensitiven oder dynamischen Netzwerken können sie daher weniger flexibel reagieren als neuere, datenorientierte Ansätze. Nichtsdestotrotz stellen sie in vielen Vergleichsstudien weiterhin eine relevante Baseline für die Bewertung neuer DDoS-Erkennungssysteme dar.
+
+\subsection{Feature-basierte Netzwerkanalyse und statistische Modelle}
+
+Ein weiterer zentraler Forschungsstrang beschäftigt sich mit der statistischen Analyse von Netzwerkmerkmalen wie Paketgröße, Flussdauer, Paketfrequenz, Entropie, TCP-SYN-Verhältnissen oder Verbindungsdauerverteilungen. Der Kern dieser Arbeiten besteht darin, DDoS-Verkehr durch veränderte statistische Eigenschaften von Netzwerkströmen zu erkennen, ohne dass ein vollständiges Modell des zugrunde liegenden Betriebsverhaltens erforderlich ist. Klassische Verfahren aus der Statistik, wie logistische Regression, Gaußsche Modelle oder zeitreihenbasierte Schätzmethoden, werden in diesem Zusammenhang häufig genutzt.
+
+Diese Ansätze sind besonders nützlich, wenn es darum geht, die Ursache eines abnormalen Verhaltens zunächst anhand einzelner Merkmale zu lokalisieren. Sie sind jedoch in der Regel anfälliger für Veränderungen im Verkehrsprofil, bei denen legitimer und angriffsähnlicher Verkehr sich in ihren statistischen Eigenschaften stark überlappen. Gerade in modernen Netzwerken mit hochvolatilen Lastmustern ist deshalb die Robustheit dieser Ansätze oft eingeschränkt, was die Forschung in Richtung tieferer und adaptiverer Modelle verstärkt hat.
+
+\section{Deep-Learning-Ansätze}
+
+Mit dem Aufkommen großer Netzwerkdatensätze und der zunehmenden Verfügbarkeit von Rechenleistung haben Deep-Learning-Ansätze das Forschungsfeld der DDoS-Erkennung stark verändert. Diese Methoden berücksichtigen nicht nur einzelne Merkmale, sondern modellieren häufig die zeitliche Struktur, die räumliche Verteilung oder die komplexe Abhängigkeit zwischen verschiedenen Netzwerkparametern. Dadurch können sie Anomalien identifizieren, die für traditionelle ML-Verfahren nicht direkt sichtbar sind.
+
+\subsection{Convolutional Neural Networks und räumliche Muster}
+
+Convolutional Neural Networks (CNNs) wurden in der DDoS-Literatur insbesondere für die Analyse von Matrix- oder Bildrepräsentationen von Netzwerkverkehr eingesetzt. Dabei werden Paket- oder Flussdaten in zweidimensionale Strukturen transformiert, die als Eingabe für Faltungsoperationen dienen. Dadurch können räumliche Muster und lokale Korrelationen erkannt werden, die bei herkömmlichen tabellarischen Features verloren gehen. Diese Idee ist besonders relevant, wenn Netzwerkverkehr als Sequenz oder als Matrix aus zeitlich und räumlich zusammenhängenden Merkmalen modelliert wird.
+
+Die Stärke von CNNs liegt in ihrer Fähigkeit, hierarchische Muster zu lernen, ohne manuell spezifizierte Filter oder Merkmalsrepräsentationen definieren zu müssen. Gleichzeitig ist die Interpretation dieser Modellentscheidungen oft schwieriger als bei klassischen Verfahren. In der Praxis zeigen CNN-basierte Ansätze häufig gute Ergebnisse bei hochdimensionalen Datensätzen, wobei die Performance jedoch stark von der gewählten Art der Signalrepräsentation abhängt.
+
+\subsection{Rekurrente Architekturen und LSTM-Netzwerke}
+
+Rekurrente neuronale Netze (RNNs) und insbesondere Long Short-Term Memory (LSTM)-Netzwerke sind aufgrund ihrer Eignung für sequenzielle Daten besonders relevant für die DDoS-Erkennung. DDoS-Angriffe zeigen häufig ein zeitlich gebundenes Verhalten, bei dem das Auftreten anomaler Paketsätze, eine plötzliche Laststeigerung oder wiederkehrende Verbindungsaktivitäten nur in Zusammenhang mit der zeitlichen Entwicklung des Verkehrs erkannt werden können. LSTM-Modelle sind daher besonders geeignet, um kurzfristige und langfristige Abhängigkeiten im Verkehrsfluss zu modellieren.
+
+In der Literatur werden LSTM-Modelle häufig für die Erkennung von zeitlich verzerrten oder in mehreren Phasen ablaufenden Angriffen eingesetzt. Die Fähigkeit, vergangene Zustände im Netzwerk einzubeziehen, verbessert die Erkennung deutlich gegenüber statischen Klassifikatoren. Zugleich ist die Modellinterpretation komplexer und die Trainingsdaten müssen ausreichend repräsentativ sein, um Overfitting zu vermeiden. Besonders bei realen Netzen mit schwankender Last und wechselnden Nutzungsmustern ist die Robustheit solcher Modelle von zentraler Bedeutung.
+
+\subsection{Autoencoder und Anomalieerkennung}
+
+Autoencoder und andere unüberwachte Deep-Learning-Ansätze gewinnen in der DDoS-Forschung ebenfalls an Bedeutung, weil sie ohne explizite Labeling eines Angriffs trainiert werden können. In solchen Architekturen wird versucht, normale Netzwerkzustände mit hoher Genauigkeit zu rekonstruieren, während anomale oder angreifende Muster eine größere Rekonstruktionsfehlerquote aufweisen. Diese Form der Anomalieerkennung ist für Szenarien besonders relevant, in denen neue oder bislang unbekannte Angriffsarten auftreten und die bekannten Angriffslabels unzureichend sind.
+
+Die Literatur zeigt, dass Autoencoder-Modelle in vielen Fällen gut geeignet sind, ungewöhnliche Muster in großen Verkehrsdaten zu identifizieren. Ihre Einschränkungen liegen jedoch in der Sensitivität gegenüber Datenverteilung und in der Schwierigkeit, den Rekonstruktionsfehler klar und interpretabar auf ein konkretes Angriffsszenario zurückzuführen. Für die praktische Umsetzung in Realtime-Systemen müssen solche Modelle daher oft mit zusätzlichen Filtermechanismen oder semisupervidierten Verfahren kombiniert werden.
+
+\section{Reinforcement-Learning- und adaptive Ansätze}
+
+Neben überwachten und unüberwachten Lernansätzen rückt in jüngerer Zeit auch Reinforcement Learning (RL) für die DDoS-Erkennung und -Abwehr in den Fokus. Diese Methoden modellieren die Interaktion zwischen einem Erkennungssystem und einer sich verändernden Netzwerkumgebung, wodurch die Entscheidung über das Erkennen oder Blockieren von Verkehr nicht nur als statischer Klassifikationsprozess, sondern als dynamischer, adaptiver Prozess verstanden wird.
+
+\subsection{Dynamische Schwellenwerte und adaptives Monitoring}
+
+Ein typischer RL-Ansatz besteht darin, das System dazu zu trainieren, basierend auf dem aktuellen Netzwerkzustand Entscheidungen über Schwellenwerte, Prioritäten oder aktuelle Sicherheitsmaßnahmen zu treffen. Diese Form der Adaptivität ist besonders relevant in Netzwerken, in denen die Last und das normale Nutzerverhalten stark variieren. Ein statischer Algorithmus kann in solchen Umgebungen schnell an Effektivität verlieren, während RL-basierte Systeme durch kontinuierliches Lernen an die Umgebung angepasst werden können.
+
+In der Forschung wird dieser Ansatz häufig als Mittel zur Optimierung von Erkennungsstrategie und Ressourcenallokation betrachtet. Die Vorteile liegen in der Fähigkeit, mit dynamischen Bedrohungsprofilen umzugehen; die Nachteile bestehen jedoch in der Komplexität des Trainings, der Notwendigkeit realistischer Simulationsumgebungen und der Schwierigkeit, Sicherheitsentscheidungen nachvollziehbar zu machen. Gerade im Bereich der Netzwerksicherheit ist die Erklärbarkeit von Entscheidungen ein wichtiger kritischer Faktor.
+
+\subsection{Multi-Agenten-Szenarien und adversariale Sicherheit}
+
+Ein weiterer vielversprechender Forschungsstrang behandelt DDoS-Erkennung als Spiel zwischen Angreifern und Verteidigern, das durch mehrere Agenten oder adversariale Lernkonzepte modelliert wird. In diesen Szenarien versucht ein Angreifer, die Erkennungsmechanismen zu umgehen, während ein Verteidiger die Parameter des Systems anpasst, um neue Angriffsformen zu erkennen. Solche Ansätze sind besonders interessant für die Untersuchung von Angriffen, die sich auf das Lernverhalten des Systems selbst auswirken.
+
+Die wissenschaftliche Literatur zeigt, dass RL- und adversariale Ansätze das Potenzial haben, Systeme robuster gegenüber unbekannten und adaptiven Angriffen zu machen. Gleichzeitig sind sie in der Praxis deutlich anspruchsvoller als überwachte Klassifikationsverfahren, da sie hohe Anforderungen an Trainingsdaten, Simulationen und Validierung stellen. In diesem Zusammenhang ist die Kombination aus Deep Learning und RL ein vielgenutzter Forschungsweg, um sowohl Erkennungsleistung als auch Reaktionsfähigkeit zu verbessern.
+
+\section{Hybride und neuere Architekturen}
+
+Neben den klar getrennten Forschungsrichtungen bestehen in der aktuellen Literatur zunehmend hybride Ansätze, die mehrere Lernparadigmen kombinieren. Beispielsweise werden klassische Merkmalsmodelle mit Deep-Learning-Komponenten verbunden, um die Interpretierbarkeit von ML-Verfahren mit der Fähigkeit tiefer Modelle zur Mustererkennung zu vereinigen. Andere Ansätze kombinieren Anomalieerkennung mit überwachten Klassifikatoren, um sowohl bekannte als auch unbekannte Angriffe zu erkennen.
+
+Ein zentraler Trend besteht außerdem darin, DDoS-Erkennung nicht als isolierten, statischen Prozess zu betrachten, sondern als Bestandteil eines größeren Sicherheits- und Netzwerkmanagementsystems. In diesem Kontext werden Streaming-Architekturen, Online-Lernverfahren und Edge-Analysesysteme eingesetzt, um Angriffe in Echtzeit zu erkennen und mit geeigneten Gegenmaßnahmen zu koordinieren. Diese Entwicklung spiegelt die gestiegene Komplexität moderner Angriffe wider, die oft hochgradig verteilt und dynamisch sind.
+
+\section{Vergleich der KI-Ansätze und Auswahl des Verfahrens}
+\label{sec:ansatz_vergleich}
+
+Die vorgestellten Verfahren unterscheiden sich in ihren Einsatzszenarien, in den Anforderungen an Trainingsdaten und in ihrem Verhalten unter gestörten Beobachtungen. Tabelle~\ref{tab:ki_vergleich} stellt sie entlang dieser Kriterien gegenüber. Die Einträge zu Random Forest, SVM, CNN, LSTM und Autoencodern stützen sich auf die Übersichtsarbeiten \autocite{balaAITechniquesIoTbased2024, kumarComprehensiveReviewVulnerabilities2024} und die Vergleichsstudien \autocite{koComparativeStudyAIEnabled2023, razaFeatureSelectionBasedDDoSAttack2024}. Die Bewertung der Rauschrobustheit und der Adaptivität sowie die Zeile zum Reinforcement Learning sind eine eigene Einordnung: Keine der vier Quellen behandelt Reinforcement Learning für die DDoS-Erkennung.
+
+\begin{table}[htbp]
+	\centering
+	\footnotesize
+	\setlength{\tabcolsep}{3pt}
+	\renewcommand{\arraystretch}{1.25}
+	\caption{Vergleich der KI-Ansätze zur DDoS-Erkennung nach Einsatzszenario, Voraussetzungen und Eignung für adaptive, verrauschte Netze. Die Bewertung der Rauschrobustheit und Adaptivität ist eine eigene Einschätzung.}
+	\label{tab:ki_vergleich}
+	\begin{tabular}{p{0.13\textwidth}p{0.22\textwidth}p{0.19\textwidth}p{0.21\textwidth}p{0.15\textwidth}}
+		\toprule
+		\textbf{Ansatz} & \textbf{Use Case und Voraussetzung} & \textbf{Stärken} & \textbf{Schwächen} & \textbf{Quellen} \\
+		\midrule
+		Random Forest, Entscheidungsbaum & Flussbasierte Klassifikation auf tabellarischen Merkmalen, gelabelte Daten & Hohe Genauigkeit, interpretierbar, geringer Rechenaufwand & Statische Entscheidungsgrenze, kein Anpassen an Verkehrsdrift ohne Neutraining & \autocite{koComparativeStudyAIEnabled2023, razaFeatureSelectionBasedDDoSAttack2024} \\
+		SVM (RBF) & Klassifikation bei mittleren Datenmengen, sorgfältige Merkmalsauswahl & Gute Trennung nichtlinearer Klassen & Rechenaufwand wächst mit Datenmenge, Kernel- und Parameterwahl & \autocite{balaAITechniquesIoTbased2024, razaFeatureSelectionBasedDDoSAttack2024} \\
+		CNN & Erkennung lokaler Muster in Matrix- oder Bilddarstellungen des Verkehrs, große Datenmengen & Lernt Merkmale selbst, auf tabellarischen Daten konkurrenzfähig & Hoher Datenbedarf, schwer interpretierbar & \autocite{razaFeatureSelectionBasedDDoSAttack2024, balaAITechniquesIoTbased2024} \\
+		LSTM / RNN & Sequenzielle Verkehrsdaten, zeitliche Abhängigkeiten, gelabelte Zeitreihen & Modelliert zeitliche Dynamik & Aufwändiges Training, Overfitting-Risiko bei kleinen Datensätzen & \autocite{balaAITechniquesIoTbased2024, kumarComprehensiveReviewVulnerabilities2024} \\
+		Autoencoder & Unüberwachte Anomalieerkennung, nur normaler Verkehr als Trainingsbasis & Erkennt unbekannte Angriffsarten & Empfindlich gegen Verteilungsverschiebung, Schwelle schwer zu begründen & \autocite{balaAITechniquesIoTbased2024, kumarComprehensiveReviewVulnerabilities2024} \\
+		Reinforcement Learning (DDQN) & Sequenzielle oder kostenbehaftete Entscheidungen, Lernen über Belohnungssignal in einer Simulationsumgebung & Kosten von FP und FN direkt über den Reward steuerbar, adaptiv, Online-Anpassung möglich & Aufwändiges Training, Umgebungsmodell nötig, Erklärbarkeit begrenzt & Eigene Einordnung \\
+		\bottomrule
+	\end{tabular}
+\end{table}
+
+Für die Wahl des Verfahrens zählen in dieser Arbeit drei Kriterien. Erstens sollen die Kosten der beiden Fehlerarten explizit einstellbar sein, denn ein verpasster Angriff (FN) wiegt in der Sicherheitsanwendung schwerer als ein Fehlalarm (FP). Zweitens muss das Verfahren auch dann arbeiten, wenn die Merkmale über einen gestörten Kanal mit SNR-Werten bis hinunter zu 5\,dB beobachtet werden. Drittens soll sich die Entscheidungsstrategie an wechselnde Verkehrs- und Kanalbedingungen anpassen lassen.
+
+Überwachte Klassifikatoren wie Random Forest und SVM erreichen auf sauberen, gelabelten Flussdaten sehr hohe Genauigkeiten, bei Ko et al. etwa 99,97\,\% für den Random Forest \autocite{koComparativeStudyAIEnabled2023}. Sie optimieren jedoch einen symmetrischen Klassifikationsfehler. Eine Asymmetrie der Fehlerkosten lässt sich nur nachträglich über Gewichte oder Schwellen ergänzen. Autoencoder lösen das Problem unbekannter Angriffe, bieten aber keine direkte Steuerung der Fehlerkosten. CNN und LSTM benötigen große Datenmengen und eine geeignete Verkehrsrepräsentation, ihr Mehraufwand lohnt sich bei den hier verwendeten kompakten Flussmerkmalen kaum, auf denen laut Raza et al. bereits gradientenbasierte Boosting-Verfahren und CNN gut abschneiden \autocite{razaFeatureSelectionBasedDDoSAttack2024}.
+
+Ein Double Deep Q-Network (DDQN) erfüllt die drei Kriterien am besten. Die Reward-Matrix legt die Fehlerkosten direkt im Lernziel fest. Das Verfahren lernt aus Interaktion mit einer Umgebung, in der sich Kanalrauschen als Teil der Beobachtung einstellen lässt. Und es lässt sich im laufenden Betrieb weitertrainieren. Die Double-Q-Zielbildung trennt Aktionsauswahl (Online-Netz) und Bewertung (Target-Netz) und dämpft die Überschätzung von Q-Werten, die bei verrauschten Rewards und Beobachtungen auftritt. Ob der DDQN die überwachten Verfahren auch im Messergebnis übertrifft, prüft Kapitel~\ref{chap:ergebnisse} gegen Random Forest, SVM und MLP als Baselines. Die Entscheidung für den DDQN folgt also aus den Anforderungen an adaptive, verrauschte Netze und nicht aus einer höheren Genauigkeit in der Literatur.
+
+\section{Forschungslücke und Einordnung der eigenen Arbeit}
+
+Die bisherige Literatur zeigt, dass sowohl traditionelle ML-Methoden als auch Deep-Learning- und Reinforcement-Learning-Ansätze zu deutlichen Fortschritten bei der DDoS-Erkennung geführt haben. Klassische Modelle bleiben dabei relevant als einfache und interpretable Baselines, während Deep-Learning-Ansätze insbesondere in Szenarien mit hoher Datenkomplexität deutlich leistungsfähiger sind. Reinforcement-Learning-Ansätze bieten dagegen einen vielversprechenden Rahmen für adaptive und selbstoptimierende Sicherheitsstrategien, sind aber aufgrund ihrer Komplexität und ihrer Anforderungen an die Umweltmodellierung noch weniger etabliert.
+
+Für die vorliegende Arbeit ist vor diesem Hintergrund besonders relevant, dass die Erkennung von DDoS-Angriffen nicht allein auf der Klassifikation einzelner Pakete oder Flüsse basiert, sondern auf der zeitlichen und verhaltensbezogenen Struktur von Netzwerkverkehr. Die in der Literatur beschriebenen Ansätze liefern wichtige methodische Grundlagen, unterscheiden sich jedoch häufig in ihrer Fähigkeit, neue Angriffsformen, verteilte Muster und adaptive Verhaltensweisen zuverlässig zu erfassen. Gerade diese Forschungsdiskussion bildet den Ausgangspunkt für die konzeptionelle und empirische Ausarbeitung der eigenen KI-basierten DDoS-Erkennung.
+
+In diesem Sinne dient das vorliegende Kapitel als Überblick über den aktuellen Forschungsstand und schafft die Grundlage für die anschließende Darstellung des Datensatzes, der Methodik sowie der experimentellen Evaluation. Es zeigt zugleich, dass die Kombination aus datengetriebener Mustererkennung, zeitlicher Analyse und adaptiver Sicherheitsstrategie ein vielversprechender Ansatz für die Erkennung moderner DDoS-Angriffe ist.
