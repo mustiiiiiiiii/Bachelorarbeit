@@ -48,6 +48,8 @@
 % Artikelnummern (eid) als solche kennzeichnen
 \AtEveryBibitem{\clearfield{issn}}
 \DeclareFieldFormat{eid}{Art.~#1}
+% Literaturverzeichnis im Flattersatz, damit DOIs nicht mitten in Zahlenfolgen umbrechen
+\appto{\bibsetup}{\raggedright}
 % Mehr Dehnungsspielraum gegen über den Rand ragende Zeilen
 \setlength{\emergencystretch}{2em}
 % Keine Hurenkinder (letzte Absatzzeile oben) und Schusterjungen (erste Absatzzeile unten)
