@@ -91,7 +91,7 @@ Ein verpasster Angriff kostet doppelt so viel wie ein Fehlalarm. Diese Asymmetri
 \subsection{Formale Definition als Markov-Entscheidungsprozess}
 \label{sec:mdp_definition}
 
-Das Entscheidungsproblem ist ein Markov-Entscheidungsprozess $(\mathcal{S},\mathcal{A},\mathcal{P},\mathcal{R},\gamma)$ mit folgenden Komponenten:
+Das Entscheidungsproblem ist ein Markov-Entscheidungsprozess $(\mathcal{S},\mathcal{A},\mathcal{P},\mathcal{R},\gamma)$ in der Notation von Sutton und Barto \autocite{suttonReinforcementLearningIntroduction2018} mit folgenden Komponenten:
 
 \begin{itemize}
 	\item \textbf{Zustandsraum:} $\mathcal{S}=\mathbb{R}^{8}$. Ein Zustand ist die verrauschte Beobachtung $\mathbf{y}=\mathbf{x}+\mathbf{n}$ mit $n_j\sim\mathcal{N}(0,\sigma_{n,j}^2)$ aus Abschnitt~\ref{sec:awgn_kanal}. Das Label $c$ gehört nicht zum Zustand, der Prozess ist bezüglich $c$ nur teilbeobachtbar.
@@ -123,7 +123,7 @@ Das Entscheidungsproblem ist ein Markov-Entscheidungsprozess $(\mathcal{S},\math
 	\item \textbf{Diskontierung:} $\gamma=0{,}99$. Wegen $d=1$ geht $\gamma$ nicht in das Ziel ein.
 \end{itemize}
 
-Die optimale Politik maximiert den erwarteten Sofort-Reward $\mathbb{E}[\mathcal{R}(a,c)\mid\mathbf{y}]$. Mit $p=P(c=1\mid\mathbf{y})$ gilt $a=1$ genau dann, wenn $p\,R_{TP}+(1-p)\,R_{FP}>p\,R_{FN}+(1-p)\,R_{TN}$, also $p>1/3$. Das ist die in Kapitel~\ref{chap:ergebnisse} erwartete Schwelle.
+Die optimale Politik maximiert den erwarteten Sofort-Reward $\mathbb{E}[\mathcal{R}(a,c)\mid\mathbf{y}]$. Mit $p=P(c=1\mid\mathbf{y})$ gilt $a=1$ genau dann, wenn $p\,R_{TP}+(1-p)\,R_{FP}>p\,R_{FN}+(1-p)\,R_{TN}$, also $p>1/3$. Elkans Schwelle $p^*=(c_{10}-c_{00})/(c_{10}-c_{00}+c_{01}-c_{11})$ liefert mit den negierten Rewards als Kosten denselben Wert \autocite{elkanFoundationsCostSensitiveLearning2001}. Das ist die in Kapitel~\ref{chap:ergebnisse} erwartete Schwelle.
 
 Im Training werden die Flüsse nicht einzeln über \texttt{step} erzeugt, sondern als Batch von 32 Flüssen pro Iteration, wobei das SNR jedes Flusses zufällig aus $\{30,20,10,5\}$\,dB gezogen wird. Der Rewardvektor entsteht durch eine Tabellenabfrage \texttt{REWARD\_TABLE[label, action]} direkt auf der GPU.
 
@@ -234,7 +234,7 @@ Das gemischte Training hat einen zweiten Effekt. Nach Bishop wirkt additives Ein
 \section{Trainings- und Optimierungsstrategie}
 \label{sec:training_optimierung}
 
-Das Training läuft über $20\,000$ Iterationen. In jeder Iteration entstehen $32$ Flüsse, der Agent wählt $\epsilon$-greedy Aktionen, die Transitionen gelangen in den Puffer, und es folgt ein Lernschritt, sobald der Puffer mindestens $1000$ Einträge enthält. Die Explorationsrate fällt linear von $1{,}0$ auf $0{,}02$ innerhalb der ersten $40\,\%$ der Iterationen ($8000$) und bleibt danach konstant. Der Optimierer ist Adam mit Lernrate $10^{-4}$. Das Zielnetz wird alle $250$ Lernschritte hart synchronisiert. Weil der Puffer je Iteration $32$ Transitionen aufnimmt, erreicht er die Mindestfüllung in Iteration $32$. Über den gesamten Lauf führt der Agent damit $19\,969$ Lernschritte mit je $64$ Transitionen aus und synchronisiert das Zielnetz $79$-mal. Ab Iteration $1563$ ist der Puffer voll, und neue Transitionen überschreiben die ältesten. Pro Seed (0, 1, 2) beginnt der Lauf mit neu initialisierten Netzen und eigenem Zufallsgenerator für die Flüsse. Die Seeds setzen Python-, NumPy- und PyTorch-Generatoren (inklusive CUDA).
+Das Training läuft über $20\,000$ Iterationen. In jeder Iteration entstehen $32$ Flüsse, der Agent wählt $\epsilon$-greedy Aktionen, die Transitionen gelangen in den Puffer, und es folgt ein Lernschritt, sobald der Puffer mindestens $1000$ Einträge enthält. Die Explorationsrate fällt linear von $1{,}0$ auf $0{,}02$ innerhalb der ersten $40\,\%$ der Iterationen ($8000$) und bleibt danach konstant. Der Optimierer ist Adam mit Lernrate $10^{-4}$, der die Schrittweite je Gewicht aus gleitenden Schätzungen des ersten und zweiten Gradientenmoments anpasst \autocite{kingmaAdamMethodStochastic2015}. Das Zielnetz wird alle $250$ Lernschritte hart synchronisiert. Weil der Puffer je Iteration $32$ Transitionen aufnimmt, erreicht er die Mindestfüllung in Iteration $32$. Über den gesamten Lauf führt der Agent damit $19\,969$ Lernschritte mit je $64$ Transitionen aus und synchronisiert das Zielnetz $79$-mal. Ab Iteration $1563$ ist der Puffer voll, und neue Transitionen überschreiben die ältesten. Pro Seed (0, 1, 2) beginnt der Lauf mit neu initialisierten Netzen und eigenem Zufallsgenerator für die Flüsse. Die Seeds setzen Python-, NumPy- und PyTorch-Generatoren (inklusive CUDA).
 
 \section{Implementierung in der praktischen Pipeline}
 \label{sec:praktische_pipeline}

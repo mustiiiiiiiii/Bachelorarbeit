@@ -1,15 +1,21 @@
 # Übergabe: Stand der Bachelorarbeit
 
-Stand: Commit nach `374a34a` (Branch `claude/dreamy-gauss-muiook`, `main` per Fast-Forward identisch).
-Diese Notiz fasst zusammen, was in der Cloud-Sitzung erledigt wurde, damit eine neue Sitzung
+Stand: 2026-11-15, Branch `main` (lokale Sitzung in VS Code nach der Cloud-Sitzung bis `374a34a`).
+Diese Notiz fasst den Arbeitsstand zusammen, damit eine neue Sitzung
 (z. B. Claude Code in VS Code) ohne den Gesprächsverlauf weiterarbeiten kann.
 Stilregeln für alle Texte: `CLAUDE.md`.
 
 ## Erledigt
 
-- **Literatur:** `literatur.bib` hat 21 Einträge, alle im Text zitiert. 14 davon wurden neu ergänzt
-  und gegen die PDFs in `QuellenLiteratur/` geprüft. Al-Gethami 2021 wurde bewusst aussortiert
+- **Literatur:** `literatur.bib` hat 29 Einträge, alle im Text zitiert und gegen die PDFs in `QuellenLiteratur/` geprüft. Al-Gethami 2021 wurde bewusst aussortiert
   (Label- statt Merkmalsrauschen, Hindawi).
+- **Methodische Primärquellen (lokale Sitzung):** Sutton & Barto 2018 (MDP-Notation, Kap. 5), Breiman 2001 (Kap. 3),
+  Cortes & Vapnik 1995 (Kap. 3), Elkan 2001 (Schwelle p* nach Gl. (2) = 1/3, Kap. 5 und 7), Kingma & Ba 2015 (Adam, Kap. 5),
+  Chawla et al. 2002 (SMOTE, Kap. 2), Henderson et al. 2018 (Seed-Varianz, Kap. 7), Pedregosa et al. 2011 (scikit-learn, Kap. 6).
+  DOIs über Crossref bestätigt. Ohne DOI: Sutton (Buch, ISBN), Kingma (arXiv), Pedregosa (JMLR), Elkan (IJCAI).
+  Henderson und Elkan ohne Seitenzahlen, weil nur Preprints vorliegen.
+- **Zotero-Export:** Ein roher Zotero-Export der bib (fehlende Keys, Dubletten mit `a`-Suffix, unvollständige Felder)
+  wurde verworfen und liegt unversioniert als `literatur_zotero.bib` vor. Maßgeblich ist die geprüfte `literatur.bib`.
 - **Volltextabgleich:** Arjoune 2020 nutzt Linkqualitätsmerkmale (BPR, PDR, RSS, CCA), **kein SNR-Merkmal**.
   Caminero 2019 (AE-RL) besteht aus zwei DQN-Agenten. Merzouk-, Zhang- und Apruzzese-Zahlen stammen aus den Volltexten.
 - **Ran 2024:** Bd. 20, H. 8, S. 10405–10418 nur über zitierende Arbeiten bestätigt; das PDF ist das akzeptierte
@@ -30,17 +36,14 @@ Stilregeln für alle Texte: `CLAUDE.md`.
 
 ## Build
 
-- `pdflatex → biber → pdflatex → pdflatex`, Ergebnis zuletzt: 47 Seiten, 0 Fehler, 0 Overfull, 0 Underfull.
+- `pdflatex → biber → pdflatex → pdflatex`, Ergebnis zuletzt: 48 Seiten, 0 Fehler, 0 Warnungen (LaTeX und biber), 0 Overfull, 0 Underfull.
 - `main.tex` enthält Spaltentyp `L{…}` (linksbündig, Paket `array`), URL-Umbrüche für biblatex und `\emergencystretch`.
 - `main.bcf` und `main.run.xml` sind nicht mehr versioniert (werden beim Kompilieren erzeugt). `main.pdf` ist noch versioniert.
 
 ## Offen
 
-1. **Methodische Primärquellen ergänzen** (Vorschlag, noch nicht umgesetzt; DOIs vorher prüfen):
-   Sutton & Barto 2018 (MDP, Kap. 5), Breiman 2001 (Random Forest), Cortes & Vapnik 1995 (SVM),
-   Elkan 2001 (Kostenschwelle p > 1/3, Kap. 5/7), Kingma & Ba 2015 (Adam), Chawla et al. 2002 (SMOTE, Kap. 2),
-   Henderson et al. 2018 (Seed-Varianz in Deep RL, Kap. 7), Pedregosa et al. 2011 (scikit-learn).
-2. Ran 2024 Metadaten auf IEEE Xplore bestätigen.
+1. Ran 2024 Metadaten auf IEEE Xplore bestätigen.
+2. Optional: Seitenzahlen für Henderson 2018 (AAAI) und Elkan 2001 (IJCAI) aus den Verlagsfassungen nachtragen.
 3. Optional: `main.pdf` ebenfalls aus Git nehmen, wenn nur noch lokal kompiliert wird.
 
 ## Arbeitsweise
