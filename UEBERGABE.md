@@ -167,6 +167,15 @@ hängen von den Vorgaben der Prüfungsordnung ab.
 - Gegen den Code geprüft: gamma=scale (≈ 1/8), MLP 2 × 128/Adam/200/Early Stopping, `numpy.std` in Populationsform,
   Bayes-Fehler 6,15 % ohne Rauschen und 6,20 % bei 30 dB.
 
+### Kap. 7 (PDF-Seiten 37–44) – behoben
+
+- Die alte Schwellenaussage in 7.2, 7.4 und 7.5 lautet jetzt „Soll-Schwelle“, jeweils mit den gemessenen impliziten Schwellen.
+- RF-Absatz: Die Bayes-Normale Σ⁻¹Δμ dreht sich gegenüber 30 dB um 0,6°/4,3°/7,8° (20/10/5 dB). Die schiefe „weil“-Begründung ist ersetzt.
+- `A_0` ist durch F1₃₀ ersetzt. Statt „Belastbar …“ steht „Konsistent ist lediglich die Rangfolge“. Die Zusammenfassung nennt die
+  konkreten Verluste (7,1 % bei 10 dB, 18,8 % bei 5 dB) statt „Robustheit bis 10 dB“.
+- Einheiten nach DIN: „SNR in dB“, „RLA in %“ in allen Tabellen und Plots. Gl. 7.1 ist mit `align` gesetzt.
+- **Plots:** `generate_plot.py`, `pr_ebene_plot.py` und `create_3d_plot.py` setzen das deutsche Dezimalkomma. Alle Abbildungen sind neu erzeugt.
+
 ### Offene Frage an den Betreuer (Prof. Seitz)
 
 - **Aufgabenstellung vs. synthetisches Modell:** Die Aufgabenstellung verlangt, „an einem Data Set, das den Netzverkehr mit einem
@@ -184,7 +193,7 @@ hängen von den Vorgaben der Prüfungsordnung ab.
 
 ### Nächste Seiten
 
-Einzelseiten-Check ab PDF-Seite 37 (Kap. 7) fortsetzen.
+Einzelseiten-Check ab PDF-Seite 45 (Kap. 8) fortsetzen.
 
 ## Arbeitsweise
 

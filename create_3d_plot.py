@@ -11,6 +11,7 @@ import matplotlib
 
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
+from matplotlib.ticker import FuncFormatter
 import numpy as np
 
 from train_eval import ATTACK_PROB, MU_ATTACK, MU_NORMAL, sample_flows
@@ -48,6 +49,8 @@ def main() -> None:
         ax.set_xlabel(r"$y_1$", labelpad=-4); ax.set_ylabel(r"$y_2$", labelpad=-4); ax.set_zlabel(r"$y_4$", labelpad=-4)
         for axis in (ax.xaxis, ax.yaxis, ax.zaxis):
             axis.set_major_locator(plt.MaxNLocator(4))
+            axis.set_major_formatter(FuncFormatter(
+                lambda v, _: (f"${v:.1f}$".replace(".", "{,}") if USE_TEX else f"{v:.1f}".replace(".", ","))))
         ax.tick_params(pad=-2)
         ax.set_xlim(*lims[0]); ax.set_ylim(*lims[1]); ax.set_zlim(*lims[2])
         ax.view_init(elev=20, azim=-55)

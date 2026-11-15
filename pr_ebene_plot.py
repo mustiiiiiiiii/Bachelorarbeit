@@ -19,7 +19,7 @@ import matplotlib
 
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
-from matplotlib.ticker import FormatStrFormatter, MaxNLocator
+from matplotlib.ticker import FuncFormatter, MaxNLocator
 import numpy as np
 from scipy.stats import norm
 
@@ -102,7 +102,7 @@ for ax, snr in zip(axes.flat, SNR_LEVELS_DB):
             pp = f * rr / (2 * rr - f)
         ok = (2 * rr > f) & (pp > 0)
         ax.plot(rr[ok], pp[ok], color="0.72", lw=0.6, ls=(0, (4, 3)), zorder=0,
-                label="konstanter F1 (Abstand 0.02)" if abs(f - 0.60) < 1e-9 else None)
+                label="konstanter F1 (Abstand 0,02)" if abs(f - 0.60) < 1e-9 else None)
 
     pc, rc, _ = bayes_point(snr, t_grid)
     ax.plot(rc, pc, color="0.25", lw=1.3, zorder=1, label="Bayes-Grenze (Schwelle variiert)")
@@ -125,7 +125,7 @@ for ax, snr in zip(axes.flat, SNR_LEVELS_DB):
     ax.tick_params(labelsize=8.5)
     for axis in (ax.xaxis, ax.yaxis):
         axis.set_major_locator(MaxNLocator(5))
-        axis.set_major_formatter(FormatStrFormatter("%.2f"))
+        axis.set_major_formatter(FuncFormatter(lambda v, _: f"{v:.2f}".replace(".", ",")))
 
 for ax in axes[1]:
     ax.set_xlabel("Recall")

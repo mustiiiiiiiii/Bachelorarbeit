@@ -7,6 +7,10 @@ import matplotlib
 
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
+from matplotlib.ticker import FuncFormatter
+
+# Deutsches Dezimalkomma auf den Achsen
+KOMMA = FuncFormatter(lambda v, _: f"{v:.2f}".replace(".", ","))
 
 HERE = Path(__file__).parent
 SNRS = [30, 20, 10, 5]
@@ -39,8 +43,9 @@ for metric, label, mk, ls in (("f1", "F1-Score", "o", "-"), ("precision", "Preci
                               ("recall", "Recall", "^", "-.")):
     ax.errorbar(SNRS, series(ddqn, "mean", metric), yerr=series(ddqn, "std", metric), marker=mk, ls=ls,
                 lw=1.6, ms=5, capsize=3, label=label)
-ax.set_xlabel("SNR [dB]")
+ax.set_xlabel("SNR in dB")
 ax.set_ylabel("Metrikwert")
+ax.yaxis.set_major_formatter(KOMMA)
 ax.set_xticks(SNRS)
 ax.invert_xaxis()
 ax.grid(True, ls=":", alpha=0.6)
@@ -56,8 +61,9 @@ fig, ax = plt.subplots(figsize=(6.0, 3.8))
 for (lbl, d), mk, ls in zip(models, "osD^", ("-", "--", "-.", ":")):
     ax.errorbar(SNRS, series(d, "mean", "f1"), yerr=series(d, "std", "f1"), marker=mk, ls=ls, lw=1.6, ms=5,
                 capsize=3, label=lbl)
-ax.set_xlabel("SNR [dB]")
+ax.set_xlabel("SNR in dB")
 ax.set_ylabel("F1-Score")
+ax.yaxis.set_major_formatter(KOMMA)
 ax.set_xticks(SNRS)
 ax.invert_xaxis()
 ax.grid(True, ls=":", alpha=0.6)
