@@ -13,8 +13,9 @@ Stilregeln für alle Texte: `CLAUDE.md`.
   Cortes & Vapnik 1995 (Kap. 3), Elkan 2001 (Schwelle p* nach Gl. (2) = 1/3, Kap. 5 und 7), Kingma & Ba 2015 (Adam, Kap. 5),
   Chawla et al. 2002 (SMOTE, Kap. 2), Henderson et al. 2018 (Seed-Varianz, Kap. 7), Pedregosa et al. 2011 (scikit-learn, Kap. 6).
   DOIs über Crossref bestätigt. Ohne DOI: Sutton (Buch, ISBN), Kingma (arXiv), Pedregosa (JMLR), Elkan (IJCAI).
-  Elkan S. 973–977 laut ijcai.org (Proceedings 2001). Henderson ohne Seiten: Crossref/OpenAlex führen keine,
-  AAAI und DBLP blocken automatisierte Abrufe.
+  Elkan S. 973–977 laut ijcai.org (Proceedings 2001). Henderson ohne Seiten, weil der Verlag keine führt:
+  Die AAAI-Artikelseite, Crossref und OpenAlex nennen nur Bd. 32, H. 1 und die DOI 10.1609/aaai.v32i1.11694.
+  Die oft zitierte Angabe „S. 3207–3214“ ist nicht belegt und bewusst nicht eingetragen.
 - **Zotero-Export:** Ein roher Zotero-Export der bib (fehlende Keys, Dubletten mit `a`-Suffix, unvollständige Felder)
   wurde verworfen. Maßgeblich ist allein die geprüfte `literatur.bib`, Zotero dient nur als PDF-Ablage.
   `literatur_zotero*.bib` steht in der `.gitignore`. Künftige Exporte nur mit Better BibTeX und festen Citation Keys.
@@ -58,7 +59,7 @@ Stilregeln für alle Texte: `CLAUDE.md`.
 
 ## Offen
 
-1. Optional: Seitenzahlen für Henderson 2018 (AAAI-18) im Browser auf ojs.aaai.org oder dblp.org prüfen und nachtragen.
+Keine offenen Punkte. Hinweis: Henderson 2018 bleibt ohne Seitenzahlen (siehe Literatur), das Zitat ist über die DOI vollständig.
 
 ## Arbeitsweise
 
