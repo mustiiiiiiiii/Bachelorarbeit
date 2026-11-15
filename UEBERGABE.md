@@ -73,6 +73,40 @@ Hinweis: Henderson 2018 bleibt ohne Seitenzahlen (siehe Literatur), das Zitat is
    Ein vollständiges Korrekturlesen fand in den Sitzungen nicht statt.
 4. Danach vollständig kompilieren und das PDF für die Abgabe erzeugen (`main.pdf` ist nicht versioniert).
 
+## Qualitäts- und Visualisierungsphase (ab 2026-11-15)
+
+Vorgehen: Einzelseiten-Check von Seite 1 bis 50 (physische PDF-Seiten), Befunde je Seite hier eintragen, gebündelt beheben,
+danach Build-Kontrolle. Neue Abbildungen nur mit nachweisbarem Mehrwert gegenüber Text und Tabelle (Kriterium wie bei
+den verworfenen ELA-Höhenlinien), Vorschau vor dem Einbinden.
+
+### Befunde Seiten 1–5 (Deckblatt, Verzeichnisse)
+
+| Seite | Befund | Vorschlag |
+|---|---|---|
+| alle | **Seitennummerierung:** `\setcounter{page}{2}` in `main.tex` lässt Kap. 1 auf S. 2 beginnen, eine S. 1 gibt es nicht. | Zähler auf 1 setzen |
+| alle | **Kapitelanfangsseiten ohne Seitenzahl:** `\clearpairofpagestyles` leert auch den Stil `plain`, also bleiben Verzeichnis- und Kapitelanfänge unnummeriert. | Seitenzahl für `plain` setzen, z. B. `\cfoot*{\pagemark}` oder `\ohead*{\pagemark}` |
+| 1 | Deckblatt: Fachgebiet Kommunikationsnetze fehlt (steht in der Aufgabenstellung), kein Uni-Logo, Abgabedatum 14. April 2027 prüfen | gegen Vorgaben des Fachgebiets abgleichen |
+| 2–3 | Kapitel 3 heißt englisch „Related Work“, alle anderen Kapitel sind deutsch | z. B. „Stand der Forschung“ |
+| 2–3 | Kurzfassung/Abstract, Abkürzungsverzeichnis (DDQN, AWGN, SNR, RLA, ELA, MDP …) und Eigenständigkeitserklärung fehlen | Anforderungen der Prüfungsordnung klären, dann ergänzen |
+| 4–5 | Abbildungs- und Tabellenverzeichnis übernehmen die volle Caption (bis 5 Zeilen, inkl. Farblegenden und Wertungen). Nur Abb. 4.1 und 7.3 haben eine Kurzform. | Kurzcaptions `\caption[…]{…}` für alle Abbildungen und Tabellen |
+| – | `kapitel/07_evaluation_ergebnisse.tex` beginnt mit einem UTF-8-BOM | entfernen (harmlos, aber unsauber) |
+
+**Behoben:** Die Seitenzählung beginnt bei 1, und Kapitelanfänge sowie Verzeichnisse tragen eine Seitenzahl (`\ohead*{\pagemark}`).
+Alle Abbildungen und Tabellen haben Kurzcaptions, jeder Verzeichniseintrag passt jetzt auf eine Zeile. Kap. 3 heißt „Stand der Forschung“.
+Das Deckblatt nennt das Fachgebiet Kommunikationsnetze, das BOM ist entfernt.
+**Offen:** Logo und Abgabedatum auf dem Deckblatt, Kurzfassung/Abstract, Abkürzungsverzeichnis und Eigenständigkeitserklärung
+hängen von den Vorgaben der Prüfungsordnung ab.
+
+### Neue Abbildungen
+
+- **Abb. 2.1 „Vom Paketstrom zum Merkmalsvektor“** (TikZ, Kap. 2.1.1): Bots und Clients → Messpunkt → Paketstrom → Flussaggregation
+  → **x** ∈ ℝ⁸ → AWGN → Detektor → Entscheidung. Ein gestrichelter Rahmen markiert die reale Messkette, ein Generatormodell-Knoten zeigt,
+  was diese Arbeit ersetzt. Sie verbindet die Grundlagen mit Abb. 4.1 und 5.1.
+
+### Nächste Seiten
+
+Einzelseiten-Check ab Seite 6 (Kap. 1) fortsetzen.
+
 ## Arbeitsweise
 
 - Nur an einem Ort arbeiten (lokal **oder** Cloud), vorher `git pull`.

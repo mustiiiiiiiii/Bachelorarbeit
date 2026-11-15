@@ -1,4 +1,4 @@
-﻿\chapter{Ergebnisse}
+\chapter{Ergebnisse}
 \label{chap:ergebnisse}
 
 Dieses Kapitel wertet die Läufe des Double-DQN-Agenten (DDQN) aus Kapitel~\ref{chap:implementierung} unter dem Protokoll aus Kapitel~\ref{chap:evaluierung} aus. Trainiert wurde je Seed $s\in\{0,1,2\}$ mit 20\,000 Iterationen à 32 parallel erzeugten Flüssen, deren SNR pro Fluss zufällig aus $\{30,20,10,5\}$\,dB gezogen wurde. Die Bewertung erfolgt greedy ($\epsilon=0$) auf je 20\,000 frischen Flüssen pro SNR-Stufe. Alle Werte sind Mittelwerte über die drei Seeds, die Streuung ist als Standardabweichung $\sigma$ über die Seeds angegeben. Precision, Recall und F1-Score beziehen sich auf die Klasse DDoS.
@@ -11,7 +11,7 @@ Tabelle~\ref{tab:ddqn_snr} fasst die Metriken des DDQN-Agenten zusammen, Abbildu
 \begin{table}[htbp]
 	\centering
 	\renewcommand{\arraystretch}{1.2}
-	\caption{Precision, Recall und F1-Score des DDQN-Agenten je SNR-Stufe (Mittelwert $\pm$ Standardabweichung über drei Seeds, 20\,000 Testflüsse je Stufe).}
+	\caption[Precision, Recall und F1-Score des DDQN-Agenten je SNR-Stufe]{Precision, Recall und F1-Score des DDQN-Agenten je SNR-Stufe (Mittelwert $\pm$ Standardabweichung über drei Seeds, 20\,000 Testflüsse je Stufe).}
 	\label{tab:ddqn_snr}
 	\begin{tabular}{cccc}
 		\toprule
@@ -28,7 +28,7 @@ Tabelle~\ref{tab:ddqn_snr} fasst die Metriken des DDQN-Agenten zusammen, Abbildu
 \begin{figure}[htbp]
 	\centering
 	\includegraphics[width=0.85\textwidth]{snr_robustheit_plot.pdf}
-	\caption{Precision, Recall und F1-Score des DDQN-Agenten über dem SNR des AWGN-Kanals (30 bis 5\,dB). Marker: Mittelwert über drei Seeds, Fehlerbalken: $\pm$ eine Standardabweichung.}
+	\caption[Precision, Recall und F1-Score des DDQN-Agenten über dem SNR]{Precision, Recall und F1-Score des DDQN-Agenten über dem SNR des AWGN-Kanals (30 bis 5\,dB). Marker: Mittelwert über drei Seeds, Fehlerbalken: $\pm$ eine Standardabweichung.}
 	\label{fig:snr_robustheit}
 \end{figure}
 
@@ -59,7 +59,7 @@ Als Referenz dienen Random Forest (200 Bäume), SVM mit RBF-Kernel und ein MLP m
 	\centering
 	\setlength{\tabcolsep}{4pt}
 	\renewcommand{\arraystretch}{1.2}
-	\caption{F1-Score von DDQN, Random Forest, SVM (RBF) und MLP je SNR-Stufe (Mittelwert $\pm$ Standardabweichung über drei Seeds). Fettdruck: höchster Mittelwert je Stufe.}
+	\caption[F1-Score von DDQN und Baselines je SNR-Stufe]{F1-Score von DDQN, Random Forest, SVM (RBF) und MLP je SNR-Stufe (Mittelwert $\pm$ Standardabweichung über drei Seeds). Fettdruck: höchster Mittelwert je Stufe.}
 	\label{tab:f1_vergleich}
 	\begin{tabular}{ccccc}
 		\toprule
@@ -76,7 +76,7 @@ Als Referenz dienen Random Forest (200 Bäume), SVM mit RBF-Kernel und ein MLP m
 \begin{figure}[htbp]
 	\centering
 	\includegraphics[width=0.85\textwidth]{baseline_vergleich_plot.pdf}
-	\caption{F1-Score von DDQN, Random Forest, SVM (RBF) und MLP über dem SNR des AWGN-Kanals. Marker: Mittelwert über drei Seeds, Fehlerbalken: $\pm$ eine Standardabweichung.}
+	\caption[F1-Score von DDQN und Baselines über dem SNR]{F1-Score von DDQN, Random Forest, SVM (RBF) und MLP über dem SNR des AWGN-Kanals. Marker: Mittelwert über drei Seeds, Fehlerbalken: $\pm$ eine Standardabweichung.}
 	\label{fig:baseline_vergleich}
 \end{figure}
 
@@ -96,7 +96,7 @@ Tabelle~\ref{tab:rla_ela} wendet die Maße aus Abschnitt~\ref{sec:robustheitsmet
 	\small
 	\setlength{\tabcolsep}{4pt}
 	\renewcommand{\arraystretch}{1.2}
-	\caption{Relative Loss of Accuracy (RLA, in \%) und Equalized Loss of Accuracy (ELA) nach Sáez et al.\ \autocite{saezEvaluatingClassifierBehavior2016}, berechnet aus den mittleren F1-Scores über drei Seeds mit 30\,dB als Referenz. Kleinere Werte bedeuten höhere Robustheit.}
+	\caption[Relative Loss of Accuracy und Equalized Loss of Accuracy]{Relative Loss of Accuracy (RLA, in \%) und Equalized Loss of Accuracy (ELA) nach Sáez et al.\ \autocite{saezEvaluatingClassifierBehavior2016}, berechnet aus den mittleren F1-Scores über drei Seeds mit 30\,dB als Referenz. Kleinere Werte bedeuten höhere Robustheit.}
 	\label{tab:rla_ela}
 	\begin{tabular}{lccccccc}
 		\toprule
@@ -123,7 +123,7 @@ Wie viel davon unvermeidbar ist, zeigt Tabelle~\ref{tab:bayes_grenze}. Sie stell
 	\small
 	\setlength{\tabcolsep}{4pt}
 	\renewcommand{\arraystretch}{1.2}
-	\caption{Gemessener F1-Score (Mittelwert über drei Seeds) gegenüber dem F1-Score des Bayes-Klassifikators mit der Soll-Schwelle des jeweiligen Modells ($\pi=0{,}3$, SNR bekannt).}
+	\caption[Gemessener F1-Score gegenüber der Bayes-Referenz]{Gemessener F1-Score (Mittelwert über drei Seeds) gegenüber dem F1-Score des Bayes-Klassifikators mit der Soll-Schwelle des jeweiligen Modells ($\pi=0{,}3$, SNR bekannt).}
 	\label{tab:bayes_grenze}
 	\begin{tabular}{ccccccc}
 		\toprule
@@ -142,7 +142,7 @@ Wie viel davon unvermeidbar ist, zeigt Tabelle~\ref{tab:bayes_grenze}. Sie stell
 \begin{figure}[htbp]
 	\centering
 	\includegraphics[width=\textwidth]{pr_ebene_plot.pdf}
-	\caption[Precision-Recall-Ebene mit Bayes-Grenze und Arbeitspunkten je SNR-Stufe]{Precision-Recall-Ebene je SNR-Stufe. Linie: Bayes-Klassifikator bei variabler Posterior-Schwelle ($\pi=0{,}3$, SNR bekannt). Offener und gefüllter Kreis: Bayes-Arbeitspunkte bei $p>1/2$ und $p>1/3$, Pfeil: Verschiebung durch die Reward-Matrix nach Elkan. Marker: gemessene Modelle, Mittelwert $\pm$ Standardabweichung über drei Seeds. Gestrichelt: Linien konstanten F1-Scores im Abstand $0{,}02$.}
+	\caption[Precision-Recall-Ebene mit Bayes-Grenze und Arbeitspunkten]{Precision-Recall-Ebene je SNR-Stufe. Linie: Bayes-Klassifikator bei variabler Posterior-Schwelle ($\pi=0{,}3$, SNR bekannt). Offener und gefüllter Kreis: Bayes-Arbeitspunkte bei $p>1/2$ und $p>1/3$, Pfeil: Verschiebung durch die Reward-Matrix nach Elkan. Marker: gemessene Modelle, Mittelwert $\pm$ Standardabweichung über drei Seeds. Gestrichelt: Linien konstanten F1-Scores im Abstand $0{,}02$.}
 	\label{fig:pr_ebene}
 \end{figure}
 

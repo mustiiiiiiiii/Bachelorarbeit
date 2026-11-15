@@ -6,7 +6,63 @@
 Paketvermittelte Netze übertragen Daten in Paketen, deren Header Adressen, Ports und Protokollzustände tragen. Ein Angriff auf die Verfügbarkeit setzt an den knappen Ressourcen dieser Übertragungskette an: an der Bandbreite der Zugangsleitung, an den Verbindungstabellen von Servern und Firewalls und an der Rechenzeit der Anwendung \autocite{mirkovicTaxonomyDDoSAttack2004}.
 
 \subsection{Grundlagen der Datenkommunikation in Netzwerken}
-Auf der Vermittlungsschicht adressiert IP die Endsysteme, auf der Transportschicht unterscheiden TCP und UDP die Dienste über Ports. TCP baut vor jeder Datenübertragung über den Drei-Wege-Handschlag (SYN, SYN-ACK, ACK) einen Verbindungszustand auf, den der Server bis zum Abschluss oder bis zum Timeout vorhält. UDP kommt ohne Verbindungszustand und ohne Bestätigung aus. Beides bietet Angriffsfläche. Halboffene TCP-Verbindungen belegen Speicher, und zustandslose UDP-Dienste beantworten auch Anfragen mit gefälschter Absenderadresse. Für die Erkennung werden Pakete zu Flüssen zusammengefasst, also zu Paketfolgen mit gleichem Quintupel aus Quell- und Zieladresse, Quell- und Zielport und Protokoll.
+Auf der Vermittlungsschicht adressiert IP die Endsysteme, auf der Transportschicht unterscheiden TCP und UDP die Dienste über Ports. TCP baut vor jeder Datenübertragung über den Drei-Wege-Handschlag (SYN, SYN-ACK, ACK) einen Verbindungszustand auf, den der Server bis zum Abschluss oder bis zum Timeout vorhält. UDP kommt ohne Verbindungszustand und ohne Bestätigung aus. Beides bietet Angriffsfläche. Halboffene TCP-Verbindungen belegen Speicher, und zustandslose UDP-Dienste beantworten auch Anfragen mit gefälschter Absenderadresse. Für die Erkennung werden Pakete zu Flüssen zusammengefasst, also zu Paketfolgen mit gleichem Quintupel aus Quell- und Zieladresse, Quell- und Zielport und Protokoll. Abbildung~\ref{fig:paketstrom} zeigt den Weg vom Paketstrom zum Merkmalsvektor und markiert, welche Stufen das Generatormodell dieser Arbeit ersetzt.
+
+\begin{figure}[htbp]
+	\centering
+	\begin{tikzpicture}[
+		font=\footnotesize,
+		src/.style={draw, rectangle, rounded corners=1.5pt, minimum width=1.2cm, minimum height=0.48cm, font=\scriptsize, thick},
+		blk/.style={draw, rectangle, rounded corners=2pt, minimum height=1.25cm, align=center, thick},
+		arr/.style={-{Stealth[length=2.2mm]}, thick},
+		pk/.style={draw=black!60, minimum size=0.17cm, inner sep=0pt}
+	]
+		% Quellen
+		\node[src, fill=red!12] (b1) at (0, 1.35) {Bot};
+		\node[src, fill=red!12] (b2) at (0, 0.75) {Bot};
+		\node[src, fill=red!12] (b3) at (0, 0.15) {Bot};
+		\node[src, fill=blue!10] (c1) at (0,-0.55) {Client};
+		\node[src, fill=blue!10] (c2) at (0,-1.15) {Client};
+
+		% Messpunkt
+		\node[blk, text width=2.1cm] (mp) at (2.75, 0.1) {Messpunkt\\ {\scriptsize Router, Mirror-Port}};
+		\foreach \n in {b1,b2,b3} \draw[arr, red!60!black, thin] (\n.east) -- (mp.west);
+		\foreach \n in {c1,c2} \draw[arr, blue!60!black, thin] (\n.east) -- (mp.west);
+
+		% Paketstrom und Flussaggregation
+		\node[blk, text width=2.9cm] (fa) at (7.45, 0.1) {Flussaggregation\\ {\scriptsize Quintupel, Zeitfenster,\\ z.\,B. CICFlowMeter}};
+		\draw[arr] (mp.east) -- (fa.west);
+		\foreach \x/\c in {4.25/red, 4.55/blue, 4.85/red, 5.15/red, 5.45/blue}
+			\node[pk, fill=\c!35] at (\x, 0.1) {};
+		\node[font=\scriptsize] at (4.85, 0.45) {Paketstrom};
+
+		% Merkmalsvektor
+		\node[blk, text width=3.3cm] (x) at (12.55, 0.1)
+			{Merkmalsvektor $\mathbf{x}\in\mathbb{R}^{8}$\\ {\scriptsize Volumen, Zeitverhalten,\\ Protokoll, Verteilung}};
+		\draw[arr] (fa.east) -- node[above, font=\scriptsize] {je Fluss} (x.west);
+
+		% Rahmen: reale Messkette
+		\begin{scope}[on background layer]
+			\node[draw=black!50, dashed, rounded corners=3pt, fit=(b1)(c2)(mp)(fa), inner sep=0.28cm,
+				label={[font=\scriptsize, black!70, anchor=south west, inner sep=1pt]north west:Messkette realer Datensätze (Abschnitt~\ref{sec:datensaetze})}] (real) {};
+		\end{scope}
+
+		% Generatormodell
+		\node[blk, dashed, fill=black!4, text width=3.3cm] (gen) at (12.55, 2.55)
+			{Generatormodell\\ {\scriptsize $\mathbf{x}\sim\mathcal{N}(\boldsymbol\mu_c,\sigma^2\mathbf{I})$, Abschnitt~\ref{sec:generatormodell}}};
+		\draw[arr, dashed] (gen) -- node[left, font=\scriptsize, align=right] {ersetzt in\\ dieser Arbeit} (x);
+
+		% zweite Zeile: Kanal und Detektor
+		\node[blk, fill=blue!8, text width=3.3cm] (aw) at (12.55,-2.6) {AWGN-Kanal\\ {\scriptsize $\mathbf{y}=\mathbf{x}+\mathbf{n}$, SNR $30$ bis $5$\,dB}};
+		\node[blk, text width=2.9cm] (det) at (7.45,-2.6) {Detektor\\ {\scriptsize DDQN; RF, SVM, MLP}};
+		\node[blk, text width=2.1cm] (out) at (2.75,-2.6) {Entscheidung\\ {\scriptsize Normal oder DDoS}};
+		\draw[arr] (x) -- (aw);
+		\draw[arr] (aw) -- node[above, font=\scriptsize] {$\mathbf{y}$} (det);
+		\draw[arr] (det) -- node[above, font=\scriptsize] {$a$} (out);
+	\end{tikzpicture}
+	\caption[Vom Paketstrom zum Merkmalsvektor]{Vom Paketstrom zum Merkmalsvektor. Gestrichelter Rahmen: Messkette realer Datensätze, in der Pakete zu Flüssen aggregiert und je Fluss Merkmale berechnet werden. In dieser Arbeit liefert das Generatormodell $\mathbf{x}$ direkt, der AWGN-Kanal stört die Beobachtung vor dem Detektor.}
+	\label{fig:paketstrom}
+\end{figure}
 
 \subsection{Definition, Ziele und Merkmale von DDoS-Angriffen}
 Ein DDoS-Angriff ist der koordinierte Versuch, die Verfügbarkeit eines Dienstes durch Anfragen aus vielen verteilten Quellen zu verhindern. Mirkovic und Reiher unterscheiden zwei Klassen \autocite{mirkovicTaxonomyDDoSAttack2004}. Semantische Angriffe nutzen eine Schwachstelle in Protokoll oder Anwendung und kommen mit wenigen Paketen aus. Brute-Force- oder Flooding-Angriffe erzeugen eine große Zahl scheinbar legitimer Transaktionen und erschöpfen das Ziel durch schiere Menge. Gefälschte Absenderadressen erschweren in beiden Fällen die Rückverfolgung. Bei Reflektorangriffen trägt der Angreifer die Adresse des Opfers als Absender ein, sodass unbeteiligte Server ihre Antworten an das Opfer richten. Für die Erkennung ist entscheidend, dass Flooding-Verkehr im einzelnen Paket legitim aussieht. Erst die Statistik eines Flusses oder Zeitfensters unterscheidet ihn von einer Flash Crowd, einem legitimen Lastanstieg \autocite{kumarComprehensiveReviewVulnerabilities2024}.

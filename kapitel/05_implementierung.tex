@@ -56,7 +56,7 @@ Abbildung~\ref{fig:blockschaltbild} zeigt die Wirkungskette vom Flussgenerator b
 		\draw[arr] (rew) -- node[above, font=\scriptsize] {$a$} (dec);
 		\draw[arr, dashed] (rew.south) -- ++(0,-1.0) -| node[pos=0.25, below, font=\scriptsize] {$r$} (rb.east);
 	\end{tikzpicture}
-	\caption{Blockschaltbild der Wirkungskette. Der Generator liefert $\mathbf{x}$ mit Label $c$, der AWGN-Kanal erzeugt die Beobachtung $\mathbf{y}$, der Agent entscheidet, und die Reward-Matrix bewertet $a$ gegen $c$. Gestrichelt: Rückführung der Belohnung in den Replay-Puffer.}
+	\caption[Blockschaltbild der Wirkungskette]{Blockschaltbild der Wirkungskette. Der Generator liefert $\mathbf{x}$ mit Label $c$, der AWGN-Kanal erzeugt die Beobachtung $\mathbf{y}$, der Agent entscheidet, und die Reward-Matrix bewertet $a$ gegen $c$. Gestrichelt: Rückführung der Belohnung in den Replay-Puffer.}
 	\label{fig:blockschaltbild}
 \end{figure}
 
@@ -158,7 +158,7 @@ Die Parameterzahl beträgt $(8\cdot128+128)+(128\cdot128+128)+(128\cdot2+2)=17\,
 		\draw[arr] (h2) -- (out);
 		\draw[arr] (out) -- (q);
 	\end{tikzpicture}
-	\caption{Feedforward-Struktur des Q-Netzes ($8\to128\to128\to2$, ReLU in beiden verdeckten Schichten, lineare Ausgabe). Online- und Zielnetz teilen sich diese Struktur.}
+	\caption[Feedforward-Struktur des Q-Netzes]{Feedforward-Struktur des Q-Netzes ($8\to128\to128\to2$, ReLU in beiden verdeckten Schichten, lineare Ausgabe). Online- und Zielnetz teilen sich diese Struktur.}
 	\label{fig:qnet_architektur}
 \end{figure}
 
@@ -211,7 +211,7 @@ Für die Parameter aus \texttt{train\_eval.py} liefert die Auswertung die Werte 
 \begin{table}[htbp]
 	\centering
 	\renewcommand{\arraystretch}{1.25}
-	\caption{Klassenseparierbarkeit der Beobachtung $\mathbf{y}$ in Abhängigkeit vom SNR ($\sigma=0{,}20$). $P_e$: Bayes-Fehler bei gleichen Priors, $P_e^{\pi}$: Bayes-Fehler beim tatsächlichen Angriffsanteil $\pi=0{,}3$.}
+	\caption[Klassenseparierbarkeit der Beobachtung in Abhängigkeit vom SNR]{Klassenseparierbarkeit der Beobachtung $\mathbf{y}$ in Abhängigkeit vom SNR ($\sigma=0{,}20$). $P_e$: Bayes-Fehler bei gleichen Priors, $P_e^{\pi}$: Bayes-Fehler beim tatsächlichen Angriffsanteil $\pi=0{,}3$.}
 	\label{tab:klassenueberlappung}
 	\begin{tabular}{rrrrrr}
 		\toprule
