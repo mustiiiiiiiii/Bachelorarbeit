@@ -103,9 +103,18 @@ hängen von den Vorgaben der Prüfungsordnung ab.
   → **x** ∈ ℝ⁸ → AWGN → Detektor → Entscheidung. Ein gestrichelter Rahmen markiert die reale Messkette, ein Generatormodell-Knoten zeigt,
   was diese Arbeit ersetzt. Sie verbindet die Grundlagen mit Abb. 4.1 und 5.1.
 
+### Kap. 1 (PDF-Seiten 6–7) – behoben
+
+- DDoS-AT-2022 und IoT-DH heißen jetzt „Referenzdatensätze“ (Kap. 1 und Titel von Abschnitt 4.1), weil die Experimente sie nicht auswerten.
+- AWGN, SNR, SVM, MLP, DRL, RLA und ELA werden beim ersten Auftreten in Kap. 1 aufgelöst.
+- FF2 spricht jetzt von „kanalbedingter Klassenüberlappung“. FF3 führt RLA und ELA ein, das Hurenkind „cy?“ ist weg.
+- „Der Preis“ wurde zu „Die Kehrseite“, „schlägt“ zu „abschneidet“. Der Titel von Kap. 5 in der Übersicht ist angeglichen.
+- `\mbox{DDoS-AT-2022}` und `\mbox{IoT-DH}` stehen in allen Kapiteln. Die Kapitelübersicht ist linksbündig gesetzt.
+- In `main.tex` sind Hurenkinder und Schusterjungen global unterbunden (`\widowpenalty`, `\clubpenalty`, `\displaywidowpenalty` = 10000).
+
 ### Nächste Seiten
 
-Einzelseiten-Check ab Seite 6 (Kap. 1) fortsetzen.
+Einzelseiten-Check ab PDF-Seite 8 (Kap. 2) fortsetzen.
 
 ## Arbeitsweise
 
