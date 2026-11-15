@@ -44,19 +44,19 @@ Abbildung~\ref{fig:eval_protokoll} stellt den Ablauf dar. Trainings- und Testfl�
 	\label{fig:eval_protokoll}
 \end{figure}
 
-Das Evaluationsszenario umfasst zwei komplementare Blickwinkel:
+Das Evaluationsszenario umfasst zwei komplementäre Blickwinkel:
 
 \begin{itemize}
-	\item \textbf{Nominalbedingung}: Bewertung unter hoher Kanalqualitat (hohe SNR), um die bestmogliche Trennleistung des Agenten zu bestimmen.
-	\item \textbf{Robustheitsbedingung}: Bewertung unter abgestuften SNR-Werten, um die Stabilitat der Entscheidungen bei verrauschten Beobachtungen zu erfassen.
+	\item \textbf{Nominalbedingung}: Bewertung unter hoher Kanalqualität (hohe SNR), um die bestmögliche Trennleistung des Agenten zu bestimmen.
+	\item \textbf{Robustheitsbedingung}: Bewertung unter abgestuften SNR-Werten, um die Stabilität der Entscheidungen bei verrauschten Beobachtungen zu erfassen.
 \end{itemize}
 
-Als Vergleichsmodelle wurden ein Random-Forest-Klassifikator, eine Support-Vector-Machine und ein mehrschichtiges Perceptron (MLP) ausgewählt. Sie erhalten dieselben verrauschten Merkmale und werden auf denselben Testflüssen bewertet, trainieren aber überwacht auf 20\,000 Flüssen mit gemischtem SNR. Diese Baselines decken etablierte Klassen aus der DDoS-Literatur ab und stellen damit einen belastbaren Referenzrahmen fur die Einordnung des RL-Ansatzes bereit \autocite{koComparativeStudyAIEnabled2023, razaFeatureSelectionBasedDDoSAttack2024}.
+Als Vergleichsmodelle wurden ein Random-Forest-Klassifikator, eine Support-Vector-Machine und ein mehrschichtiges Perceptron (MLP) ausgewählt. Sie erhalten dieselben verrauschten Merkmale und werden auf denselben Testflüssen bewertet, trainieren aber überwacht auf 20\,000 Flüssen mit gemischtem SNR. Diese Baselines decken etablierte Klassen aus der DDoS-Literatur ab und stellen damit einen belastbaren Referenzrahmen für die Einordnung des RL-Ansatzes bereit \autocite{koComparativeStudyAIEnabled2023, razaFeatureSelectionBasedDDoSAttack2024}.
 
 \section{Bewertungsmetriken}
 \label{sec:eval_metriken}
 
-Da in der Angriffserkennung Klassenungleichgewichte zu erwarten sind (Abschnitt~\ref{sec:imbalanced_data}), werden Precision, Recall und F1-Score als primare Metriken verwendet. Diese Metriken basieren auf den Komponenten der Konfusionsmatrix mit True Positives (TP), False Positives (FP) und False Negatives (FN):
+Da in der Angriffserkennung Klassenungleichgewichte zu erwarten sind (Abschnitt~\ref{sec:imbalanced_data}), werden Precision, Recall und F1-Score als primäre Metriken verwendet. Diese Metriken basieren auf den Komponenten der Konfusionsmatrix mit True Positives (TP), False Positives (FP) und False Negatives (FN):
 
 \begin{equation}
 \mathrm{Precision} = \frac{TP}{TP+FP},
@@ -70,7 +70,7 @@ Da in der Angriffserkennung Klassenungleichgewichte zu erwarten sind (Abschnitt~
 \mathrm{F1} = 2 \cdot \frac{\mathrm{Precision} \cdot \mathrm{Recall}}{\mathrm{Precision} + \mathrm{Recall}}.
 \end{equation}
 
-Precision bewertet die Zuverlassigkeit der als Angriff klassifizierten Ereignisse und ist somit direkt mit der Fehlalarmrate verknupft. Recall bewertet den Anteil korrekt erkannter Angriffe und ist fur den operativen Sicherheitsnutzen besonders kritisch. Der F1-Score fasst beide Aspekte harmonisch zusammen und dient als zentrale Vergleichsmetrik zwischen DDQN und Baselines.
+Precision bewertet die Zuverlässigkeit der als Angriff klassifizierten Ereignisse und ist somit direkt mit der Fehlalarmrate verknüpft. Recall bewertet den Anteil korrekt erkannter Angriffe und ist für den operativen Sicherheitsnutzen besonders kritisch. Der F1-Score fasst beide Aspekte harmonisch zusammen und dient als zentrale Vergleichsmetrik zwischen DDQN und Baselines.
 
 \subsection{Robustheitsmaße RLA und ELA}
 \label{sec:robustheitsmetriken}
