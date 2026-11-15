@@ -13,7 +13,8 @@ Stilregeln für alle Texte: `CLAUDE.md`.
   Cortes & Vapnik 1995 (Kap. 3), Elkan 2001 (Schwelle p* nach Gl. (2) = 1/3, Kap. 5 und 7), Kingma & Ba 2015 (Adam, Kap. 5),
   Chawla et al. 2002 (SMOTE, Kap. 2), Henderson et al. 2018 (Seed-Varianz, Kap. 7), Pedregosa et al. 2011 (scikit-learn, Kap. 6).
   DOIs über Crossref bestätigt. Ohne DOI: Sutton (Buch, ISBN), Kingma (arXiv), Pedregosa (JMLR), Elkan (IJCAI).
-  Henderson und Elkan ohne Seitenzahlen, weil nur Preprints vorliegen.
+  Elkan S. 973–977 laut ijcai.org (Proceedings 2001). Henderson ohne Seiten: Crossref/OpenAlex führen keine,
+  AAAI und DBLP blocken automatisierte Abrufe.
 - **Zotero-Export:** Ein roher Zotero-Export der bib (fehlende Keys, Dubletten mit `a`-Suffix, unvollständige Felder)
   wurde verworfen. Maßgeblich ist allein die geprüfte `literatur.bib`, Zotero dient nur als PDF-Ablage.
   `literatur_zotero*.bib` steht in der `.gitignore`. Künftige Exporte nur mit Better BibTeX und festen Citation Keys.
@@ -49,13 +50,12 @@ Stilregeln für alle Texte: `CLAUDE.md`.
 
 - `pdflatex → biber → pdflatex → pdflatex`, Ergebnis zuletzt: 50 Seiten, 0 Fehler, 0 Warnungen (LaTeX und biber), 0 Overfull, 0 Underfull.
 - `main.tex` enthält Spaltentyp `L{…}` (linksbündig, Paket `array`), URL-Umbrüche für biblatex und `\emergencystretch`.
-- `main.bcf` und `main.run.xml` sind nicht mehr versioniert (werden beim Kompilieren erzeugt). `main.pdf` ist noch versioniert.
+- `main.bcf`, `main.run.xml` und `main.pdf` sind nicht versioniert (Build-Artefakte, lokal kompilieren).
 
 ## Offen
 
-1. Optional: Seitenzahlen für Henderson 2018 (AAAI) und Elkan 2001 (IJCAI) aus den Verlagsfassungen nachtragen.
-2. Optional: `main.pdf` ebenfalls aus Git nehmen, wenn nur noch lokal kompiliert wird.
-3. Optional, Abbildung „ELA-Höhenlinien“ (Kap. 7, zu Tab. `tab:rla_ela`): In der Ebene A₀ = F1 bei 30 dB × Aₓ = F1 bei x dB
+1. Optional: Seitenzahlen für Henderson 2018 (AAAI-18) im Browser auf ojs.aaai.org oder dblp.org prüfen und nachtragen.
+2. Optional, Abbildung „ELA-Höhenlinien“ (Kap. 7, zu Tab. `tab:rla_ela`): In der Ebene A₀ = F1 bei 30 dB × Aₓ = F1 bei x dB
    die Isolinien ELA = (1 − Aₓ)/A₀ zeichnen, dazu je Modell die Trajektorie 20 → 10 → 5 dB. Vorbild ist Sáez et al. 2016, Fig. 1,
    aber in 2D statt als 3D-Fläche. Sie soll zeigen, warum die ELA die Modelle konsistent ordnet und die RLA nicht
    (SVM vor MLP bei 20 dB). Daten aus den CSVs, Matplotlib wie `pr_ebene_plot.py`. Die F1-Werte liegen eng (0,72–0,89),
