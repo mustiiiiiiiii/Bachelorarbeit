@@ -15,13 +15,16 @@ Stilregeln für alle Texte: `CLAUDE.md`.
   DOIs über Crossref bestätigt. Ohne DOI: Sutton (Buch, ISBN), Kingma (arXiv), Pedregosa (JMLR), Elkan (IJCAI).
   Henderson und Elkan ohne Seitenzahlen, weil nur Preprints vorliegen.
 - **Zotero-Export:** Ein roher Zotero-Export der bib (fehlende Keys, Dubletten mit `a`-Suffix, unvollständige Felder)
-  wurde verworfen und liegt unversioniert als `literatur_zotero.bib` vor. Maßgeblich ist die geprüfte `literatur.bib`.
+  wurde verworfen. Maßgeblich ist allein die geprüfte `literatur.bib`, Zotero dient nur als PDF-Ablage.
+  `literatur_zotero*.bib` steht in der `.gitignore`. Künftige Exporte nur mit Better BibTeX und festen Citation Keys.
+- **Repo bereinigt:** Testdateien (`mwe*.tex`, `test_dup*.tex`), `buildlog.txt`, ein toter Discord-Link (`.url`) und ein
+  alter KI-Kontext-Prompt entfernt. Die Aufgabenstellung von Prof. Seitz heißt jetzt `Aufgabenstellung_Bachelorarbeit.pdf`.
 - **Volltextabgleich:** Arjoune 2020 nutzt Linkqualitätsmerkmale (BPR, PDR, RSS, CCA), **kein SNR-Merkmal**.
   Caminero 2019 (AE-RL) besteht aus zwei DQN-Agenten. Merzouk-, Zhang- und Apruzzese-Zahlen stammen aus den Volltexten.
-- **Ran 2024:** Bd. 20, H. 8, S. 10405–10418 nur über zitierende Arbeiten bestätigt; das PDF ist das akzeptierte
-  Manuskript. Einmal auf IEEE Xplore (Dok. 10528868) gegenprüfen.
+- **Ran 2024:** Bd. 20, H. 8, S. 10405–10418, Aug. 2024, über Crossref (DOI 10.1109/TII.2024.3396527) bestätigt;
+  das PDF ist das akzeptierte Manuskript.
 - **Konsistenz:** Forschungsfragen FF1–FF3 (Kap. 1) passen zum synthetischen Gauß-Flussmodell; Fazit (Kap. 8)
-  beantwortet FF1–FF3 entlang Kap. 7. Kap. 4 beschreibt nur die tatsächlich ausgeführte Vorverarbeitung.
+  beantwortet FF1–FF3 entlang Kap. 7. FF1 unterscheidet Soll-Schwelle 1/3 (Elkan) und implizite Schwelle 0,38–0,43. Kap. 4 beschreibt nur die tatsächlich ausgeführte Vorverarbeitung.
 - **Abgleich Kap. 5–7 mit Code** (`train_eval.py`, `eval_baselines.py`, CSVs): alle Hyperparameter und Messwerte geprüft.
 
 ## Nachgerechnete Größen (nicht aus neuen Trainingsläufen)
@@ -50,10 +53,9 @@ Stilregeln für alle Texte: `CLAUDE.md`.
 
 ## Offen
 
-1. Ran 2024 Metadaten auf IEEE Xplore bestätigen.
-2. Optional: Seitenzahlen für Henderson 2018 (AAAI) und Elkan 2001 (IJCAI) aus den Verlagsfassungen nachtragen.
-3. Optional: `main.pdf` ebenfalls aus Git nehmen, wenn nur noch lokal kompiliert wird.
-4. Optional, Abbildung „ELA-Höhenlinien“ (Kap. 7, zu Tab. `tab:rla_ela`): In der Ebene A₀ = F1 bei 30 dB × Aₓ = F1 bei x dB
+1. Optional: Seitenzahlen für Henderson 2018 (AAAI) und Elkan 2001 (IJCAI) aus den Verlagsfassungen nachtragen.
+2. Optional: `main.pdf` ebenfalls aus Git nehmen, wenn nur noch lokal kompiliert wird.
+3. Optional, Abbildung „ELA-Höhenlinien“ (Kap. 7, zu Tab. `tab:rla_ela`): In der Ebene A₀ = F1 bei 30 dB × Aₓ = F1 bei x dB
    die Isolinien ELA = (1 − Aₓ)/A₀ zeichnen, dazu je Modell die Trajektorie 20 → 10 → 5 dB. Vorbild ist Sáez et al. 2016, Fig. 1,
    aber in 2D statt als 3D-Fläche. Sie soll zeigen, warum die ELA die Modelle konsistent ordnet und die RLA nicht
    (SVM vor MLP bei 20 dB). Daten aus den CSVs, Matplotlib wie `pr_ebene_plot.py`. Die F1-Werte liegen eng (0,72–0,89),

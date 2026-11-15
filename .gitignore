@@ -15,3 +15,6 @@ __pycache__/
 # Von biber erzeugte Hilfsdateien
 *.bcf
 *.run.xml
+
+# Lokale Zotero-Exporte (maßgeblich ist literatur.bib)
+literatur_zotero*.bib
