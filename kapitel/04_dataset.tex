@@ -27,7 +27,7 @@ Auf Rohdaten wie den CSV-Exporten von CICFlowMeter wären Bereinigung, Kodierung
 
 Tatsächlich ausgeführt werden drei Schritte. Erstens trennen eigene Zufallsgeneratoren Trainings- und Testflüsse: Die Testflüsse für Seed $s$ und eine SNR-Stufe stammen aus einem Generator mit Startwert $1\,000\,003\,s+\mathrm{SNR}$, der im Training nie verwendet wird. Zweitens standardisieren SVM und MLP ihre Eingaben mit einem \texttt{StandardScaler}, dessen Mittelwert und Varianz ausschließlich auf den $20\,000$ Trainingsflüssen geschätzt werden. Der Random Forest arbeitet auf den unskalierten Merkmalen, da seine Schwellen skaleninvariant sind. Drittens hält das MLP für das Early Stopping intern $10\,\%$ seiner Trainingsflüsse als Validierungsmenge zurück. Weitere Validierungsdaten gibt es nicht (Abschnitt~\ref{sec:eval_protokoll}).
 
-\section{Feature-Extraktion}
+\section{Merkmalsextraktion}
 \label{sec:feature_extraktion}
 
 In den Originaldatensätzen entstehen die Merkmale durch Aggregation von Paketen zu Flüssen. \mbox{DDoS-AT-2022} nutzt dafür CICFlowMeter \autocite{mittalDDoSAT2022DistributedDenial2023}. \mbox{IoT-DH} liefert zehn Merkmale, darunter Paketrate, Zeitabstände zwischen Paketen und Datenraten in kbit/s \autocite{saifIoTDHDatasetClassification2024}. Ein kompakter Merkmalssatz genügt, sofern er die Angriffscharakteristik trägt: Ko et al. reduzieren 84 Flussmerkmale per Permutation Importance auf 20 und erreichen mit einem Random Forest eine Accuracy von $99{,}97\,\%$ \autocite{koComparativeStudyAIEnabled2023}.
@@ -37,7 +37,7 @@ Die Merkmale solcher Datensätze lassen sich vier Gruppen zuordnen: Volumen (Pak
 \section{Generatormodell der Evaluationsdaten}
 \label{sec:generatormodell}
 
-Für die kontrollierten SNR-Experimente beschreibt jeder Netzwerkfluss ein Vektor $\mathbf{x}\in\mathbb{R}^{8}$ aus acht normierten Merkmalen. Sie stehen stellvertretend für die in Abschnitt~\ref{sec:feature_extraktion} genannten Gruppen, etwa Paketrate, SYN-Anteil oder die Entropie der Quelladressen, wie sie in den Datensätzen \autocite{mittalDDoSAT2022DistributedDenial2023, saifIoTDHDatasetClassification2024} und in der Merkmalsauswahl von Raza et al. \autocite{razaFeatureSelectionBasedDDoSAttack2024} auftreten. Das Modell ist klassenbedingt gaußverteilt:
+Für die kontrollierten SNR-Experimente beschreibt jeder Netzwerkfluss ein Vektor $\mathbf{x}\in\mathbb{R}^{8}$ aus acht dimensionslosen, auf den Bereich um $[0,1]$ skalierten Merkmalen. Sie stehen stellvertretend für die in Abschnitt~\ref{sec:feature_extraktion} genannten Gruppen, etwa Paketrate, SYN-Anteil oder die Entropie der Quelladressen, wie sie in den Datensätzen \autocite{mittalDDoSAT2022DistributedDenial2023, saifIoTDHDatasetClassification2024} und in der Merkmalsauswahl von Raza et al. \autocite{razaFeatureSelectionBasedDDoSAttack2024} auftreten. Das Modell ist klassenbedingt gaußverteilt:
 \begin{equation}
 	\mathbf{x}\mid c \sim \mathcal{N}\!\left(\boldsymbol{\mu}_c,\ \sigma^2\mathbf{I}\right),\qquad c\in\{\text{Normal},\text{DDoS}\},\quad \sigma=0{,}20 .
 \end{equation}
@@ -47,7 +47,7 @@ Der Agent beobachtet nicht $\mathbf{x}$, sondern die über einen AWGN-Kanal gest
 \begin{equation}
 	\sigma_{n,j}^2=\frac{P_j}{10^{\mathrm{SNR_{dB}}/10}},\qquad P_j=(1-\pi)\,\mu_{\text{Normal},j}^2+\pi\,\mu_{\text{DDoS},j}^2+\sigma^2 .
 \end{equation}
-Abbildung~\ref{fig:generator_ablauf} fasst den Ablauf zusammen und zeigt am Merkmal $j=1$ ($\mu_{\text{Normal},1}=0{,}30$, $\mu_{\text{DDoS},1}=0{,}55$), wie das Rauschen die Klassendichten verbreitert. Bei $30$\,dB bleibt $\sigma_{n,1}\approx0{,}015$ neben $\sigma=0{,}20$ unerheblich, bei $5$\,dB wächst die effektive Streuung auf $\sqrt{\sigma^2+\sigma_{n,1}^2}\approx0{,}34$ und die Dichten überdecken einander weitgehend.
+Abbildung~\ref{fig:generator_ablauf} fasst den Ablauf zusammen und zeigt am Merkmal $j=1$ ($\mu_{\text{Normal},1}=0{,}30$, $\mu_{\text{DDoS},1}=0{,}55$), wie das Rauschen die Klassendichten verbreitert. Bei $30$\,dB bleibt $\sigma_{n,1}\approx0{,}014$ neben $\sigma=0{,}20$ unerheblich, bei $5$\,dB wächst die effektive Streuung auf $\sqrt{\sigma^2+\sigma_{n,1}^2}\approx0{,}32$ und die Dichten überdecken einander weitgehend.
 
 \begin{figure}[htbp]
 	\centering
@@ -80,20 +80,20 @@ Abbildung~\ref{fig:generator_ablauf} fasst den Ablauf zusammen und zeigt am Merk
 		\begin{scope}[shift={(7.6,-5.6)}, xscale=2.2, yscale=0.9]
 			\draw[->] (-0.5,0) -- (1.35,0) node[right, font=\scriptsize] {$y_1$};
 			\draw[->] (-0.5,0) -- (-0.5,2.3);
-			\draw[thick, blue!70!black, domain=-0.5:1.3, samples=70] plot (\x, {1.18*exp(-((\x-0.30)^2)/(2*0.1137))});
-			\draw[thick, red!70!black, domain=-0.5:1.3, samples=70] plot (\x, {1.18*exp(-((\x-0.55)^2)/(2*0.1137))});
-			\draw[dotted] (0.30,0) -- (0.30,1.2);
-			\draw[dotted] (0.55,0) -- (0.55,1.2);
+			\draw[thick, blue!70!black, domain=-0.5:1.3, samples=70] plot (\x, {1.254*exp(-((\x-0.30)^2)/(2*0.1013))});
+			\draw[thick, red!70!black, domain=-0.5:1.3, samples=70] plot (\x, {1.254*exp(-((\x-0.55)^2)/(2*0.1013))});
+			\draw[dotted] (0.30,0) -- (0.30,1.25);
+			\draw[dotted] (0.55,0) -- (0.55,1.25);
 			\node[font=\scriptsize] at (0.1,-0.45) {$\mu_{\text{N}}$};
 			\node[font=\scriptsize] at (0.78,-0.45) {$\mu_{\text{A}}$};
-			\node[font=\scriptsize, align=center] at (0.43,2.65) {(b) $5$\,dB: $\sigma_{\mathrm{eff}}\approx0{,}34$};
+			\node[font=\scriptsize, align=center] at (0.43,2.65) {(b) $5$\,dB: $\sigma_{\mathrm{eff}}\approx0{,}32$};
 		\end{scope}
 	\end{tikzpicture}
 	\caption[Datengenerator mit AWGN-Kanal und klassenbedingte Dichten]{Datengenerator mit AWGN-Kanal. Oben: Ablauf von Label, Gauß-Merkmalen und Rauschen. Unten: Klassenbedingte Dichten (blau: Normal, rot: DDoS) des Merkmals $y_1$ bei (a) hohem und (b) niedrigem SNR. Die Mittelwerte bleiben fest, nur die Streuung wächst.}
 	\label{fig:generator_ablauf}
 \end{figure}
 
-Abbildung~\ref{fig:feature_raum_3d} zeigt dieselben $1\,500$ Flüsse im Teilraum der Merkmale $y_1$, $y_2$ und $y_4$, einmal bei $30$\,dB und einmal bei $5$\,dB. Bei $30$\,dB bilden Normal- und DDoS-Verkehr zwei erkennbare, wenn auch bereits durch $\sigma=0{,}20$ überlappende Wolken um die Mittelwerte. Bei $5$\,dB streuen die Punkte so stark, dass die Klassen im Teilraum kaum noch trennbar sind.
+Abbildung~\ref{fig:feature_raum_3d} zeigt dieselben $1\,500$ Flüsse im Teilraum der Merkmale $y_1$, $y_2$ und $y_4$, einmal bei $30$\,dB und einmal bei $5$\,dB. Bei $30$\,dB bilden Normal- und DDoS-Verkehr zwei erkennbare, wenn auch bereits durch $\sigma=0{,}20$ überlappende Wolken um die Mittelwerte. Bei $5$\,dB streuen die Punkte so stark, dass die Klassen im Teilraum kaum noch trennbar sind. Die technische Umsetzung von Generator und Kanal beschreiben die Abschnitte~\ref{sec:gymnasium_umgebung} und~\ref{sec:awgn_kanal}.
 
 \begin{figure}[htbp]
 	\centering
@@ -102,12 +102,10 @@ Abbildung~\ref{fig:feature_raum_3d} zeigt dieselben $1\,500$ Flüsse im Teilraum
 	\label{fig:feature_raum_3d}
 \end{figure}
 
-Evaluiert werden $\mathrm{SNR}\in\{30,20,10,5\}$\,dB. Mehr zur technischen Umsetzung steht in Abschnitt~\ref{sec:gymnasium_umgebung} und~\ref{sec:awgn_kanal}.
-
-\section{Umgang mit Klassenungleichgewichten (Imbalanced Data)}
+\section{Umgang mit dem Klassenungleichgewicht}
 \label{sec:imbalanced_data}
 
 Das Generatormodell legt den Angriffsanteil auf $\pi=0{,}3$ fest. Das liegt nahe am Testsplit von \mbox{IoT-DH} mit rund $37\,\%$ Angriffen \autocite{saifIoTDHDatasetClassification2024} und bildet das Klassenungleichgewicht ab, dessen Folgen Abschnitt~\ref{sec:imbalanced_grundlagen} beschreibt.
 
-Resampling findet in dieser Arbeit nicht statt, weder für den DDQN noch für die Baselines. Der DDQN gewichtet die Fehlerarten stattdessen über die Reward-Matrix ($R_{FN}=-2$ gegenüber $R_{FP}=-1$), was seine Entscheidungsschwelle auf eine Angriffs-Posterior von $p>1/3$ senkt (Abschnitt~\ref{sec:mdp_definition}). Random Forest, SVM und MLP trainieren ohne Klassengewichte und entscheiden damit bei $p>1/2$. Die Bewertung stützt sich deshalb auf Precision, Recall und F1-Score der Angriffsklasse, nicht auf die Accuracy (Abschnitt~\ref{sec:eval_metriken}).
+Resampling findet in dieser Arbeit nicht statt, weder für den DDQN noch für die Baselines. Der DDQN gewichtet die Fehlerarten stattdessen über die Reward-Matrix ($R_{FN}=-2$ gegenüber $R_{FP}=-1$), was seine Soll-Schwelle auf eine Angriffs-Posterior von $p>1/3$ senkt (Abschnitt~\ref{sec:mdp_definition}). Random Forest, SVM und MLP trainieren ohne Klassengewichte, ihre Soll-Schwelle liegt bei $p>1/2$. Die gemessenen impliziten Schwellen weichen von beiden Werten ab (Abschnitt~\ref{sec:reward_recall}). Die Bewertung stützt sich deshalb auf Precision, Recall und F1-Score der Angriffsklasse, nicht auf die Accuracy (Abschnitt~\ref{sec:eval_metriken}).
 

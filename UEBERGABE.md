@@ -133,6 +133,26 @@ hängen von den Vorgaben der Prüfungsordnung ab.
   ML und DL sind in Kap. 1–3 ausgeschrieben bzw. aufgelöst.
 - „Der Preis …“ ist ersetzt, 99,97 % im Mathe-Modus gesetzt.
 
+### Kap. 4 (PDF-Seiten 21–25) – behoben
+
+- **Rechenfehler korrigiert:** Für Merkmal 1 bei 5 dB gilt σ_eff = √(0,04 + 0,0613) ≈ 0,32 (vorher 0,34), bei 30 dB σₙ,₁ ≈ 0,014 (vorher 0,015).
+  Die TikZ-Kurve in Abb. 4.1 (b) nutzt jetzt Varianz 0,1013 und Amplitude 1,254 (vorher 0,1137/1,18).
+- Abschnitt 4.5 nennt die Soll-Schwellen (1/3 bzw. 1/2) und verweist für die gemessenen impliziten Schwellen auf 7.1.1.
+- Die Überschriften lauten jetzt „4.3 Merkmalsextraktion“ und „4.5 Umgang mit dem Klassenungleichgewicht“. „Normierte Merkmale“
+  ist präzisiert, der verwaiste Verweissatz nach Abb. 4.2 integriert.
+- **Abb. 4.2:** `create_3d_plot.py` erzeugt die Grafik jetzt in Textbreite (6,3 × 3,3 in), damit die Schrift in Originalgröße erscheint
+  (Achsen 9 pt, Ticks 7,5 pt). Die z-Beschriftung ist nicht mehr abgeschnitten.
+- Gegen Code und Saif-PDF geprüft: Mittelwertabstände, P_j-Formel, Test-Seeds, 20 000 Trainingsflüsse, Skalierung, Early Stopping,
+  IoT-DH-Angaben (10 000 Einträge, 80/20, 98 %, 748/2000).
+
+### Offene Frage an den Betreuer (Prof. Seitz)
+
+- **Aufgabenstellung vs. synthetisches Modell:** Die Aufgabenstellung verlangt, „an einem Data Set, das den Netzverkehr mit einem
+  DDoS-Angriff beschreibt, die Erkennung des Angriffs zu demonstrieren“. Die Arbeit evaluiert ausschließlich auf einem
+  parametrischen Gauß-Flussmodell, das sich an DDoS-AT-2022 und IoT-DH orientiert (Begründung: kontrollierbares SNR,
+  analytische Bayes-Grenze). Die Arbeit legt das offen (4.1, Kap. 8 Ausblick). Vor der Abgabe klären, ob das akzeptiert wird
+  oder ob ein ergänzender Lauf auf einem der Originaldatensätze erwartet wird.
+
 ### Vorgemerkt für das Ende des Seiten-Checks
 
 - **K2-7 Seitenumbruch:** Wegen `\raggedbottom` und KOMAs negativer Penalty vor Überschriften bricht LaTeX bevorzugt vor
@@ -141,7 +161,7 @@ hängen von den Vorgaben der Prüfungsordnung ab.
 
 ### Nächste Seiten
 
-Einzelseiten-Check ab PDF-Seite 21 (Kap. 4) fortsetzen.
+Einzelseiten-Check ab PDF-Seite 26 (Kap. 5) fortsetzen.
 
 ## Arbeitsweise
 
