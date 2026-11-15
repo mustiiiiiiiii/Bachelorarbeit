@@ -121,6 +121,18 @@ hängen von den Vorgaben der Prüfungsordnung ab.
   Klassenungleichgewicht“ und „2.4.2 Klassenungleichgewicht“.
 - Bala (1,4 Tbit/s) und Zhu & Wu (17 Datensätze, C4.5) sind gegen die PDFs geprüft.
 
+### Kap. 3 (PDF-Seiten 13–20) – behoben
+
+- Das Double-Q-Argument in 3.6 ist eingeschränkt: Es greift in der Ein-Schritt-Formulierung nicht (Verweis auf 5.2.1, 5.3 und Kap. 8).
+- Die Kostenasymmetrie überwachter Verfahren ist nach Elkan als gleichwertig eingeordnet. Der DDQN bindet sie direkt ins Lernziel ein.
+- Die Merzouk-Angabe „sechsseitiges Kurzpapier“ ist entfernt (PDF hat 7 Seiten, kein Short-Paper-Vermerk). Bei der Online-Anpassung
+  steht in Text und Tab. 3.2 jetzt „grundsätzlich möglich, hier nicht untersucht“.
+- Der einzelne Unterabschnitt 3.4.1 ist aufgelöst. Die Überschriften lauten jetzt „3.2 Klassische Verfahren des maschinellen Lernens“
+  und „3.2.2 Support Vector Machines“.
+- IDS, DQN, PG, AC, RBF, C-LSTM, A3C, PPO und DDPG werden beim ersten Auftreten aufgelöst. FP/FN stehen als Fußzeile unter Tab. 3.2.
+  ML und DL sind in Kap. 1–3 ausgeschrieben bzw. aufgelöst.
+- „Der Preis …“ ist ersetzt, 99,97 % im Mathe-Modus gesetzt.
+
 ### Vorgemerkt für das Ende des Seiten-Checks
 
 - **K2-7 Seitenumbruch:** Wegen `\raggedbottom` und KOMAs negativer Penalty vor Überschriften bricht LaTeX bevorzugt vor
@@ -129,7 +141,7 @@ hängen von den Vorgaben der Prüfungsordnung ab.
 
 ### Nächste Seiten
 
-Einzelseiten-Check ab PDF-Seite 13 (Kap. 3) fortsetzen.
+Einzelseiten-Check ab PDF-Seite 21 (Kap. 4) fortsetzen.
 
 ## Arbeitsweise
 
