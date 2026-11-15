@@ -100,7 +100,7 @@ Das Entscheidungsproblem ist ein Markov-Entscheidungsprozess $(\mathcal{S},\math
 	\begin{equation}
 		\mathcal{P}(\mathbf{y}'\mid\mathbf{y},a)=\delta(\mathbf{y}'-\mathbf{0}),\qquad d=1 .
 	\end{equation}
-	Der Folgezustand ist die Null-Beobachtung aus \texttt{step}. Der nächste Fluss entsteht erst im \texttt{reset}.
+	Der Folgezustand ist die Null-Beobachtung aus \texttt{step}. Der nächste Fluss entsteht erst im \texttt{reset}. Im vektorisierten Training speichert der Replay-Puffer als Folgebeobachtung stattdessen die aktuelle Beobachtung $\mathbf{y}$. Wegen $d=1$ geht dieser Wert in keines der Lernziele ein.
 	\item \textbf{Belohnung:} $\mathcal{R}(a,c)$ als Kostenmatrix mit Zeilen $c$ und Spalten $a$:
 	\begin{equation}
 		\mathcal{R}=
@@ -125,7 +125,7 @@ Das Entscheidungsproblem ist ein Markov-Entscheidungsprozess $(\mathcal{S},\math
 
 Die optimale Politik maximiert den erwarteten Sofort-Reward $\mathbb{E}[\mathcal{R}(a,c)\mid\mathbf{y}]$. Mit $p=P(c=1\mid\mathbf{y})$ gilt $a=1$ genau dann, wenn $p\,R_{TP}+(1-p)\,R_{FP}>p\,R_{FN}+(1-p)\,R_{TN}$, also $p>1/3$. Das ist die in Kapitel~\ref{chap:ergebnisse} erwartete Schwelle.
 
-Im Training werden die Flüsse nicht einzeln über \texttt{step} erzeugt, sondern als Batch von 32 Flüssen pro Iteration, wobei der SNR jedes Flusses zufällig aus $\{30,20,10,5\}$\,dB gezogen wird. Der Rewardvektor entsteht durch eine Tabellenabfrage \texttt{REWARD\_TABLE[label, action]} direkt auf der GPU.
+Im Training werden die Flüsse nicht einzeln über \texttt{step} erzeugt, sondern als Batch von 32 Flüssen pro Iteration, wobei das SNR jedes Flusses zufällig aus $\{30,20,10,5\}$\,dB gezogen wird. Der Rewardvektor entsteht durch eine Tabellenabfrage \texttt{REWARD\_TABLE[label, action]} direkt auf der GPU.
 
 \section{DDQN-Architektur in PyTorch}
 \label{sec:dqn_architektur}
@@ -198,39 +198,43 @@ Die Klassenmittelwerte bleiben fest, nur die Varianz wächst von $\sigma^2=0{,}0
 \begin{equation}
 	D^{2}=\sum_{j=1}^{8}\frac{\Delta\mu_j^{2}}{\sigma^{2}+\sigma_{n,j}^{2}},
 \end{equation}
-und die Bayes-Fehlerwahrscheinlichkeit für gleiche Priors ist $P_e=Q(D/2)$ mit der Gaußschen Q-Funktion
+und die Bayes-Fehlerwahrscheinlichkeit für gleiche Priors ist $P_e=Q_{\mathrm{G}}(D/2)$ mit der Gaußschen Q-Funktion
 \begin{equation}
-	Q(z)=\frac{1}{\sqrt{2\pi}}\int_{z}^{\infty}e^{-t^{2}/2}\,\mathrm{d}t .
+	Q_{\mathrm{G}}(z)=\frac{1}{\sqrt{2\pi}}\int_{z}^{\infty}e^{-t^{2}/2}\,\mathrm{d}t .
 \end{equation}
-Der Zusammenhang entspricht der Symbolfehlerwahrscheinlichkeit binärer Signale im AWGN-Kanal, bei der $D$ die Rolle des normierten Signalabstands übernimmt \autocite{proakisDigitalCommunications2008}. Für die Parameter aus \texttt{train\_eval.py} liefert die Auswertung die Werte in Tabelle~\ref{tab:klassenueberlappung}.
+Der Index G trennt sie von der Aktionswertfunktion $Q(\mathbf{y},a)$ des Agenten. Der Zusammenhang entspricht der Symbolfehlerwahrscheinlichkeit binärer Signale im AWGN-Kanal, bei der $D$ die Rolle des normierten Signalabstands übernimmt \autocite{proakisDigitalCommunications2008}. Mit dem tatsächlichen Angriffsanteil $\pi=0{,}3$ verschiebt die Bayes-Regel ihre Schwelle um $\lambda=\ln\bigl((1-\pi)/\pi\bigr)$ auf der Skala des Log-Likelihood-Verhältnisses, und die minimale Fehlerwahrscheinlichkeit lautet
+\begin{equation}
+	P_e^{\pi}=\pi\,Q_{\mathrm{G}}\!\left(\frac{D}{2}-\frac{\lambda}{D}\right)+(1-\pi)\,Q_{\mathrm{G}}\!\left(\frac{D}{2}+\frac{\lambda}{D}\right).
+\end{equation}
+Für die Parameter aus \texttt{train\_eval.py} liefert die Auswertung die Werte in Tabelle~\ref{tab:klassenueberlappung}.
 
 \begin{table}[htbp]
 	\centering
 	\renewcommand{\arraystretch}{1.25}
-	\caption{Klassenseparierbarkeit der Beobachtung $\mathbf{y}$ in Abhängigkeit vom SNR ($\sigma=0{,}20$, $\pi=0{,}3$; $P_e$ bei gleichen Priors).}
+	\caption{Klassenseparierbarkeit der Beobachtung $\mathbf{y}$ in Abhängigkeit vom SNR ($\sigma=0{,}20$). $P_e$: Bayes-Fehler bei gleichen Priors, $P_e^{\pi}$: Bayes-Fehler beim tatsächlichen Angriffsanteil $\pi=0{,}3$.}
 	\label{tab:klassenueberlappung}
-	\begin{tabular}{rrrrr}
+	\begin{tabular}{rrrrrr}
 		\toprule
-		\textbf{SNR in dB} & $\max_j\sigma_{n,j}$ & $D^{2}$ & $D$ & $P_e=Q(D/2)$ \\
+		\textbf{SNR in dB} & $\max_j\sigma_{n,j}$ & $D^{2}$ & $D$ & $P_e=Q_{\mathrm{G}}(D/2)$ & $P_e^{\pi}$ \\
 		\midrule
-		$30$ & $0{,}018$ & $8{,}76$ & $2{,}96$ & $6{,}9\,\%$ \\
-		$20$ & $0{,}056$ & $8{,}33$ & $2{,}89$ & $7{,}4\,\%$ \\
-		$10$ & $0{,}176$ & $5{,}62$ & $2{,}37$ & $11{,}8\,\%$ \\
-		$5$  & $0{,}312$ & $3{,}17$ & $1{,}78$ & $18{,}7\,\%$ \\
+		$30$ & $0{,}018$ & $8{,}76$ & $2{,}96$ & $6{,}9\,\%$ & $6{,}2\,\%$ \\
+		$20$ & $0{,}056$ & $8{,}33$ & $2{,}89$ & $7{,}4\,\%$ & $6{,}6\,\%$ \\
+		$10$ & $0{,}176$ & $5{,}62$ & $2{,}37$ & $11{,}8\,\%$ & $10{,}4\,\%$ \\
+		$5$  & $0{,}312$ & $3{,}17$ & $1{,}78$ & $18{,}7\,\%$ & $16{,}2\,\%$ \\
 		\bottomrule
 	\end{tabular}
 \end{table}
 
-Zwischen $30$ und $20$\,dB ändert sich die Überlappung kaum, weil das Rauschen ($\sigma_{n,j}\le0{,}056$) neben $\sigma=0{,}20$ vernachlässigbar bleibt. Bei $5$\,dB sinkt $D$ auf $1{,}78$, die effektive Streuung steigt auf etwa $0{,}32$ je Merkmal, und die Fehlerwahrscheinlichkeit des Bayes-Klassifikators verdreifacht sich gegenüber $30$\,dB. Mit $\pi=0{,}3$ und der Schwelle $p>1/3$ aus Abschnitt~\ref{sec:mdp_definition} verschiebt sich die tatsächliche Fehlerrate zwar, die Rangfolge der SNR-Stufen bleibt aber erhalten. Das Training mit gemischtem SNR zwingt das Q-Netz auf eine Kompromiss-Entscheidungsgrenze, die für kein SNR exakt optimal ist.
+Zwischen $30$ und $20$\,dB ändert sich die Überlappung kaum, weil das Rauschen ($\sigma_{n,j}\le0{,}056$) neben $\sigma=0{,}20$ vernachlässigbar bleibt. Bei $5$\,dB sinkt $D$ auf $1{,}78$, die effektive Streuung steigt auf etwa $0{,}32$ je Merkmal, und die Fehlerwahrscheinlichkeit des Bayes-Klassifikators steigt gegenüber $30$\,dB auf fast das Dreifache. Beim tatsächlichen Angriffsanteil $\pi=0{,}3$ liegt sie auf jeder Stufe etwas niedriger, von $6{,}2\,\%$ bei $30$\,dB bis $16{,}2\,\%$ bei $5$\,dB. Diese Spalte ist die Referenz für alle weiteren Vergleiche mit der Bayes-Grenze. Das Training mit gemischtem SNR zwingt das Q-Netz auf eine Kompromiss-Entscheidungsgrenze, die für kein SNR exakt optimal ist.
 
-Im Training trifft der Agent pro Fluss auf einen zufällig gewählten SNR. Er lernt dadurch eine einzige Entscheidungsfunktion für alle vier Kanalqualitäten, ohne den SNR als Eingabe zu erhalten. Die Evaluation erfolgt dagegen getrennt je SNR-Stufe (Kapitel~\ref{chap:evaluierung}).
+Im Training trifft der Agent pro Fluss auf ein zufällig gewähltes SNR. Er lernt dadurch eine einzige Entscheidungsfunktion für alle vier Kanalqualitäten, ohne das SNR als Eingabe zu erhalten. Die Evaluation erfolgt dagegen getrennt je SNR-Stufe (Kapitel~\ref{chap:evaluierung}).
 
 Das gemischte Training hat einen zweiten Effekt. Nach Bishop wirkt additives Eingangsrauschen im Training wie ein Tikhonov-Strafterm auf die Ableitungen der gelernten Abbildung (Abschnitt~\ref{sec:merkmalsrauschen}) \autocite{bishopTrainingNoiseEquivalent1995}. Das Q-Netz wird also gezwungen, $Q(\mathbf{y},a)$ glatt über $\mathbf{y}$ zu halten, und reagiert im Test weniger empfindlich auf einzelne Rauschausreißer. Apruzzese et al. nutzen dasselbe Prinzip mit gezielt gestörten Flussmerkmalen, um Detektoren gegen Evasion zu härten \autocite{apruzzeseDeepReinforcementAdversarial2020}. Streng gilt Bishops Äquivalenz nur für kleine Rauschvarianz. Bei $30$ und $20$\,dB ist diese Bedingung erfüllt ($\sigma_{n,j}\le0{,}056$), bei $5$\,dB mit $\sigma_{n,j}$ bis $0{,}31$ nicht mehr. Auf dieser Stufe bleibt die Regularisierungsdeutung eine qualitative Erklärung.
 
 \section{Trainings- und Optimierungsstrategie}
 \label{sec:training_optimierung}
 
-Das Training läuft über $20\,000$ Iterationen. In jeder Iteration entstehen $32$ Flüsse, der Agent wählt $\epsilon$-greedy Aktionen, die Transitionen gelangen in den Puffer, und es folgt ein Lernschritt, sobald der Puffer mindestens $1000$ Einträge enthält. Die Explorationsrate fällt linear von $1{,}0$ auf $0{,}02$ innerhalb der ersten $40\,\%$ der Iterationen ($8000$) und bleibt danach konstant. Der Optimierer ist Adam mit Lernrate $10^{-4}$. Das Zielnetz wird alle $250$ Lernschritte hart synchronisiert. Pro Seed (0, 1, 2) beginnt der Lauf mit neu initialisierten Netzen und eigenem Zufallsgenerator für die Flüsse. Die Seeds setzen Python-, NumPy- und PyTorch-Generatoren (inklusive CUDA).
+Das Training läuft über $20\,000$ Iterationen. In jeder Iteration entstehen $32$ Flüsse, der Agent wählt $\epsilon$-greedy Aktionen, die Transitionen gelangen in den Puffer, und es folgt ein Lernschritt, sobald der Puffer mindestens $1000$ Einträge enthält. Die Explorationsrate fällt linear von $1{,}0$ auf $0{,}02$ innerhalb der ersten $40\,\%$ der Iterationen ($8000$) und bleibt danach konstant. Der Optimierer ist Adam mit Lernrate $10^{-4}$. Das Zielnetz wird alle $250$ Lernschritte hart synchronisiert. Weil der Puffer je Iteration $32$ Transitionen aufnimmt, erreicht er die Mindestfüllung in Iteration $32$. Über den gesamten Lauf führt der Agent damit $19\,969$ Lernschritte mit je $64$ Transitionen aus und synchronisiert das Zielnetz $79$-mal. Ab Iteration $1563$ ist der Puffer voll, und neue Transitionen überschreiben die ältesten. Pro Seed (0, 1, 2) beginnt der Lauf mit neu initialisierten Netzen und eigenem Zufallsgenerator für die Flüsse. Die Seeds setzen Python-, NumPy- und PyTorch-Generatoren (inklusive CUDA).
 
 \section{Implementierung in der praktischen Pipeline}
 \label{sec:praktische_pipeline}
