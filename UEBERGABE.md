@@ -176,6 +176,18 @@ hängen von den Vorgaben der Prüfungsordnung ab.
 - Einheiten nach DIN: „SNR in dB“, „RLA in %“ in allen Tabellen und Plots. Gl. 7.1 ist mit `align` gesetzt.
 - **Plots:** `generate_plot.py`, `pr_ebene_plot.py` und `create_3d_plot.py` setzen das deutsche Dezimalkomma. Alle Abbildungen sind neu erzeugt.
 
+### Kap. 8 (PDF-Seiten 45–47) – behoben
+
+- FF1: Die Aktion ist das vorhergesagte Label. Die Reward-Matrix senkt die Soll-Schwelle, Elkans Formel liefert denselben Wert.
+  In FF2 steht „kanalbedingte Klassenüberlappung“, in FF3 „Konsistent über alle Stufen ist die Rangfolge“.
+- Der „Vorzug“ der Kostenasymmetrie ist ehrlich eingeordnet: Er ist konzeptionell, nicht empirisch belegt (Elkan-Gleichwertigkeit,
+  implizite Schwelle 0,38–0,43). Schlussabsatz: „beste Mittelwerte, kein signifikanter Vorsprung“.
+- Ran et al. korrekt wiedergegeben: zwei DQN zur Erkennung von FDIA und adversarialen Beispielen.
+- Ausblick: Multi-Agenten-Punkt gestrichen (jetzt fünf Punkte). Punkt Betriebskennzahlen konkretisiert (Latenz, Ressourcen
+  des Q-Netzes mit 17 922 Parametern gegen RF/SVM). d = 0 für nichtterminale Schritte, PER bleibt ohne Zitat.
+
+**Einzelseiten-Check bis zum Literaturverzeichnis abgeschlossen.**
+
 ### Offene Frage an den Betreuer (Prof. Seitz)
 
 - **Aufgabenstellung vs. synthetisches Modell:** Die Aufgabenstellung verlangt, „an einem Data Set, das den Netzverkehr mit einem
@@ -193,7 +205,7 @@ hängen von den Vorgaben der Prüfungsordnung ab.
 
 ### Nächste Seiten
 
-Einzelseiten-Check ab PDF-Seite 45 (Kap. 8) fortsetzen.
+Offen in dieser Phase: Literaturverzeichnis (S. 48–50) und der globale Umbruch-Schritt (K2-7, K5-8).
 
 ## Arbeitsweise
 
