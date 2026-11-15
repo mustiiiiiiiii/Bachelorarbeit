@@ -8,6 +8,8 @@ Traditionelle Erkennungsmechanismen, die auf statischen Signaturen oder einfache
 \section{Zielsetzung und Forschungsfragen}
 Das Hauptziel dieser Bachelorarbeit besteht darin, die Leistungsfähigkeit und Robustheit von KI-basierten Klassifikationsverfahren zur Erkennung von DDoS-Angriffen systematisch zu untersuchen und zu bewerten. Im Fokus stehen dabei insbesondere die Validierung anhand aktueller Evaluationsdatensätze sowie die Analyse des Einflusses von Störungen auf die Detektionsgenauigkeit.
 
+Deep Reinforcement Learning ist für die Angriffserkennung auf Flussmerkmalen bereits erprobt, mit DDQN als stärkster der von Lopez-Martin et al. verglichenen DRL-Varianten \autocite{lopez-martinApplicationDeepReinforcement2020}. Ausgewertet wurde dort jedoch nur auf ungestörten Merkmalen. Merzouk et al. zeigen, dass ein DRL-Detektor unter gezielt gestörten Merkmalen erheblich an Leistung verliert \autocite{merzoukEvadingDeepReinforcement2022}. Wie sich ein DDQN-Detektor unter stochastischem Kanalrauschen verhält, das alle Merkmale abhängig vom SNR überlagert, und wie er sich dabei gegenüber überwacht trainierten Klassifikatoren schlägt, ist in der gesichteten Literatur nicht untersucht (Abschnitt~\ref{sec:rw_robustheit}). Diese Arbeit schließt die Lücke für einen achtdimensionalen Merkmalsraum unter AWGN mit 30 bis 5\,dB und vergleicht den DDQN mit Random Forest, SVM und MLP.
+
 Dabei werden folgende zentrale Forschungsfragen adressiert:
 \begin{itemize}
     \item Welche aktuellen Klassifikationsverfahren und Deep-Learning-Architekturen eignen sich am besten für die Identifikation von DDoS-Angriffen in modernen Netzwerktopologien?
@@ -18,10 +20,11 @@ Dabei werden folgende zentrale Forschungsfragen adressiert:
 \section{Aufbau der Arbeit}
 Die vorliegende Arbeit gliedert sich in folgende Kapitel:
 \begin{itemize}
-    \item \textbf{Kapitel 2 (Grundlagen):} Vermittelt die theoretischen Grundlagen zu DDoS-Angriffsvektoren, Taxonomien und den verwendeten Klassifikationsverfahren.
-    \item \textbf{Kapitel 3 (Verwandte Arbeiten / Related Work):} Gibt einen Überblick über den aktuellen Forschungsstand und bestehende Lösungsansätze in der Literatur.
-    \item \textbf{Kapitel 4 (Datensätze \& Evaluierung):} Beleuchtet die verwendeten Evaluationsdatensätze und deren Eigenschaften.
-    \item \textbf{Kapitel 5 (Implementierung):} Beschreibt die technische Umsetzung und Modellarchitektur.
-    \item \textbf{Kapitel 6 (Evaluation):} Präsentiert und diskutiert die experimentellen Ergebnisse.
-    \item \textbf{Kapitel 7 (Fazit):} Fasst die Ergebnisse zusammen und gibt einen Ausblick auf zukünftige Forschungsarbeiten.
+    \item \textbf{Kapitel~\ref{chap:grundlagen} (Grundlagen):} DDoS-Angriffsvektoren, klassische und KI-basierte Erkennung, Evaluationsmetriken sowie die Wirkung von Merkmalsrauschen auf Klassifikatoren.
+    \item \textbf{Kapitel~\ref{chap:related_work} (Related Work):} Forschungsstand zu ML-, DL- und DRL-basierter Angriffserkennung, Robustheit gegenüber gestörten Merkmalen und Forschungslücke.
+    \item \textbf{Kapitel~\ref{chap:datensatz} (Datensatz und Datenvorbereitung):} Evaluationsdatensätze DDoS-AT-2022 und IoT-DH, Merkmalsstruktur und das Generatormodell der Experimentdaten.
+    \item \textbf{Kapitel~\ref{chap:implementierung} (Implementierung):} Gymnasium-Umgebung, DDQN-Architektur, AWGN-Kanalmodell und Training.
+    \item \textbf{Kapitel~\ref{chap:evaluierung} (Evaluationsaufbau und Metriken):} Evaluationsprotokoll, Baselines sowie Leistungs- und Robustheitsmaße.
+    \item \textbf{Kapitel~\ref{chap:ergebnisse} (Ergebnisse):} Messergebnisse über die SNR-Stufen, Baseline-Vergleich und Einordnung in die Literatur.
+    \item \textbf{Kapitel~\ref{chap:fazit} (Fazit und Ausblick):} Zusammenfassung und Ausblick auf zukünftige Forschungsarbeiten.
 \end{itemize}

@@ -162,22 +162,26 @@ Die Parameterzahl beträgt $(8\cdot128+128)+(128\cdot128+128)+(128\cdot2+2)=17\,
 	\label{fig:qnet_architektur}
 \end{figure}
 
-Die Ausgabeschicht ist linear, die zwei Ausgaben sind die Q-Werte $Q(\mathbf{y},0)$ und $Q(\mathbf{y},1)$. Online-Netz und Zielnetz haben dieselbe Struktur, das Zielnetz startet mit den Gewichten des Online-Netzes und wird nur kopiert, nie per Gradient trainiert.
+Die Ausgabeschicht ist linear, die zwei Ausgaben sind die Q-Werte $Q(\mathbf{y},0)$ und $Q(\mathbf{y},1)$. Online-Netz und Zielnetz haben dieselbe Struktur, das Zielnetz startet mit den Gewichten des Online-Netzes und wird nur kopiert, nie per Gradient trainiert. Zielnetz und Replay-Puffer gehen auf den DQN-Ansatz von Mnih et al. zurück, wo sie die Korrelation aufeinanderfolgender Transitionen aufbrechen und das Regressionsziel zwischen zwei Synchronisationen festhalten \autocite{mnihHumanlevelControlDeep2015}.
 
-Das DDQN-Ziel trennt Aktionsauswahl und Bewertung:
+Im Standard-DQN wählt und bewertet dasselbe Zielnetz die Folgeaktion:
+\begin{equation}
+	Y^{\mathrm{DQN}} = r + \gamma\,(1-d)\,\max_{a'} Q(\mathbf{y}',a';\bar{\theta}).
+\end{equation}
+Sind die Q-Schätzungen verrauscht, greift der $\max$-Operator bevorzugt Aktionen mit positivem Schätzfehler heraus, und das Ziel überschätzt den wahren Wert systematisch. Das DDQN-Ziel nach van Hasselt et al. trennt deshalb Aktionsauswahl und Bewertung \autocite{vanhasseltDeepReinforcementLearning2016}:
 \begin{equation}
 	Y = r + \gamma\,(1-d)\;Q\!\left(\mathbf{y}',\ \arg\max_{a'} Q(\mathbf{y}',a';\theta);\ \bar{\theta}\right),
 \end{equation}
 wobei $\theta$ die Parameter des Online-Netzes, $\bar\theta$ die des Zielnetzes und $d\in\{0,1\}$ das Terminal-Flag sind. Der Verlust ist die Huber-Funktion (\texttt{smooth\_l1\_loss}) zwischen $Q(\mathbf{y},a;\theta)$ und $Y$, die Gradientennorm wird auf $10$ begrenzt.
 
-Weil jede Episode nach einem Schritt endet, gilt für alle gespeicherten Transitionen $d=1$ und damit $Y=r$. Das Bootstrapping-Glied entfällt, der Diskontierungsfaktor $\gamma$ beeinflusst das Lernen nicht, und das Q-Netz schätzt den erwarteten Sofort-Reward je Aktion (ein kontextuelles Banditenproblem). Online-/Zielnetz, Double-Q-Ziel und Replay-Puffer sind vollständig implementiert und bleiben im Code aktiv. Unter diesem Problemzuschnitt geht das Zielnetz wegen $d=1$ jedoch nie in $Y$ ein. Das ist bei der Interpretation der Ergebnisse zu berücksichtigen.
+Weil jede Episode nach einem Schritt endet, gilt für alle gespeicherten Transitionen $d=1$ und damit $Y=r$. Das Bootstrapping-Glied entfällt, der Diskontierungsfaktor $\gamma$ beeinflusst das Lernen nicht, und das Q-Netz schätzt den erwarteten Sofort-Reward je Aktion (ein kontextuelles Banditenproblem). Online-/Zielnetz, Double-Q-Ziel und Replay-Puffer sind vollständig implementiert und bleiben im Code aktiv. Unter diesem Problemzuschnitt geht das Zielnetz wegen $d=1$ jedoch nie in $Y$ ein. Die Überschätzung, gegen die van Hasselt et al. das Double-Q-Ziel entwickelt haben, entsteht erst im Bootstrapping-Glied und kann hier nicht auftreten. Wirksam bleiben der Replay-Puffer, der die Mini-Batches dekorreliert, und die Huber-Regression auf den Sofort-Reward. Das ist bei der Interpretation der Ergebnisse zu berücksichtigen.
 
-Der Replay-Puffer (\texttt{ReplayBuffer}) ist ein Ringpuffer mit $50\,000$ Einträgen. Er hält Beobachtung, Aktion, Reward, Folgebeobachtung und Terminal-Flag als Tensoren auf dem Zielgerät und zieht gleichverteilte Mini-Batches der Größe $64$.
+Der Replay-Puffer (\texttt{ReplayBuffer}) ist ein Ringpuffer mit $50\,000$ Einträgen nach dem Schema von Mnih et al. \autocite{mnihHumanlevelControlDeep2015}. Er hält Beobachtung, Aktion, Reward, Folgebeobachtung und Terminal-Flag als Tensoren auf dem Zielgerät und zieht gleichverteilte Mini-Batches der Größe $64$.
 
 \section{AWGN-Kanalmodell im Lernprozess}
 \label{sec:awgn_kanal}
 
-Der Agent beobachtet $\mathbf{y}=\mathbf{x}+\mathbf{n}$ mit $n_j\sim\mathcal{N}(0,\sigma_{n,j}^2)$ je Merkmal $j$. Die Rauschvarianz richtet sich nach der Signalleistung $P_j=\mathbb{E}[x_j^2]$ des Merkmals und dem gewünschten SNR (Abschnitt~\ref{sec:generatormodell}):
+Der Agent beobachtet $\mathbf{y}=\mathbf{x}+\mathbf{n}$ mit $n_j\sim\mathcal{N}(0,\sigma_{n,j}^2)$ je Merkmal $j$. Das ist das AWGN-Kanalmodell der Nachrichtentechnik \autocite{proakisDigitalCommunications2008}, hier nicht auf ein Sendesignal, sondern auf den Merkmalsvektor angewendet (Abschnitt~\ref{sec:merkmalsrauschen}). Die Rauschvarianz richtet sich nach der Signalleistung $P_j=\mathbb{E}[x_j^2]$ des Merkmals und dem gewünschten SNR (Abschnitt~\ref{sec:generatormodell}):
 \begin{equation}
 	\sigma_{n,j}^2=\frac{P_j}{10^{\mathrm{SNR_{dB}}/10}}.
 \end{equation}
@@ -194,7 +198,11 @@ Die Klassenmittelwerte bleiben fest, nur die Varianz wächst von $\sigma^2=0{,}0
 \begin{equation}
 	D^{2}=\sum_{j=1}^{8}\frac{\Delta\mu_j^{2}}{\sigma^{2}+\sigma_{n,j}^{2}},
 \end{equation}
-und die Bayes-Fehlerwahrscheinlichkeit für gleiche Priors ist $P_e=Q(D/2)$ mit der Gaußschen Q-Funktion. Für die Parameter aus \texttt{train\_eval.py} liefert die Auswertung die Werte in Tabelle~\ref{tab:klassenueberlappung}.
+und die Bayes-Fehlerwahrscheinlichkeit für gleiche Priors ist $P_e=Q(D/2)$ mit der Gaußschen Q-Funktion
+\begin{equation}
+	Q(z)=\frac{1}{\sqrt{2\pi}}\int_{z}^{\infty}e^{-t^{2}/2}\,\mathrm{d}t .
+\end{equation}
+Der Zusammenhang entspricht der Symbolfehlerwahrscheinlichkeit binärer Signale im AWGN-Kanal, bei der $D$ die Rolle des normierten Signalabstands übernimmt \autocite{proakisDigitalCommunications2008}. Für die Parameter aus \texttt{train\_eval.py} liefert die Auswertung die Werte in Tabelle~\ref{tab:klassenueberlappung}.
 
 \begin{table}[htbp]
 	\centering
@@ -216,6 +224,8 @@ und die Bayes-Fehlerwahrscheinlichkeit für gleiche Priors ist $P_e=Q(D/2)$ mit 
 Zwischen $30$ und $20$\,dB ändert sich die Überlappung kaum, weil das Rauschen ($\sigma_{n,j}\le0{,}056$) neben $\sigma=0{,}20$ vernachlässigbar bleibt. Bei $5$\,dB sinkt $D$ auf $1{,}78$, die effektive Streuung steigt auf etwa $0{,}32$ je Merkmal, und die Fehlerwahrscheinlichkeit des Bayes-Klassifikators verdreifacht sich gegenüber $30$\,dB. Mit $\pi=0{,}3$ und der Schwelle $p>1/3$ aus Abschnitt~\ref{sec:mdp_definition} verschiebt sich die tatsächliche Fehlerrate zwar, die Rangfolge der SNR-Stufen bleibt aber erhalten. Das Training mit gemischtem SNR zwingt das Q-Netz auf eine Kompromiss-Entscheidungsgrenze, die für kein SNR exakt optimal ist.
 
 Im Training trifft der Agent pro Fluss auf einen zufällig gewählten SNR. Er lernt dadurch eine einzige Entscheidungsfunktion für alle vier Kanalqualitäten, ohne den SNR als Eingabe zu erhalten. Die Evaluation erfolgt dagegen getrennt je SNR-Stufe (Kapitel~\ref{chap:evaluierung}).
+
+Das gemischte Training hat einen zweiten Effekt. Nach Bishop wirkt additives Eingangsrauschen im Training wie ein Tikhonov-Strafterm auf die Ableitungen der gelernten Abbildung (Abschnitt~\ref{sec:merkmalsrauschen}) \autocite{bishopTrainingNoiseEquivalent1995}. Das Q-Netz wird also gezwungen, $Q(\mathbf{y},a)$ glatt über $\mathbf{y}$ zu halten, und reagiert im Test weniger empfindlich auf einzelne Rauschausreißer. Apruzzese et al. nutzen dasselbe Prinzip mit gezielt gestörten Flussmerkmalen, um Detektoren gegen Evasion zu härten \autocite{apruzzeseDeepReinforcementAdversarial2020}. Streng gilt Bishops Äquivalenz nur für kleine Rauschvarianz. Bei $30$ und $20$\,dB ist diese Bedingung erfüllt ($\sigma_{n,j}\le0{,}056$), bei $5$\,dB mit $\sigma_{n,j}$ bis $0{,}31$ nicht mehr. Auf dieser Stufe bleibt die Regularisierungsdeutung eine qualitative Erklärung.
 
 \section{Trainings- und Optimierungsstrategie}
 \label{sec:training_optimierung}

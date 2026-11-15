@@ -83,7 +83,44 @@ Der DDQN erzielt seinen F1-Wert über einen anderen Arbeitspunkt als die Baselin
 
 Zwei Einschränkungen begrenzen die Aussagekraft des Vergleichs. Erstens sah der DDQN rund $6{,}4\cdot 10^{5}$ Trainingsflüsse (20\,000 Iterationen $\times$ 32), die Baselines nur $2\cdot 10^{4}$. Zweitens stammen alle Daten aus dem klassenbedingt gaußverteilten Generatormodell mit Angriffsanteil $0{,}3$. In einem solchen Modell erreicht schon ein kleines neuronales Netz eine nahezu Bayes-optimale Entscheidungsgrenze, was die geringen Unterschiede zwischen DDQN und MLP erklärt. Ob sich der Vorsprung auf realem Verkehr halten würde, bleibt offen.
 
+\section{Robustheit nach RLA und ELA}
+\label{sec:robustheit_rla_ela}
+
+Tabelle~\ref{tab:rla_ela} wendet die Maße aus Abschnitt~\ref{sec:robustheitsmetriken} auf die mittleren F1-Scores an. Referenz ist jeweils die eigene Leistung des Modells bei 30\,dB.
+
+\begin{table}[htbp]
+	\centering
+	\renewcommand{\arraystretch}{1.2}
+	\caption{Relative Loss of Accuracy (RLA, in \%) und Equalized Loss of Accuracy (ELA) nach Sáez et al.\ \autocite{saezEvaluatingClassifierBehavior2016}, berechnet aus den mittleren F1-Scores über drei Seeds mit 30\,dB als Referenz. Kleinere Werte bedeuten höhere Robustheit.}
+	\label{tab:rla_ela}
+	\begin{tabular}{lccccccc}
+		\toprule
+		& \multicolumn{3}{c}{\textbf{RLA [\%]}} & \multicolumn{4}{c}{\textbf{ELA}} \\
+		\cmidrule(lr){2-4}\cmidrule(lr){5-8}
+		\textbf{Modell} & 20\,dB & 10\,dB & 5\,dB & 30\,dB & 20\,dB & 10\,dB & 5\,dB \\
+		\midrule
+		DDQN          & $\mathbf{0{,}46}$ & $\mathbf{7{,}13}$ & $\mathbf{18{,}75}$ & $\mathbf{0{,}119}$ & $\mathbf{0{,}124}$ & $\mathbf{0{,}191}$ & $\mathbf{0{,}307}$ \\
+		MLP           & $0{,}77$ & $7{,}24$ & $19{,}21$ & $0{,}122$ & $0{,}130$ & $0{,}195$ & $0{,}315$ \\
+		SVM (RBF)     & $0{,}70$ & $7{,}29$ & $19{,}87$ & $0{,}129$ & $0{,}136$ & $0{,}202$ & $0{,}328$ \\
+		Random Forest & $0{,}88$ & $8{,}03$ & $20{,}22$ & $0{,}144$ & $0{,}153$ & $0{,}225$ & $0{,}347$ \\
+		\bottomrule
+	\end{tabular}
+\end{table}
+
+Die ELA ordnet die Modelle auf jeder Stufe gleich: DDQN vor MLP, SVM und Random Forest. Bei der RLA ist das nicht durchgehend so. Bei 20\,dB verliert die SVM relativ weniger als das MLP ($0{,}70$ gegenüber $0{,}77\,\%$), obwohl ihr F1-Score auf beiden Stufen niedriger liegt. Genau diesen Effekt korrigiert die ELA, indem sie den verbleibenden Fehler statt der Differenz bewertet.
+
+Auffälliger als die Rangfolge ist die Spannweite. Bei 10\,dB liegen DDQN, MLP und SVM in der RLA nur $0{,}16$ Prozentpunkte auseinander, der Random Forest $0{,}9$ Prozentpunkte hinter dem DDQN. Bei 5\,dB verlieren alle vier Modelle zwischen $18{,}8$ und $20{,}2\,\%$ ihrer Ausgangsleistung. Der Großteil des Verlusts ist also nicht modellbedingt, sondern folgt aus der Klassenüberlappung des Kanals: Die Bayes-Fehlerwahrscheinlichkeit steigt im selben Intervall von $6{,}9$ auf $18{,}7\,\%$ (Tabelle~\ref{tab:klassenueberlappung}). Modellbedingt ist nur die Differenz zwischen den Verfahren, bei 5\,dB rund $1{,}5$ Prozentpunkte RLA zwischen DDQN und Random Forest. Wie beim F1-Vergleich gilt: Mit drei Seeds ist dieser Abstand nicht als signifikant nachgewiesen.
+
+\section{Einordnung in die Literatur}
+\label{sec:ergebnisse_literatur}
+
+\paragraph{Random Forest als schwächste Baseline.} Arjoune et al. finden für die Jamming-Erkennung die Rangfolge Random Forest vor neuronalem Netz und SVM \autocite{arjouneNovelJammingAttacks2020}. Hier fällt sie umgekehrt aus. Zwei Unterschiede erklären das. Bei Arjoune et al. ist das SNR ein informatives Merkmal, hier ist das Rauschen eine Störung auf allen acht Merkmalen. Der zweite Grund liegt im Generatormodell. Bei gleicher Kovarianz beider Klassen ist der Logarithmus des Likelihood-Verhältnisses linear in $\mathbf{y}$, die Bayes-optimale Grenze also eine Hyperebene mit der Normalen $\boldsymbol{\Sigma}^{-1}\Delta\boldsymbol{\mu}$. Weil $\boldsymbol{\Sigma}$ vom SNR abhängt, ändert sich ihre Richtung über die gemischten Trainingsstufen nur geringfügig, die Grenze bleibt nahezu linear und liegt schräg zu den Koordinatenachsen. Q-Netz, MLP und RBF-SVM bilden eine solche Fläche direkt ab. Ein Random Forest muss sie aus achsenparallelen Stufen zusammensetzen, und jede dieser Stufen reagiert auf Rauschen nahe ihrer Schwelle, wie es Zhu und Wu für Entscheidungsbäume beschreiben \autocite{zhuClassNoiseVs2004}.
+
+\paragraph{DDQN und MLP.} Q-Netz und MLP haben dieselbe Struktur $8\to128\to128$ mit ReLU und unterscheiden sich im Lernziel. Das MLP schätzt über die Kreuzentropie die Posterior $p$ und entscheidet bei $p>1/2$. Das Q-Netz regressiert den erwarteten Reward und entscheidet damit bei $p>1/3$ (Abschnitt~\ref{sec:reward_recall}). Die fast gleichen ELA-Werte passen dazu: Beide lernen eine vergleichbar gute Repräsentation, der F1-Unterschied stammt überwiegend aus dem Arbeitspunkt. Zhang et al. zeigen, dass MLP-basierte NIDS unter gezielter Manipulation zeitbasierter Merkmale umgangen werden können \autocite{zhangAdversarialAttacksDeep2022}. Dieser Befund betrifft das Q-Netz gleichermaßen, da es architektonisch ein MLP ist.
+
+\paragraph{Stochastische gegenüber gezielter Störung.} Die gemessene Robustheit gilt nur für AWGN. Merzouk et al. zeigen, dass ein DRL-Detektor unter FGSM und BIM erheblich an Leistung verliert \autocite{merzoukEvadingDeepReinforcement2022}. Der Unterschied lässt sich am Generatormodell abschätzen. In weißen Koordinaten, in denen die Klassenstreuung isotrop ist, entscheidet nur die Komponente der Störung entlang der Diskriminanten. Näherungsweise isotropes Rauschen legt im Mittel nur den Anteil $1/8$ seiner Leistung in diese Richtung, eine gezielte Störung ihre gesamte. Bei gleicher Leistung ist der gezielte Angriff damit um etwa den Faktor $\sqrt{8}\approx2{,}8$ in der Amplitude wirksamer. Ein gutes Ergebnis unter AWGN ist deshalb kein Beleg für adversariale Robustheit.
+
 \section{Zusammenfassung}
 \label{sec:ergebnisse_zusammenfassung}
 
-Der DDQN-Agent erreicht bei 30\,dB einen F1-Score von $0{,}8935$ und hält bei 10\,dB noch $0{,}8298$. Bei 5\,dB fällt er auf $0{,}7260$. Der Recall übertrifft die Precision auf jeder Stufe, weil die Reward-Matrix die Entscheidungsschwelle von $p=1/2$ auf $p=1/3$ senkt. Gegenüber Random Forest, SVM und MLP liegt der DDQN auf allen vier SNR-Stufen vorn, der Abstand zum MLP bleibt jedoch unter einem Prozentpunkt und innerhalb weniger Standardabweichungen. Die Ergebnisse belegen die Robustheit des Ansatzes bis etwa 10\,dB. Einen klaren Überlegenheitsnachweis gegenüber überwacht trainierten Klassifikatoren liefern sie nicht.
+Der DDQN-Agent erreicht bei 30\,dB einen F1-Score von $0{,}8935$ und hält bei 10\,dB noch $0{,}8298$. Bei 5\,dB fällt er auf $0{,}7260$. Der Recall übertrifft die Precision auf jeder Stufe, weil die Reward-Matrix die Entscheidungsschwelle von $p=1/2$ auf $p=1/3$ senkt. Gegenüber Random Forest, SVM und MLP liegt der DDQN auf allen vier SNR-Stufen vorn, der Abstand zum MLP bleibt jedoch unter einem Prozentpunkt und innerhalb weniger Standardabweichungen. Nach der ELA bleibt der DDQN auf allen Stufen das robusteste Verfahren ($0{,}307$ bei 5\,dB gegenüber $0{,}347$ beim Random Forest). Der größte Teil des Leistungsverlusts geht jedoch auf die wachsende Klassenüberlappung zurück und trifft alle Modelle ähnlich. Die Ergebnisse belegen die Robustheit des Ansatzes bis etwa 10\,dB, und zwar gegenüber stochastischem Rauschen, nicht gegenüber gezielten Angriffen. Einen klaren Überlegenheitsnachweis gegenüber überwacht trainierten Klassifikatoren liefern sie nicht.
