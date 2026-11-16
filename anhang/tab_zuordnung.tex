@@ -1,0 +1,24 @@
+% erzeugt von anhang_tabellen.py, nicht von Hand ändern
+\begin{tabular}{@{}L{2.8cm}L{4.6cm}L{7.4cm}@{}}
+\toprule
+\textbf{Element} & \textbf{Inhalt} & \textbf{Skript und Datengrundlage} \\
+\midrule
+Abbildungen~\ref{fig:paketstrom}, \ref{fig:generator_ablauf}, \ref{fig:blockschaltbild}, \ref{fig:qnet_architektur}, \ref{fig:backup} und~\ref{fig:eval_protokoll} & Schemata, als TikZ im Quelltext gesetzt & keine Messdaten \\
+Tabellen~\ref{tab:rw_robustheit} und~\ref{tab:ki_vergleich} & Ergebnisse der Literatur & Quellen im Literaturverzeichnis \\
+Abbildung~\ref{fig:feature_raum_3d} & Flüsse im Teilraum $(y_1,y_2,y_4)$ & \texttt{create\_3d\_plot.py}\newline Daten: Generator in \texttt{train\_eval.py} \\
+Tabelle~\ref{tab:klassenueberlappung} & Abstand $D$ und Bayes-Fehler je SNR-Stufe & \texttt{nachweis\_zahlen.py} (Prüfung)\newline Daten: \texttt{bayes\_referenz.py} \\
+Abbildung~\ref{fig:llr_signalraum} & Klassendichten der Prüfgröße $\Lambda$ & \texttt{llr\_signalraum\_plot.py}\newline Daten: \texttt{bayes\_referenz.py} \\
+Algorithmus~\ref{alg:training}, Tabellen~\ref{tab:dqn_hyperparameters} und~\ref{tab:system_parameters} & Trainingsschleife und Konfiguration & \texttt{train\_eval.py}, \texttt{nachweis\_zahlen.py} (Prüfung)\newline Daten: Klasse \texttt{Config} \\
+Tabelle~\ref{tab:ddqn_snr}, Abbildung~\ref{fig:snr_robustheit} & DDQN je SNR-Stufe & \texttt{train\_eval.py}, \texttt{generate\_plot.py}\newline Daten: \texttt{evaluation\_results.csv} \\
+Abbildung~\ref{fig:entscheidungsfunktion} & Entscheidungsfunktion gegenüber der Bayes-Posterior & \texttt{entscheidungsfunktion\_plot.py}\newline Daten: \texttt{modelle/}, \texttt{baseline\_results.csv} \\
+Tabelle~\ref{tab:f1_vergleich}, Abbildung~\ref{fig:baseline_vergleich} & F1-Score aller Verfahren & \texttt{eval\_baselines.py}, \texttt{generate\_plot.py}\newline Daten: beide CSV-Dateien \\
+Tabelle~\ref{tab:reward} & mittlerer Reward je Fluss & \texttt{reward\_tabelle.py}\newline Daten: \texttt{modelle/}, beide CSV-Dateien \\
+Tabelle~\ref{tab:rla_ela} & RLA und ELA & \texttt{nachweis\_zahlen.py} (Prüfung)\newline Daten: Tabelle~\ref{tab:f1_vergleich} \\
+Tabelle~\ref{tab:bayes_grenze}, Abbildung~\ref{fig:pr_ebene} & Bayes-Referenz und gemessene Arbeitspunkte & \texttt{pr\_ebene\_plot.py}\newline Daten: \texttt{bayes\_referenz.py}, beide CSV-Dateien \\
+Abbildung~\ref{fig:entscheidungsgrenzen} & Schnitt durch den Merkmalsraum & \texttt{entscheidungsgrenzen\_plot.py}\newline Daten: \texttt{modelle/ddqn\_seed0.pt}, \texttt{baseline\_results.csv} \\
+Tabellen~\ref{tab:anh_prf1}, \ref{tab:anh_seeds}, \ref{tab:anh_schwellen} und~\ref{tab:anh_zuordnung} & Messwerte, Schwellen und Zuordnung & \texttt{anhang\_tabellen.py}\newline Daten: beide CSV-Dateien \\
+Fließtext aller Kapitel & abgeleitete Zahlen in Text und Tabellen & \texttt{nachweis\_zahlen.py}\newline Daten: beide CSV-Dateien, Code, \texttt{modelle/} \\
+Abschnitt~\ref{sec:reward_recall} & Kontrolllauf mit quadratischem Verlust & \texttt{kontrolle\_mse\_verlust.py}\newline Daten: eigener Lauf mit Seed~0 \\
+Gewichte in \texttt{modelle/} & DDQN-Agenten der Seeds 0, 1 und 2 & \texttt{modelle\_nachtrainieren.py}\newline Daten: reproduziert \texttt{evaluation\_results.csv} \\
+\bottomrule
+\end{tabular}

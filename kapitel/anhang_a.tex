@@ -1,0 +1,69 @@
+\chapter{Messdaten und Reproduzierbarkeit}
+\label{chap:anhang_messdaten}
+
+Dieser Anhang enthält die Messwerte hinter Kapitel~\ref{chap:ergebnisse} und ordnet jede Abbildung und Tabelle dem Skript zu, das sie erzeugt oder prüft. Die Tabellen~\ref{tab:anh_prf1} bis~\ref{tab:anh_zuordnung} schreibt \texttt{anhang\_\allowbreak tabellen.py} direkt aus den CSV-Dateien, keine Zahl ist von Hand übertragen.
+
+\section{Messwerte aller Verfahren}
+\label{sec:anh_messwerte}
+
+Tabelle~\ref{tab:anh_prf1} fasst Precision, Recall und F1-Score aller vier Verfahren zusammen. Die F1-Spalte stimmt mit Tabelle~\ref{tab:f1_vergleich} überein. Precision und Recall der Baselines erscheinen im Hauptteil vor allem als Arbeitspunkte in Abbildung~\ref{fig:pr_ebene}. Tabelle~\ref{tab:anh_seeds} listet die Einzelwerte, aus denen Mittelwert und Standardabweichung gebildet sind. Die Standardabweichung folgt der Populationsformel mit $n=3$, so wie sie \texttt{train\_\allowbreak eval.py} und \texttt{eval\_\allowbreak baselines.py} berechnen.
+
+\begin{table}[htbp]
+	\centering
+	\small
+	\renewcommand{\arraystretch}{1.15}
+	\caption[Precision, Recall und F1-Score aller Verfahren je SNR-Stufe]{Precision, Recall und F1-Score aller Verfahren je SNR-Stufe, Mittelwert $\pm$ Standardabweichung über die Seeds 0, 1 und 2 mit je $20\,000$ Testflüssen.}
+	\label{tab:anh_prf1}
+	\input{anhang/tab_prf1.tex}
+\end{table}
+
+\begin{table}[tb]
+	\centering
+	\small
+	\setlength{\tabcolsep}{3.5pt}
+	\renewcommand{\arraystretch}{1.15}
+	\caption[Einzelwerte je Seed]{Precision (P), Recall (R) und F1-Score je Seed und SNR-Stufe (SNR in dB).}
+	\label{tab:anh_seeds}
+	\input{anhang/tab_seeds.tex}
+\end{table}
+
+\section{Implizite Schwellen}
+\label{sec:anh_schwellen}
+
+Die implizite Schwelle $t$ eines Modells ist die Posterior-Schwelle, bei der der Bayes-Klassifikator mit bekanntem SNR denselben Recall erreicht wie das Modell (Abschnitt~\ref{sec:reward_recall}). Tabelle~\ref{tab:anh_schwellen} gibt sie dreistellig an, berechnet aus den mittleren Recall-Werten der Tabelle~\ref{tab:anh_prf1}. Kapitel~\ref{chap:ergebnisse} rundet auf zwei Stellen. Abstände zwischen zwei Schwellen sind aus den ungerundeten Werten gebildet und lassen sich mit dieser Tabelle nachrechnen.
+
+\begin{table}[htbp]
+	\centering
+	\small
+	\renewcommand{\arraystretch}{1.15}
+	\caption[Implizite Schwellen aller Verfahren]{Implizite Posterior-Schwelle $t$ je Verfahren und SNR-Stufe ($\pi=0{,}3$) und Soll-Schwelle des Lernziels. Mit Huber-Verlust liegt die Nullstelle des DDQN bei $3/7$ statt $1/3$ (Abschnitt~\ref{sec:dqn_architektur}).}
+	\label{tab:anh_schwellen}
+	\input{anhang/tab_schwellen.tex}
+\end{table}
+
+\section{Zuordnung und Reproduktion}
+\label{sec:anh_reproduktion}
+
+Tabelle~\ref{tab:anh_zuordnung} ordnet jede Abbildung, jede Tabelle und den Algorithmus dem erzeugenden oder prüfenden Skript und der Datengrundlage zu. \texttt{anhang\_\allowbreak tabellen.py} bricht ab, wenn ein Element der Kapitel~\ref{chap:einleitung} bis~\ref{chap:fazit} in der Zuordnung fehlt oder ein genanntes Skript nicht existiert. \texttt{nachweis\_\allowbreak zahlen.py} rechnet jede abgeleitete Zahl in Text und Tabellen aus den CSV-Dateien, der Konfiguration im Code und den gespeicherten Modellen nach und vergleicht sie mit dem LaTeX-Quelltext. Gerundet wird genau einmal. Nennt der Text die Differenz zweier gerundeter Werte, muss sie sich auch aus den gedruckten Werten ergeben.
+
+\begin{table}[htbp]
+	\centering
+	\small
+	\setlength{\tabcolsep}{3pt}
+	\renewcommand{\arraystretch}{1.12}
+	\caption[Zuordnung der Ergebnisse zu Skripten und Daten]{Zuordnung jeder Abbildung, jeder Tabelle und des Algorithmus zum erzeugenden oder prüfenden Skript und zur Datengrundlage.}
+	\label{tab:anh_zuordnung}
+	\input{anhang/tab_zuordnung.tex}
+\end{table}
+
+Die Ergebnisse entstehen in dieser Reihenfolge:
+\begin{enumerate}\raggedright
+	\item \texttt{train\_\allowbreak eval.py}: Training und Evaluation des DDQN für die Seeds 0, 1 und 2, Ausgabe \texttt{evaluation\_\allowbreak results.csv}.
+	\item \texttt{eval\_\allowbreak baselines.py}: Random Forest, SVM und MLP auf denselben Testflüssen, Ausgabe \texttt{baseline\_\allowbreak results.csv}.
+	\item \texttt{modelle\_\allowbreak nachtrainieren.py}: trainiert die drei DDQN-Agenten mit identischen Seeds erneut und speichert die Gewichte in \texttt{modelle/}.
+	\item Plotskripte aus Tabelle~\ref{tab:anh_zuordnung} für die Abbildungen.
+	\item \texttt{reward\_\allowbreak tabelle.py} und \texttt{anhang\_\allowbreak tabellen.py} für Tabelle~\ref{tab:reward} und die Tabellen dieses Anhangs.
+	\item \texttt{nachweis\_\allowbreak zahlen.py} als abschließende Prüfung, Exit-Code~1 bei jeder Abweichung.
+\end{enumerate}
+
+Gerechnet wurde mit Python~3.14.5, PyTorch~2.11.0 (CUDA~12.8), scikit-learn~1.9.1, NumPy~2.5.4, SciPy~1.18.1, Gymnasium~1.4.0 und Matplotlib~3.11.2 auf einer NVIDIA GeForce RTX~2060. In dieser Umgebung reproduziert das Nachtraining alle 36 DDQN-Werte der \texttt{evaluation\_\allowbreak results.csv} auf vier Stellen, und die neu trainierten Baselines liefern dieselben Werte wie \texttt{baseline\_\allowbreak results.csv}. Skripte, CSV-Dateien und Modellgewichte gehören zum Projektarchiv der Arbeit.

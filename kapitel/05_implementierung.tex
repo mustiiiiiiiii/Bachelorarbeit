@@ -315,11 +315,11 @@ Algorithmus~\ref{alg:training} fasst die Trainingsschleife je Seed zusammen. Die
 \section{Implementierung in der praktischen Pipeline}
 \label{sec:praktische_pipeline}
 
-Das Skript \texttt{train\_eval.py} führt für jeden Seed Training und Evaluation aus und schreibt \texttt{evaluation\_results.csv} mit Precision, Recall und F1-Score je Seed und SNR sowie Mittelwert und Standardabweichung. Die Baselines (Random Forest, SVM, MLP) laufen in \texttt{eval\_baselines.py} und importieren Flussgenerator und Kanalmodell unverändert aus \texttt{train\_eval.py}. Dadurch sehen alle Verfahren dieselbe Datenverteilung und exakt dieselben Testflüsse. Die Abbildungen entstehen in \texttt{generate\_plot.py} aus den beiden CSV-Dateien.
+Das Skript \texttt{train\_eval.py} führt für jeden Seed Training und Evaluation aus und schreibt \texttt{evaluation\_results.csv} mit Precision, Recall und F1-Score je Seed und SNR sowie Mittelwert und Standardabweichung. Die Baselines (Random Forest, SVM, MLP) laufen in \texttt{eval\_baselines.py} und importieren Flussgenerator und Kanalmodell unverändert aus \texttt{train\_eval.py}. Dadurch sehen alle Verfahren dieselbe Datenverteilung und exakt dieselben Testflüsse. Die Abbildungen entstehen in \texttt{generate\_plot.py} aus den beiden CSV-Dateien. Die Zuordnung aller Abbildungen und Tabellen zu den erzeugenden Skripten enthält Anhang~\ref{chap:anhang_messdaten}.
 
 Tabelle~\ref{tab:dqn_hyperparameters} fasst die Hyperparameter zusammen, Tabelle~\ref{tab:system_parameters} die Umgebungs- und Kanalparameter.
 
-\begin{table}[htbp]
+\begin{table}[!t]
 	\centering
 	\renewcommand{\arraystretch}{1.25}
 	\caption{Hyperparameter des DDQN-Agenten.}

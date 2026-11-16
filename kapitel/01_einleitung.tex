@@ -20,11 +20,14 @@ Daraus ergeben sich drei Forschungsfragen (FF):
 \section{Aufbau der Arbeit}
 Die vorliegende Arbeit gliedert sich in folgende Kapitel:
 \begin{itemize}\raggedright
-    \item \textbf{Kapitel~\ref{chap:grundlagen} (Grundlagen):} DDoS-Angriffsvektoren, klassische und KI-basierte Erkennung, Evaluationsmetriken, die Wirkung von Merkmalsrauschen auf Klassifikatoren sowie die Grundlagen des Reinforcement Learning bis zum Double DQN.
+    \item \textbf{Kapitel~\ref{chap:grundlagen} (Grundlagen):} DDoS-Angriffsvektoren und Gegenmaßnahmen, klassische und KI-basierte Erkennung, Evaluationsmetriken, die Wirkung von Merkmalsrauschen auf Klassifikatoren sowie die Grundlagen des Reinforcement Learning bis zum Double DQN.
     \item \textbf{Kapitel~\ref{chap:related_work} (Stand der Forschung):} Forschungsstand zu klassischer, Deep-Learning- und DRL-basierter Angriffserkennung, Robustheit gegenüber gestörten Merkmalen und Forschungslücke.
     \item \textbf{Kapitel~\ref{chap:datensatz} (Datensatz und Datenvorbereitung):} Referenzdatensätze \mbox{DDoS-AT-2022} und \mbox{IoT-DH}, Merkmalsstruktur und das Generatormodell der Experimentdaten.
     \item \textbf{Kapitel~\ref{chap:implementierung} (Implementierung des DDQN-Ansatzes):} Gymnasium-Umgebung, DDQN-Architektur, AWGN-Kanalmodell und Training.
     \item \textbf{Kapitel~\ref{chap:evaluierung} (Evaluationsaufbau und Metriken):} Evaluationsprotokoll, Baselines sowie Leistungs- und Robustheitsmaße.
     \item \textbf{Kapitel~\ref{chap:ergebnisse} (Ergebnisse):} Messergebnisse über die SNR-Stufen, Baseline-Vergleich und Einordnung in die Literatur.
     \item \textbf{Kapitel~\ref{chap:fazit} (Fazit und Ausblick):} Zusammenfassung und Ausblick auf zukünftige Forschungsarbeiten.
+    \item \textbf{Anhang~\ref{chap:anhang_messdaten} (Messdaten und Reproduzierbarkeit):} Einzelwerte aller Messungen, implizite Schwellen und die Zuordnung jeder Abbildung und Tabelle zum erzeugenden Skript.
 \end{itemize}
+
+Die vier Teilaufgaben der Aufgabenstellung bilden sich so auf die Kapitel ab: Die Recherche zu DDoS-Angriffen, Gegenmaßnahmen und KI-basierten Erkennungsverfahren umfasst die Kapitel~\ref{chap:grundlagen} und~\ref{chap:related_work}. Vergleich und Bewertung der Techniken mit der Auswahl des DDQN stehen in Abschnitt~\ref{sec:ansatz_vergleich}. Kapitel~\ref{chap:datensatz} definiert, begründet und beschreibt das Data Set. Den Nachweis der Funktionstüchtigkeit führen die Kapitel~\ref{chap:implementierung} bis~\ref{chap:ergebnisse}, quantitativ über die in Kapitel~\ref{chap:evaluierung} festgelegten Leistungsparameter.

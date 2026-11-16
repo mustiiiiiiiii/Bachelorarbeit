@@ -57,6 +57,10 @@
 \widowpenalty=10000
 \clubpenalty=10000
 \displaywidowpenalty=10000
+% Platz für römische Seitenzahlen wie VIII in den Verzeichnissen (Standard 1,55em ist zu schmal)
+\makeatletter
+\renewcommand*{\@pnumwidth}{2em}
+\makeatother
 
 % ---------------------------------------------------------------
 % Seitenlayout & Hyperlinks
@@ -147,5 +151,11 @@
 % Literaturverzeichnis
 % ---------------------------------------------------------------
 \printbibliography[heading=bibintoc, title={Literaturverzeichnis}]
+
+% ---------------------------------------------------------------
+% Anhang
+% ---------------------------------------------------------------
+\appendix
+\include{kapitel/anhang_a}
 
 \end{document}

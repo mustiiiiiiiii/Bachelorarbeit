@@ -1,6 +1,6 @@
 # Übergabe: Stand der Bachelorarbeit
 
-Stand: 2026-11-15, Branch `main` (lokale Sitzung in VS Code nach der Cloud-Sitzung bis `374a34a`).
+Stand: 2026-11-16, Branch `main` (lokale Sitzung in VS Code nach der Cloud-Sitzung bis `374a34a`).
 Diese Notiz fasst den Arbeitsstand zusammen, damit eine neue Sitzung
 (z. B. Claude Code in VS Code) ohne den Gesprächsverlauf weiterarbeiten kann.
 Stilregeln für alle Texte: `CLAUDE.md`.
@@ -31,20 +31,24 @@ Stilregeln für alle Texte: `CLAUDE.md`.
 
 ## Nachgerechnete Größen
 
-Bis auf die als solche markierten Zeilen ohne neue Trainingsläufe.
+Bis auf die als solche markierten Zeilen ohne neue Trainingsläufe. **Jede abgeleitete Zahl in Text und Tabellen prüft
+`nachweis_zahlen.py`** (203 Prüfungen mit Kontextmuster gegen den LaTeX-Quelltext, Exit-Code 1 bei Abweichung, Option
+`--ohne-modelle`). Rechenregel: Basis sind die abgedruckten Mittelwerte (CSV-mean-Zeilen = Tab. 7.1/7.2/A.1) bzw. Code und
+Modelle, gerundet wird genau einmal kaufmännisch. Steht eine Differenz gerundeter Werte im Text, muss sie sich auch aus den
+gedruckten Werten ergeben (Leserprobe).
 
 | Größe | Quelle / Methode | Stelle |
 |---|---|---|
 | Bayes-Fehler bei π = 0,3: 6,2 / 6,6 / 10,4 / 16,2 % | analytisch aus Generatormodell | Tab. `tab:klassenueberlappung` |
 | Bayes-optimaler F1 je Schwelle | analytisch (LLR ~ N(±D²/2, D²)) | Tab. `tab:bayes_grenze` |
 | Mittlerer Reward je Fluss, 4 Modelle × 4 SNR-Stufen (30 dB: DDQN 0,509, MLP 0,497, SVM 0,484, RF 0,465) | **reproduzierte Modelle**, direkt aus den Entscheidungen auf den Testflüssen, `reward_tabelle.py` (prüft vorher alle 144 P/R/F1-Werte beider CSVs, erzeugt `reward_tabelle.tex`) | Tab. `tab:reward` (7.3) |
-| RLA / ELA | aus mittleren F1-Werten der CSVs | Tab. `tab:rla_ela` |
+| RLA / ELA | aus den mittleren F1-Werten der Tab. 7.2 (nicht aus Seed-Einzelwerten), `nachweis_zahlen.py` | Tab. `tab:rla_ela` |
 | 19 969 Lernschritte, 79 Zielnetz-Syncs | aus `Config` in `train_eval.py` | Kap. 5, `sec:training_optimierung` |
 | Bayes-PR-Kurven, Bayes-Punkte p > 1/2 und p > 1/3 | geschlossen aus LLR ~ N(±D²/2, D²), `pr_ebene_plot.py` | Abb. `fig:pr_ebene` (Kap. 7) |
-| Implizite Schwelle t (Bayes-Schwelle mit gleichem Recall): DDQN 0,43 / 0,42 / 0,38 / 0,38; RF 0,68–0,50; SVM 0,61–0,47; MLP 0,54–0,41 | Nullstellensuche auf der Bayes-Recall-Kurve, mittlere P/R aus den CSVs | Kap. 7, `sec:reward_recall` |
+| Implizite Schwelle t (Bayes-Schwelle mit gleichem Recall): DDQN 0,43 / 0,42 / 0,38 / 0,38; RF 0,68–0,50; SVM 0,61–0,47; MLP 0,54–0,41 | Nullstellensuche auf der Bayes-Recall-Kurve, mittlere P/R aus den CSVs; dreistellig in Tab. A.3 (`anhang_tabellen.py`) | Kap. 7, `sec:reward_recall`, Tab. `tab:anh_schwellen` |
 | FN/FP-Anteile (bezogen auf alle Flüsse) bei p > 1/2 und p > 1/3: 30 dB 3,5/2,7 % bzw. 2,3/4,4 %; 5 dB 10,2/6,0 % bzw. 6,3/11,5 % | geschlossen auf der LLR, `llr_signalraum_plot.py` (Summe bei 1/2 = P_eᵖ aus Tab. 5.1) | Abschnitt 5.4.1, Abb. `fig:llr_signalraum` |
 | Nullstelle der Q-Differenz bei Huber-Verlust (β = 1): 3/7 ≈ 0,43 (MSE: 1/3) | geschlossen, `bayes_referenz.huber_differenz` | Kap. 5, `sec:dqn_architektur` |
-| Modellbasierte Nulldurchgänge: DDQN 0,42 (30 dB) / 0,37 (5 dB), MLP 0,54 / 0,40; ohne SNR-Kenntnis erwartet: Huber 0,45 / 0,40, MLP-Schwelle 0,535 / 0,44 | **neue Trainingsläufe, exakt reproduziert** (`modelle_nachtrainieren.py`), Auswertung `entscheidungsfunktion_plot.py` | Abb. `fig:entscheidungsfunktion`, `sec:reward_recall` |
+| Modellbasierte Nulldurchgänge (im Text dreistellig): DDQN 0,416 (30 dB) / 0,369 (5 dB), MLP 0,536 / 0,400; ohne SNR-Kenntnis erwartet: Huber 0,453 / 0,396, MLP-Schwelle 0,535 / 0,442 | **neue Trainingsläufe, exakt reproduziert** (`modelle_nachtrainieren.py`), Auswertung `entscheidungsfunktion_plot.py` | Abb. `fig:entscheidungsfunktion`, `sec:reward_recall` |
 | MSE-Kontrolllauf Seed 0: Nulldurchgang 0,30–0,32; P/R/F1 bei 30 dB 0,8442/0,9286/0,8844 | **neuer Trainingslauf, nur Diagnose** (`kontrolle_mse_verlust.py`), ändert keine CSV | 7.1.1, 7.5, 8 (FF1) |
 | Bayes-Posterior entlang der DDQN-Grenze im Schnitt (y₁, y₄): 0,36–0,43 (30 dB), 0,30–0,41 (5 dB) | **reproduzierte Modelle** (Seed 0), Konsolenausgabe von `entscheidungsgrenzen_plot.py` | Abb. `fig:entscheidungsgrenzen` (7.5), 7.4 |
 
@@ -69,13 +73,21 @@ Bis auf die als solche markierten Zeilen ohne neue Trainingsläufe.
   RF-Regionen, Grenzen von DDQN und MLP, Bayes-Grenzen bei 1/2, 1/3 und 3/7 und Normalenvektor **w**. Modelle aus Seed 0, RF und MLP
   werden gegen `baseline_results.csv` geprüft.
 - `reward_tabelle.py` → `reward_tabelle.tex` (Tab. 7.3, per `\input` eingebunden, **nicht von Hand ändern**).
+- `anhang_tabellen.py` → `anhang/tab_prf1.tex`, `tab_seeds.tex`, `tab_schwellen.tex`, `tab_zuordnung.tex` (Tab. A.1–A.4 in
+  `kapitel/anhang_a.tex`, **nicht von Hand ändern**). Bricht ab, wenn ein `fig:`/`tab:`/`alg:`-Label aus Kap. 1–8 in Tab. A.4
+  fehlt oder ein genanntes Skript nicht existiert. `nachweis_zahlen.py` prüft zusätzlich, ob die Dateien aktuell sind.
+- `nachweis_zahlen.py`: Nachweis aller abgeleiteten Zahlen (siehe „Nachgerechnete Größen“). Nicht nachgerechnet, nur verwiesen:
+  Tab. 7.3 (`reward_tabelle.py` prüft sich selbst), MSE-Kontrolllauf, Literaturwerte.
 - `plot_stil.py`: gemeinsamer Stil aller Matplotlib-Abbildungen (LaTeX-Satz in Computer Modern wie der Fließtext,
   Dezimalkomma). Genutzt von `generate_plot.py`, `pr_ebene_plot.py`, `llr_signalraum_plot.py`, `entscheidungsfunktion_plot.py`,
   `entscheidungsgrenzen_plot.py`. `create_3d_plot.py` setzt usetex selbst.
 
 ## Build
 
-- `pdflatex → biber → pdflatex → pdflatex`, Ergebnis zuletzt: 58 Seiten, 0 Fehler, 0 Warnungen (LaTeX und biber), 0 Overfull, 0 Underfull.
+- `pdflatex → biber → pdflatex → pdflatex`, Ergebnis zuletzt: 63 PDF-Seiten (VIII + 56), 0 Fehler, 0 Warnungen (LaTeX und biber),
+  0 Overfull, 0 Underfull, keine undefinierten Verweise. PDF-Seite = gedruckte Seite + 9.
+- Anhang A über `\appendix` und `\include{kapitel/anhang_a}` nach dem Literaturverzeichnis. `\@pnumwidth` = 2em, damit „VIII“
+  im Inhaltsverzeichnis passt. Tab. 5.2/5.3 stehen mit `[!t]` oben auf S. 31 (sonst Gleitseite und fast leere Kapitelendseite).
 - `main.tex` enthält Spaltentyp `L{…}` (linksbündig, Paket `array`), URL-Umbrüche für biblatex und `\emergencystretch`.
 - `main.bcf`, `main.run.xml` und `main.pdf` sind nicht versioniert (Build-Artefakte, lokal kompilieren).
 - Zusatzpakete: `longtable` (Verzeichnisse in `verzeichnisse.tex`, eigene hyperref-Anker über `\theHtable`) und
@@ -84,7 +96,8 @@ Bis auf die als solche markierten Zeilen ohne neue Trainingsläufe.
 
 ## Offen
 
-Inhaltlich und technisch keine offenen Punkte: Quellen geprüft, Kap. 7 und Fazit konsistent, Build sauber (58 Seiten, 0 Fehler, 0 Warnungen).
+Inhaltlich und technisch keine offenen Punkte: Quellen geprüft, Kap. 7 und Fazit konsistent, alle abgeleiteten Zahlen
+skriptgeprüft, Build sauber (63 Seiten, 0 Fehler, 0 Warnungen).
 Offen sind die zwei Betreuer-Fragen (Abschnitt „Offene Fragen an den Betreuer“) und die Formalia unten.
 Hinweis: Henderson 2018 bleibt ohne Seitenzahlen (siehe Literatur), das Zitat ist über die DOI vollständig.
 
@@ -256,6 +269,29 @@ hängen von den Vorgaben der Prüfungsordnung ab.
 - **Bewusst weggelassen** (kein Erkenntnisgewinn oder irreführend): 3D-Decision-Regions, CNN-/Topologie-Diagramme,
   Konfusionsmatrizen, Box-/Kreis-/Balkendiagramme, Spiel- und Physik-Analogien, weitere Herleitungen, externe Zeichenwerkzeuge.
 
+### Master-Audit und Umsetzung (2026-11-16)
+
+Prüfung in fünf Dimensionen (Aufgabenstellung, Datenintegrität, Quellen, Stil, Verweise), danach Umsetzung der Punkte 1–3:
+- **Aufgabenstellung:** Neuer Unterabschnitt 2.2.1 „Präventive und reaktive Gegenmaßnahmen“ nach Mirkovic & Reiher [4]
+  (präventiv: Angriffs- und DoS-Prävention; reaktiv: Erkennung, Quellenidentifikation, Ratenbegrenzung, Filterung,
+  Rekonfiguration; Einsatzort; Einordnung der Arbeit als Erkennungsstufe, hoher Recall spricht für Ratenbegrenzung).
+  Abschnitt 2.2 heißt jetzt „Gegenmaßnahmen und klassische Angriffserkennung“. In 1.2 ordnet ein Absatz die vier Teilaufgaben
+  den Kapiteln zu, die Aufbau-Liste nennt Anhang A. Der Ausblick (Kap. 8, Punkt 2) verweist auf 2.2.1.
+- **Zahlen korrigiert:** Tab. 7.4 einheitlich aus Tab. 7.2 gerechnet, dadurch DDQN-ELA 10 dB 0,191 → 0,190, MLP-ELA 5 dB
+  0,315 → 0,314, RF-ELA 5 dB 0,347 → 0,346 (auch 7.6). Vorher waren mehrere ELA-Werte aus Seed-Einzelwerten gerechnet.
+  RLA im Text 18,75 / 20,22 % statt doppelt gerundeter 18,8 / 20,2 % (7.4, 7.6, 8), 7,13 % statt 7,1 %.
+  Schwellenlücke DDQN–MLP bei 5 dB 0,04 statt 0,03 (Verweis auf Tab. A.3). Absatz zu Abb. 7.2 dreistellig, damit
+  „um 0,04 bzw. 0,03 darunter“ nachrechenbar ist; „nahe dieser Stelle“ statt „dort“ (0,416 gegenüber 3/7).
+  Recall-Streuung „rund 30 bis 40 %“ (+32 / +41 %).
+- **Kleinigkeiten:** Kurzcaption Abb. 7.5 ohne „aller Verfahren“ (SVM fehlt), „Botnetz einer Mirai-Variante“, „verwundbare Geräte“
+  (Bala: *vulnerable*), SARSA im Abkürzungsverzeichnis.
+- **Anhang A „Messdaten und Reproduzierbarkeit“:** Tab. A.1 P/R/F1 aller Verfahren (Mittel ± Std), A.2 Einzelwerte je Seed,
+  A.3 implizite Schwellen dreistellig, A.4 Zuordnung Element → Skript → Daten, Reproduktionsreihenfolge, Softwareversionen.
+  Verweise darauf aus 5.6, 7.1, 7.1.1 und 7.4.
+- **Optional offen (Punkt 4, nicht beauftragt):** drei rhetorische Stellen glätten („Die Kehrseite:“ in Kap. 1, „Genau diesen
+  Effekt korrigiert die ELA“, „Auffälliger als die Rangfolge ist die Spannweite.“) und die Schwellenanalogie in 2.4.3 mit
+  Mirkovic (NBS-2: niedrige Schwelle → viele Fehlalarme, hohe Schwelle → geringere Empfindlichkeit) belegen.
+
 ### Offene Fragen an den Betreuer (Prof. Seitz)
 
 - **Aufgabenstellung vs. synthetisches Modell:** Die Aufgabenstellung verlangt, „an einem Data Set, das den Netzverkehr mit einem
@@ -275,9 +311,12 @@ hängen von den Vorgaben der Prüfungsordnung ab.
 
 ### Nächste Seiten
 
-Technische Qualitätsphase und Audit abgeschlossen. Offen sind nur die Betreuer-Fragen und die manuellen Formalia (siehe „Vor der Abgabe“).
+Technische Qualitätsphase und Master-Audit abgeschlossen. Offen sind die Betreuer-Fragen, die manuellen Formalia (siehe
+„Vor der Abgabe“) und optional Punkt 4 des Master-Audits.
 
 ## Arbeitsweise
 
 - Nur an einem Ort arbeiten (lokal **oder** Cloud), vorher `git pull`.
 - Nach jeder Änderung vollständig kompilieren und das Log auf Fehler, undefinierte Verweise sowie Over-/Underfull prüfen.
+- Nach jeder Änderung an Zahlen, Tabellen oder Abbildungen `anhang_tabellen.py` und `nachweis_zahlen.py` laufen lassen
+  (0 Abweichungen, sonst nicht committen).
