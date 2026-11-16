@@ -1,6 +1,8 @@
 # Übergabe: Stand der Bachelorarbeit
 
 Stand: 2026-11-16, Branch `main` (lokale Sitzung in VS Code nach der Cloud-Sitzung bis `374a34a`).
+**Status: inhaltlich und technisch endgültig abgeschlossen.** Offen sind nur die manuellen Formalia und zwei Betreuer-Fragen
+(Abschnitt „Offen“).
 Diese Notiz fasst den Arbeitsstand zusammen, damit eine neue Sitzung
 (z. B. Claude Code in VS Code) ohne den Gesprächsverlauf weiterarbeiten kann.
 Stilregeln für alle Texte: `CLAUDE.md`.
@@ -96,8 +98,9 @@ gedruckten Werten ergeben (Leserprobe).
 
 ## Offen
 
-Inhaltlich und technisch keine offenen Punkte: Quellen geprüft, Kap. 7 und Fazit konsistent, alle abgeleiteten Zahlen
-skriptgeprüft, Build sauber (63 Seiten, 0 Fehler, 0 Warnungen).
+**Inhaltlich und technisch endgültig abgeschlossen (2026-11-16).** Quellen geprüft, Aufgabenstellung vollständig abgedeckt,
+Kap. 7 und Fazit konsistent, alle abgeleiteten Zahlen skriptgeprüft (`nachweis_zahlen.py`: 203 Prüfungen, 0 Abweichungen),
+Build sauber (63 Seiten, 0 Fehler, 0 Warnungen, 0 Over-/Underfull).
 Offen sind die zwei Betreuer-Fragen (Abschnitt „Offene Fragen an den Betreuer“) und die Formalia unten.
 Hinweis: Henderson 2018 bleibt ohne Seitenzahlen (siehe Literatur), das Zitat ist über die DOI vollständig.
 
@@ -288,9 +291,11 @@ Prüfung in fünf Dimensionen (Aufgabenstellung, Datenintegrität, Quellen, Stil
 - **Anhang A „Messdaten und Reproduzierbarkeit“:** Tab. A.1 P/R/F1 aller Verfahren (Mittel ± Std), A.2 Einzelwerte je Seed,
   A.3 implizite Schwellen dreistellig, A.4 Zuordnung Element → Skript → Daten, Reproduktionsreihenfolge, Softwareversionen.
   Verweise darauf aus 5.6, 7.1, 7.1.1 und 7.4.
-- **Optional offen (Punkt 4, nicht beauftragt):** drei rhetorische Stellen glätten („Die Kehrseite:“ in Kap. 1, „Genau diesen
-  Effekt korrigiert die ELA“, „Auffälliger als die Rangfolge ist die Spannweite.“) und die Schwellenanalogie in 2.4.3 mit
-  Mirkovic (NBS-2: niedrige Schwelle → viele Fehlalarme, hohe Schwelle → geringere Empfindlichkeit) belegen.
+- **Punkt 4 (Stil und Beleg), umgesetzt:** Drei rhetorische Stellen geglättet: „Die Kehrseite:“ (Kap. 1) als Nebensatz,
+  „Genau diesen Effekt korrigiert die ELA“ → „Die ELA gleicht diesen Effekt aus, weil …“, „Auffälliger als die Rangfolge ist
+  die Spannweite.“ → „In der Robustheit unterscheiden sich die Modelle nur wenig.“ Die Schwellenanalogie in 2.4.3 ist mit
+  Mirkovic & Reiher belegt (NBS-2, Nachteil „Threshold setting“: niedrige Schwelle → viele Fehlalarme, hohe Schwelle →
+  geringere Empfindlichkeit, im PDF wörtlich geprüft).
 
 ### Offene Fragen an den Betreuer (Prof. Seitz)
 
@@ -311,8 +316,8 @@ Prüfung in fünf Dimensionen (Aufgabenstellung, Datenintegrität, Quellen, Stil
 
 ### Nächste Seiten
 
-Technische Qualitätsphase und Master-Audit abgeschlossen. Offen sind die Betreuer-Fragen, die manuellen Formalia (siehe
-„Vor der Abgabe“) und optional Punkt 4 des Master-Audits.
+Inhaltliche und technische Arbeit endgültig abgeschlossen, Master-Audit einschließlich Punkt 4 umgesetzt. Vor der Abgabe
+bleiben nur die manuellen Formalia (siehe „Vor der Abgabe“) und die Klärung der zwei Betreuer-Fragen.
 
 ## Arbeitsweise
 
