@@ -24,3 +24,6 @@ main.pdf
 
 # Screenshot-Sammlung (fremde Abbildungen, nur lokale Inspiration)
 compressedPDFs/
+
+# Begleitarchiv (wird mit abgabe_archiv.py erzeugt)
+Bachelorarbeit_Begleitarchiv.zip
