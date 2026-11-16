@@ -29,7 +29,9 @@ Stilregeln für alle Texte: `CLAUDE.md`.
   beantwortet FF1–FF3 entlang Kap. 7. FF1 unterscheidet Soll-Schwelle 1/3 (Elkan) und implizite Schwelle 0,38–0,43. Kap. 4 beschreibt nur die tatsächlich ausgeführte Vorverarbeitung.
 - **Abgleich Kap. 5–7 mit Code** (`train_eval.py`, `eval_baselines.py`, CSVs): alle Hyperparameter und Messwerte geprüft.
 
-## Nachgerechnete Größen (nicht aus neuen Trainingsläufen)
+## Nachgerechnete Größen
+
+Bis auf die zwei als solche markierten Zeilen ohne neue Trainingsläufe.
 
 | Größe | Quelle / Methode | Stelle |
 |---|---|---|
@@ -40,20 +42,32 @@ Stilregeln für alle Texte: `CLAUDE.md`.
 | 19 969 Lernschritte, 79 Zielnetz-Syncs | aus `Config` in `train_eval.py` | Kap. 5, `sec:training_optimierung` |
 | Bayes-PR-Kurven, Bayes-Punkte p > 1/2 und p > 1/3 | geschlossen aus LLR ~ N(±D²/2, D²), `pr_ebene_plot.py` | Abb. `fig:pr_ebene` (Kap. 7) |
 | Implizite Schwelle t (Bayes-Schwelle mit gleichem Recall): DDQN 0,43 / 0,42 / 0,38 / 0,38; RF 0,68–0,50; SVM 0,61–0,47; MLP 0,54–0,41 | Nullstellensuche auf der Bayes-Recall-Kurve, mittlere P/R aus den CSVs | Kap. 7, `sec:reward_recall` |
+| FN/FP-Anteile (bezogen auf alle Flüsse) bei p > 1/2 und p > 1/3: 30 dB 3,5/2,7 % bzw. 2,3/4,4 %; 5 dB 10,2/6,0 % bzw. 6,3/11,5 % | geschlossen auf der LLR, `llr_signalraum_plot.py` (Summe bei 1/2 = P_eᵖ aus Tab. 5.1) | Abschnitt 5.4.1, Abb. `fig:llr_signalraum` |
+| Nullstelle der Q-Differenz bei Huber-Verlust (β = 1): 3/7 ≈ 0,43 (MSE: 1/3) | geschlossen, `bayes_referenz.huber_differenz` | Kap. 5, `sec:dqn_architektur` |
+| Modellbasierte Nulldurchgänge: DDQN 0,42 (30 dB) / 0,37 (5 dB), MLP 0,54 / 0,40; ohne SNR-Kenntnis erwartet: Huber 0,45 / 0,40, MLP-Schwelle 0,535 / 0,44 | **neue Trainingsläufe, exakt reproduziert** (`modelle_nachtrainieren.py`), Auswertung `entscheidungsfunktion_plot.py` | Abb. `fig:entscheidungsfunktion`, `sec:reward_recall` |
+| MSE-Kontrolllauf Seed 0: Nulldurchgang 0,30–0,32; P/R/F1 bei 30 dB 0,8442/0,9286/0,8844 | **neuer Trainingslauf, nur Diagnose** (`kontrolle_mse_verlust.py`), ändert keine CSV | 7.1.1, 7.5, 8 (FF1) |
 
 ## Abbildungen
 
-- `pr_ebene_plot.py` → `pr_ebene_plot.pdf` (Abb. 7.3): Precision-Recall-Ebene je SNR mit Bayes-Grenze, Bayes-Arbeitspunkten,
+- `pr_ebene_plot.py` → `pr_ebene_plot.pdf` (Abb. 7.4): Precision-Recall-Ebene je SNR mit Bayes-Grenze, Bayes-Arbeitspunkten,
   Elkan-Pfeil und Modellpunkten (Mittelwert ± Std). Importiert die Generatorparameter aus `train_eval.py`, Stil wie `generate_plot.py`.
   Bayes-F1 aus dem Skript stimmt auf vier Stellen mit Tab. `tab:bayes_grenze` überein.
 - **ELA-Höhenlinien (nach Sáez et al. 2016, Fig. 1): geprüft und verworfen, weil A₀ der Modelle zu eng beieinanderliegt.**
   Die A₀-Werte (F1 bei 30 dB) liegen nur 0,02 auseinander (0,874–0,894). Die Trajektorien werden dadurch zu senkrechten Strichen,
   und die ELA-Isolinien verlaufen fast waagrecht. Die ELA ordnet damit praktisch nach dem F1-Score der gestörten Stufe,
-  was Abb. 7.2 schon zeigt. Die Erkenntnis steht stattdessen als Satz nach Tab. `tab:rla_ela` in Kap. 7.
+  was der F1-Vergleich (jetzt Abb. 7.3) schon zeigt. Die Erkenntnis steht stattdessen als Satz nach Tab. `tab:rla_ela` in Kap. 7.
+- `bayes_referenz.py`: gemeinsame analytische Bayes-Referenz (D², Schwellen τ(t), Bayes-PR-Punkte, LLR, Posterior mit
+  und ohne SNR-Kenntnis, Huber-Sollkurve). Genutzt von `pr_ebene_plot.py`, `llr_signalraum_plot.py`,
+  `entscheidungsfunktion_plot.py`, `kontrolle_mse_verlust.py`.
+- `llr_signalraum_plot.py` → `llr_signalraum_plot.pdf` (Abb. 5.4): Signalraum auf der LLR bei 30/5 dB nach Proakis.
+- `entscheidungsfunktion_plot.py` → `entscheidungsfunktion_plot.pdf` (Abb. 7.2): gelernte Q-Differenz bzw. MLP-Wahrscheinlichkeit
+  über der Bayes-Posterior. Braucht `modelle/ddqn_seed{0,1,2}.pt` aus `modelle_nachtrainieren.py`. Das MLP wird neu gefittet
+  und gegen `baseline_results.csv` geprüft, bei Abweichung bricht das Skript ab.
+- TikZ: Abb. 5.3 (Backup-Diagramme, Sutton-Notation) in Kap. 5.3, Abb. 4.1 oben mit AWGN-Kanal als Addierer ⊕ (Proakis-Notation).
 
 ## Build
 
-- `pdflatex → biber → pdflatex → pdflatex`, Ergebnis zuletzt: 50 Seiten, 0 Fehler, 0 Warnungen (LaTeX und biber), 0 Overfull, 0 Underfull.
+- `pdflatex → biber → pdflatex → pdflatex`, Ergebnis zuletzt: 52 Seiten, 0 Fehler, 0 Warnungen (LaTeX und biber), 0 Overfull, 0 Underfull.
 - `main.tex` enthält Spaltentyp `L{…}` (linksbündig, Paket `array`), URL-Umbrüche für biblatex und `\emergencystretch`.
 - `main.bcf`, `main.run.xml` und `main.pdf` sind nicht versioniert (Build-Artefakte, lokal kompilieren).
 
@@ -198,6 +212,21 @@ hängen von den Vorgaben der Prüfungsordnung ab.
   Kapitelenden höchstens etwa 26 mm, unauffällig bei `\raggedbottom`. `\raggedbottom` bleibt bewusst (Standard für einseitigen Satz).
 - **K5-8:** Tab. 5.2 und 5.3 stehen in einer gemeinsamen Gleitumgebung `[tbp]` auf einer Seite direkt nach ihrem Verweis.
 - Hurenkinder und Schusterjungen sind global unterbunden (Penalties 10000). Die Gesamtsicht aller 50 Seiten ist unauffällig.
+
+### Visualisierungen aus `compressedPDFs/screenshots.odt` (2026-11-16)
+
+- 147 Screenshots aus 20 Quellen gesichtet, nur Visualisierungs-*Typen* übernommen. Umgesetzt: A Entscheidungsfunktion
+  (Abb. 7.2), C LLR-Signalraum (Abb. 5.4), D Backup-Diagramme (Abb. 5.3), E Kanalnotation (Abb. 4.1). B (Lernkurve) auf Wunsch
+  nicht umgesetzt. Verworfen: Konfusionsmatrizen, Balkenvergleiche, t-SNE, Architektur-/Infografiken, Rechenzeitdiagramm.
+- **Reproduktion:** Die DDQN-Läufe wurden mit identischen Seeds auf CUDA neu trainiert (RTX 2060, ca. 2 min je Seed).
+  Alle 36 P/R/F1-Werte aus `evaluation_results.csv` stimmen auf 4 Stellen, die Gewichte liegen in `modelle/`.
+  Das MLP reproduziert `baseline_results.csv` ebenfalls exakt.
+- **Befund Huber-Verlust:** `smooth_l1_loss` (β = 1) schätzt bei Reward-Abständen von 2 bzw. 2,5 nicht den Erwartungswert. Die
+  Nullstelle der Q-Differenz liegt bei 3/7 statt 1/3. Das erklärt den Großteil der impliziten Schwelle 0,38–0,43, der Rest
+  (Abfall mit dem SNR) kommt von der SNR-Mischung. Ein MSE-Kontrolllauf landet bei 0,30–0,32. Text angepasst in 5.2.1, 5.3
+  (Herleitung als Gleichung), 7.1.1, 7.4, 7.5 und 8 (FF1, Einschränkungen, Ausblick „Verlustfunktion“).
+- Abbildungsnummern in Kap. 7 verschoben: Entscheidungsfunktion 7.2, F1-Vergleich 7.3, PR-Ebene 7.4.
+- `compressedPDFs/` (Screenshot-Sammlung, fremde Abbildungen) bleibt unversioniert und steht in der `.gitignore`.
 
 ### Offene Frage an den Betreuer (Prof. Seitz)
 

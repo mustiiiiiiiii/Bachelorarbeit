@@ -21,36 +21,16 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 from matplotlib.ticker import FuncFormatter, MaxNLocator
 import numpy as np
-from scipy.stats import norm
 
-from train_eval import ATTACK_PROB, MU_ATTACK, MU_NORMAL, SIGMA, SIGNAL_POWER, SNR_LEVELS_DB
+from bayes_referenz import PI, bayes_point, mahalanobis_sq
+from train_eval import SIGMA, SNR_LEVELS_DB
 
 HERE = Path(__file__).parent
-PI = float(ATTACK_PROB)
 
 plt.rcParams.update({
     "font.family": "serif", "font.size": 10, "axes.labelsize": 11, "legend.fontsize": 9,
     "pdf.fonttype": 42, "ps.fonttype": 42,
 })
-
-
-# ---------------------------------------------------------------- Bayes-Referenz
-def mahalanobis_sq(snr_db: float) -> float:
-    var = float(SIGMA) ** 2 + SIGNAL_POWER.astype(np.float64) / 10.0 ** (snr_db / 10.0)
-    dmu = (MU_ATTACK - MU_NORMAL).astype(np.float64)
-    return float(np.sum(dmu**2 / var))
-
-
-def bayes_point(snr_db: float, t):
-    """Precision, Recall, F1 des Bayes-Klassifikators mit Posterior-Schwelle t (Skalar oder Array)."""
-    d2 = mahalanobis_sq(snr_db)
-    d = np.sqrt(d2)
-    tau = np.log(t / (1 - t)) - np.log(PI / (1 - PI))
-    rec = norm.sf((tau - d2 / 2) / d)
-    fpr = norm.sf((tau + d2 / 2) / d)
-    prec = PI * rec / (PI * rec + (1 - PI) * fpr)
-    f1 = 2 * prec * rec / (prec + rec)
-    return prec, rec, f1
 
 
 # ---------------------------------------------------------------- Messwerte

@@ -123,7 +123,7 @@ Das Entscheidungsproblem ist ein Markov-Entscheidungsprozess $(\mathcal{S},\math
 	\item \textbf{Diskontierung:} $\gamma=0{,}99$. Wegen $d=1$ geht $\gamma$ nicht in das Ziel ein.
 \end{itemize}
 
-Die optimale Politik maximiert den erwarteten Sofort-Reward $\mathbb{E}[\mathcal{R}(a,c)\mid\mathbf{y}]$. Mit $p=P(c=1\mid\mathbf{y})$ gilt $a=1$ genau dann, wenn $p\,R_{\mathrm{TP}}+(1-p)\,R_{\mathrm{FP}}>p\,R_{\mathrm{FN}}+(1-p)\,R_{\mathrm{TN}}$, also $p>1/3$. Elkans Schwelle $p^*=(c_{10}-c_{00})/(c_{10}-c_{00}+c_{01}-c_{11})$ liefert mit den negierten Rewards als Kosten denselben Wert \autocite{elkanFoundationsCostSensitiveLearning2001}. Das ist die Soll-Schwelle für exakt gelernte Q-Werte. Gemessen entscheidet der Agent bei impliziten Schwellen von $0{,}38$ bis $0{,}43$ (Abschnitt~\ref{sec:reward_recall}).
+Die optimale Politik maximiert den erwarteten Sofort-Reward $\mathbb{E}[\mathcal{R}(a,c)\mid\mathbf{y}]$. Mit $p=P(c=1\mid\mathbf{y})$ gilt $a=1$ genau dann, wenn $p\,R_{\mathrm{TP}}+(1-p)\,R_{\mathrm{FP}}>p\,R_{\mathrm{FN}}+(1-p)\,R_{\mathrm{TN}}$, also $p>1/3$. Elkans Schwelle $p^*=(c_{10}-c_{00})/(c_{10}-c_{00}+c_{01}-c_{11})$ liefert mit den negierten Rewards als Kosten denselben Wert \autocite{elkanFoundationsCostSensitiveLearning2001}. Das ist die Soll-Schwelle, wenn das Q-Netz die bedingten Erwartungswerte des Rewards lernt. Der im Training verwendete Huber-Verlust verschiebt sie auf $3/7$ (Abschnitt~\ref{sec:dqn_architektur}), gemessen entscheidet der Agent bei impliziten Schwellen von $0{,}38$ bis $0{,}43$ (Abschnitt~\ref{sec:reward_recall}).
 
 Im Training werden die Flüsse nicht einzeln über \texttt{step} erzeugt, sondern als Batch von 32 Flüssen pro Iteration, wobei das SNR jedes Flusses zufällig aus $\{30,20,10,5\}$\,dB gezogen wird. Der Rewardvektor entsteht durch eine Tabellenabfrage \texttt{REWARD\_TABLE[label, action]} direkt auf dem Rechengerät.
 
@@ -174,7 +174,61 @@ Sind die Q-Schätzungen verrauscht, greift der $\max$-Operator bevorzugt Aktione
 \end{equation}
 wobei $\theta$ die Parameter des Online-Netzes, $\bar\theta$ die des Zielnetzes und $d\in\{0,1\}$ das Terminal-Flag sind. Der Verlust ist die Huber-Funktion (\texttt{smooth\_l1\_loss}) zwischen $Q(\mathbf{y},a;\theta)$ und $Y$, die Gradientennorm wird auf $10$ begrenzt.
 
-Weil jede Episode nach einem Schritt endet, gilt für alle gespeicherten Transitionen $d=1$ und damit $Y=r$. Das Bootstrapping-Glied entfällt, der Diskontierungsfaktor $\gamma$ beeinflusst das Lernen nicht, und das Q-Netz schätzt den erwarteten Sofort-Reward je Aktion (ein kontextuelles Banditenproblem). Online-/Zielnetz, Double-Q-Ziel und Replay-Puffer sind vollständig implementiert und bleiben im Code aktiv. Unter diesem Problemzuschnitt geht das Zielnetz wegen $d=1$ jedoch nie in $Y$ ein. Die Überschätzung, gegen die van Hasselt et al. das Double-Q-Ziel entwickelt haben, entsteht erst im Bootstrapping-Glied und kann hier nicht auftreten. Wirksam bleiben der Replay-Puffer, der die Mini-Batches dekorreliert, und die Huber-Regression auf den Sofort-Reward. Das ist bei der Interpretation der Ergebnisse zu berücksichtigen.
+Weil jede Episode nach einem Schritt endet, gilt für alle gespeicherten Transitionen $d=1$ und damit $Y=r$. Abbildung~\ref{fig:backup} stellt den allgemeinen Fall und diesen Spezialfall als Backup-Diagramme gegenüber. Das Bootstrapping-Glied entfällt, der Diskontierungsfaktor $\gamma$ beeinflusst das Lernen nicht, und das Q-Netz regressiert den Sofort-Reward je Aktion (ein kontextuelles Banditenproblem). Online-/Zielnetz, Double-Q-Ziel und Replay-Puffer sind vollständig implementiert und bleiben im Code aktiv. Unter diesem Problemzuschnitt geht das Zielnetz wegen $d=1$ jedoch nie in $Y$ ein. Die Überschätzung, gegen die van Hasselt et al. das Double-Q-Ziel entwickelt haben, entsteht erst im Bootstrapping-Glied und kann hier nicht auftreten. Wirksam bleiben der Replay-Puffer, der die Mini-Batches dekorreliert, und die Huber-Regression auf den Sofort-Reward. Das ist bei der Interpretation der Ergebnisse zu berücksichtigen.
+
+Der Huber-Verlust hat dabei eine Nebenwirkung auf die Entscheidungsschwelle. Er ist für Residuen $|Y-Q|\le1$ quadratisch und darüber linear. Die Rewards einer Aktion liegen aber $2$ (Aktion DDoS: $+1$ oder $-1$) bzw. $2{,}5$ (Aktion Normal: $-2$ oder $+0{,}5$) auseinander. Das Minimum des erwarteten Verlusts liegt deshalb nicht beim bedingten Erwartungswert, sondern zwischen Erwartungswert und Median. Für $p<1/2$ ergibt die Stationaritätsbedingung $Q_{\mathrm{H}}(\mathbf{y},1)=(2p-1)/(1-p)$ und $Q_{\mathrm{H}}(\mathbf{y},0)=0{,}5-p/(1-p)$, für $p>1/2$ entsprechend $(2p-1)/p$ und $(1-p)/p-2$. Daraus folgt
+\begin{equation}
+	Q_{\mathrm{H}}(\mathbf{y},1)-Q_{\mathrm{H}}(\mathbf{y},0)=
+	\begin{cases}
+		\dfrac{3{,}5\,p-1{,}5}{1-p}, & p<1/2,\\[8pt]
+		\dfrac{5\,p-2}{p}, & p>1/2,
+	\end{cases}
+\end{equation}
+mit der Nullstelle $p=3/7\approx0{,}43$ statt $1/3$. Ein mit diesem Verlust trainiertes Q-Netz entscheidet also konservativer, als die Reward-Matrix vorgibt. Abschnitt~\ref{sec:reward_recall} prüft das am trainierten Netz.
+
+\begin{figure}[htbp]
+	\centering
+	\begin{tikzpicture}[
+		font=\small,
+		st/.style={circle, draw, thick, minimum size=4.4mm, inner sep=0pt},
+		ac/.style={circle, fill, minimum size=2.3mm, inner sep=0pt},
+		te/.style={rectangle, fill, minimum size=2.8mm, inner sep=0pt},
+		gst/.style={circle, draw=black!35, dashed, thick, minimum size=4.4mm, inner sep=0pt},
+		gac/.style={circle, fill=black!30, minimum size=2.3mm, inner sep=0pt},
+		ed/.style={thick},
+		ged/.style={draw=black!35, dashed, thick}
+	]
+		% (a) allgemeiner Fall
+		\begin{scope}
+			\node[ac, label={[font=\scriptsize]above:$(s,a)$}] (sa) at (0,0) {};
+			\node[st] (s1) at (0,-1.25) {};
+			\node[font=\scriptsize, right=1.5mm of s1] {$s'$};
+			\draw[ed] (sa) -- node[left, font=\scriptsize] {$r$} (s1);
+			\foreach \x/\n in {-0.75/a1, 0/a2, 0.75/a3} { \node[ac] (\n) at (\x,-2.45) {}; \draw[ed] (s1) -- (\n); }
+			\draw[thick] ($(s1)!0.42!(a1)$) to[bend right=35] ($(s1)!0.42!(a3)$);
+			\node[font=\scriptsize, anchor=east] at ($(s1)!0.42!(a1)+(-0.05,0)$) {$\max$};
+			\node[font=\scriptsize, below=1mm of a2] {$a'$};
+			\node[font=\scriptsize, right=1.5mm of a3, align=left] {wählt: Online-Netz $\theta$\\ bewertet: Zielnetz $\bar\theta$};
+			\node[font=\scriptsize] at (0.6,-3.3) {$Y=r+\gamma\,(1-d)\,Q\bigl(s',\arg\max_{a'}Q(s',a';\theta);\bar\theta\bigr)$};
+			\node at (0.6,-3.95) {(a) allgemeiner Fall ($d=0$)};
+		\end{scope}
+		% (b) Ein-Schritt-Episode dieser Arbeit
+		\begin{scope}[xshift=8.4cm]
+			\node[ac, label={[font=\scriptsize]above:$(\mathbf{y},a)$}] (ya) at (0,0) {};
+			\node[te] (T) at (0,-1.25) {};
+			\node[font=\scriptsize, right=1.5mm of T] {Terminalzustand, $d=1$};
+			\draw[ed] (ya) -- node[left, font=\scriptsize] {$r$} (T);
+			\node[gst] (g1) at (0,-1.95) {};
+			\draw[ged] (T) -- (g1);
+			\foreach \x/\n in {-0.6/b1, 0/b2, 0.6/b3} { \node[gac] (\n) at (\x,-2.75) {}; \draw[ged] (g1) -- (\n); }
+			\node[font=\scriptsize, text=black!55, right=1.5mm of b3, align=left] {Bootstrapping-Zweig\\ entfällt: $\gamma\,(1-d)=0$};
+			\node[font=\scriptsize] at (0.6,-3.3) {$Y=r$};
+			\node at (0.6,-3.95) {(b) diese Arbeit (Ein-Schritt-Episode)};
+		\end{scope}
+	\end{tikzpicture}
+	\caption[Backup-Diagramme des Lernziels]{Backup-Diagramme des Lernziels in der Notation von Sutton und Barto \autocite{suttonReinforcementLearningIntroduction2018} (offener Kreis: Zustand, Punkt: Aktion, Quadrat: Terminalzustand). (a) Im allgemeinen Fall bootstrappt das Double-DQN-Ziel über den Folgezustand $s'$: Das Online-Netz wählt $a'$, das Zielnetz bewertet sie. (b) In dieser Arbeit endet jede Episode nach einem Schritt. Der Bootstrapping-Zweig (grau) entfällt, das Ziel reduziert sich auf $Y=r$, und Zielnetz und Double-Q-Ziel gehen nicht in das Lernen ein.}
+	\label{fig:backup}
+\end{figure}
 
 Der Replay-Puffer (\texttt{ReplayBuffer}) ist ein Ringpuffer mit $50\,000$ Einträgen nach dem Schema von Mnih et al. \autocite{mnihHumanlevelControlDeep2015}. Er hält Beobachtung, Aktion, Reward, Folgebeobachtung und Terminal-Flag als Tensoren auf dem Zielgerät und zieht gleichverteilte Mini-Batches der Größe $64$.
 
@@ -226,6 +280,15 @@ Für die Parameter aus \texttt{train\_eval.py} liefert die Auswertung die Werte 
 \end{table}
 
 Zwischen $30$ und $20$\,dB ändert sich die Überlappung kaum, weil das Rauschen ($\sigma_{n,j}\le0{,}056$) neben $\sigma=0{,}20$ vernachlässigbar bleibt. Bei $5$\,dB sinkt $D$ auf $1{,}78$, die effektive Streuung steigt je nach Merkmal auf $0{,}30$ bis $0{,}37$, und die Fehlerwahrscheinlichkeit des Bayes-Klassifikators steigt gegenüber $30$\,dB auf fast das Dreifache. Beim tatsächlichen Angriffsanteil $\pi=0{,}3$ liegt sie auf jeder Stufe etwas niedriger, von $6{,}2\,\%$ bei $30$\,dB bis $16{,}2\,\%$ bei $5$\,dB. Diese Spalte ist die Referenz für alle weiteren Vergleiche mit der Bayes-Grenze. Das Training mit gemischtem SNR zwingt das Q-Netz auf eine Kompromiss-Entscheidungsgrenze, die für kein SNR exakt optimal ist.
+
+Abbildung~\ref{fig:llr_signalraum} zeigt dieselbe Rechnung als Signalraumdarstellung auf der Prüfgröße $\Lambda(\mathbf{y})=\ln\bigl(p(\mathbf{y}\mid\mathrm{DDoS})/p(\mathbf{y}\mid\mathrm{Normal})\bigr)$. Sie bündelt wie bei binären Signalen im AWGN-Kanal die gesamte Klasseninformation der acht Merkmale \autocite{proakisDigitalCommunications2008}. Bei der fehlerminimalen Schwelle $\tau(1/2)=\lambda$ ergeben beide Fehlerflächen zusammen genau $P_e^{\pi}$: bei $30$\,dB $3{,}5\,\%$ verpasste Angriffe und $2{,}7\,\%$ Fehlalarme, bei $5$\,dB $10{,}2$ und $6{,}0\,\%$, jeweils bezogen auf alle Flüsse. Die Soll-Schwelle $p>1/3$ der Reward-Matrix liegt um $\ln 2\approx0{,}69$ weiter links und tauscht verpasste Angriffe gegen Fehlalarme. Bei $5$\,dB sinkt der FN-Anteil auf $6{,}3\,\%$, der FP-Anteil steigt auf $11{,}5\,\%$. Der Gesamtfehler wächst dabei von $16{,}2$ auf $17{,}8\,\%$, die erwarteten Kosten unter der Reward-Matrix sinken.
+
+\begin{figure}[htbp]
+	\centering
+	\includegraphics[width=\textwidth]{llr_signalraum_plot.pdf}
+	\caption[Signalraumdarstellung auf dem Log-Likelihood-Verhältnis]{Signalraumdarstellung der binären Entscheidung auf der Prüfgröße $\Lambda(\mathbf{y})$ bei $30$ und $5$\,dB ($\pi=0{,}3$). Kurven: mit den Priors gewichtete Klassendichten $\pi\,\mathcal{N}(+D^2/2,D^2)$ und $(1-\pi)\,\mathcal{N}(-D^2/2,D^2)$. Durchgezogen: fehlerminimale Schwelle $\tau(1/2)=\lambda$, gestrichelt: Soll-Schwelle $\tau(1/3)$ der Reward-Matrix, Pfeil: Verschiebung um $\ln 2$. Schraffiert: Anteile verpasster Angriffe (FN) und Fehlalarme (FP) bei $p>1/3$.}
+	\label{fig:llr_signalraum}
+\end{figure}
 
 Im Training trifft der Agent pro Fluss auf ein zufällig gewähltes SNR. Er lernt dadurch eine einzige Entscheidungsfunktion für alle vier Kanalqualitäten, ohne das SNR als Eingabe zu erhalten. Die Evaluation erfolgt dagegen getrennt je SNR-Stufe (Kapitel~\ref{chap:evaluierung}).
 
@@ -289,4 +352,4 @@ Tabelle~\ref{tab:dqn_hyperparameters} fasst die Hyperparameter zusammen, Tabelle
 \section{Zusammenfassung der Implementierung}
 \label{sec:implementierung_zusammenfassung}
 
-Die Implementierung bildet die DDoS-Erkennung als Entscheidungsproblem mit acht verrauschten Merkmalen und zwei Aktionen ab, dessen Episoden nach einem Schritt enden. Das DDQN-Gerüst aus Online-Netz, Zielnetz, Double-Q-Ziel und Replay-Puffer ist vollständig umgesetzt. Die Kosten der Fehlerarten stecken in der Reward-Matrix, die Kanalqualität im AWGN-Modell mit SNR-Werten von $30$ bis $5$\,dB. Weil die Entscheidungen unabhängig sind, reduziert sich das Lernziel auf die Schätzung des erwarteten Sofort-Rewards. Kapitel~\ref{chap:ergebnisse} wertet die Läufe quantitativ aus.
+Die Implementierung bildet die DDoS-Erkennung als Entscheidungsproblem mit acht verrauschten Merkmalen und zwei Aktionen ab, dessen Episoden nach einem Schritt enden. Das DDQN-Gerüst aus Online-Netz, Zielnetz, Double-Q-Ziel und Replay-Puffer ist vollständig umgesetzt. Die Kosten der Fehlerarten stecken in der Reward-Matrix, die Kanalqualität im AWGN-Modell mit SNR-Werten von $30$ bis $5$\,dB. Weil die Entscheidungen unabhängig sind, reduziert sich das Lernziel auf eine Huber-Regression des Sofort-Rewards. Kapitel~\ref{chap:ergebnisse} wertet die Läufe quantitativ aus.

@@ -21,3 +21,6 @@ literatur_zotero*.bib
 
 # Build-Artefakt, wird lokal erzeugt
 main.pdf
+
+# Screenshot-Sammlung (fremde Abbildungen, nur lokale Inspiration)
+compressedPDFs/
