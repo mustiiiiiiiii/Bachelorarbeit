@@ -20,17 +20,13 @@ import numpy as np
 from scipy.stats import norm
 
 from bayes_referenz import PI, mahalanobis_sq, tau
+import plot_stil
 
 HERE = Path(__file__).parent
 C_NORMAL, C_ATTACK = "#3b6ea5", "#c0504d"   # wie Abb. 4.1/4.2
-KOMMA = FuncFormatter(lambda v, _: (f"{v:.2f}".rstrip("0").rstrip(".") if abs(v) < 1 else f"{v:.0f}")
-                      .replace(".", ",").replace("-", "−"))
+KOMMA = FuncFormatter(lambda v, _: plot_stil.zahl(v, 2, kuerzen=True) if abs(v) < 1 else plot_stil.zahl(v, 0))
 
-plt.rcParams.update({
-    "font.family": "serif", "font.size": 10, "axes.labelsize": 10, "legend.fontsize": 8.5,
-    "xtick.labelsize": 8.5, "ytick.labelsize": 8.5, "pdf.fonttype": 42, "ps.fonttype": 42,
-    "hatch.linewidth": 0.6, "mathtext.fontset": "cm",
-})
+plot_stil.anwenden(**{"hatch.linewidth": 0.6})
 
 
 def fehler(snr: float, t: float):

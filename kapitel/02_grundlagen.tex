@@ -103,7 +103,7 @@ Die Modellbildung approximiert eine unbekannte Abbildung $f:\mathcal{X}\to\mathc
 Klassenungleichgewicht (Imbalanced Data) liegt vor, wenn eine Klasse deutlich seltener auftritt als die andere. In der Angriffserkennung ist das meist die Angriffsklasse. Ein auf Accuracy optimiertes Modell kann dann eine hohe Gesamtgenauigkeit erreichen und trotzdem viele Angriffe übersehen: Bei $70\,\%$ Normalverkehr erzielt ein Klassifikator, der stets \emph{Normal} ausgibt, bereits $70\,\%$ Accuracy bei einem Recall von null. Gegenmaßnahmen setzen an den Daten oder am Lernziel an. Over- und Undersampling sowie synthetische Minderheitsbeispiele (SMOTE) verändern die Klassenverteilung im Training. SMOTE erzeugt neue Angriffsbeispiele auf den Verbindungsstrecken zwischen einem Minderheitsbeispiel und seinen $k$ nächsten Nachbarn derselben Klasse \autocite{chawlaSMOTESyntheticMinority2002}. Kostensensitive Verlustfunktionen und Klassengewichte bestrafen dagegen Fehler auf der Minderheitsklasse stärker. Resampling darf nur auf den Trainingsdaten erfolgen, sonst sind die Testergebnisse verzerrt. Diese Arbeit verzichtet auf Resampling und gewichtet die Fehlerarten über eine Reward-Matrix (Abschnitt~\ref{sec:imbalanced_data}).
 
 \subsection{Evaluationsmetriken: Precision, Recall und F1-Score}
-Precision, Recall und F1-Score bewerten die Erkennung klassenbezogen und sind bei unausgewogenen Klassen aussagekräftiger als die Accuracy. Precision ist der Anteil echter Angriffe unter allen Alarmen und bestimmt damit die Fehlalarmlast. Recall ist der Anteil erkannter Angriffe unter allen tatsächlichen Angriffen. Der F1-Score ist das harmonische Mittel beider Größen und nur hoch, wenn beide hoch sind. Zwischen Precision und Recall besteht ein Zielkonflikt, den die Entscheidungsschwelle des Klassifikators festlegt. Die formalen Definitionen folgen in Abschnitt~\ref{sec:eval_metriken}.
+Precision, Recall und F1-Score bewerten die Erkennung klassenbezogen und sind bei unausgewogenen Klassen aussagekräftiger als die Accuracy. Precision ist der Anteil echter Angriffe unter allen Alarmen und bestimmt damit die Fehlalarmlast. Recall ist der Anteil erkannter Angriffe unter allen tatsächlichen Angriffen. Der F1-Score ist das harmonische Mittel beider Größen und nur hoch, wenn beide hoch sind. Zwischen Precision und Recall besteht ein Zielkonflikt, den die Entscheidungsschwelle des Klassifikators festlegt. Das entspricht der Schwellenwahl eines binären Detektors in der Nachrichtentechnik: Eine niedrigere Schwelle entdeckt mehr Angriffe, löst aber auch mehr Fehlalarme aus (Abschnitt~\ref{sec:klassenueberlappung}). Die formalen Definitionen folgen in Abschnitt~\ref{sec:eval_metriken}.
 
 \subsection{Merkmalsrauschen und Rauschsensitivität von Klassifikatoren}
 \label{sec:merkmalsrauschen}
@@ -126,3 +126,35 @@ Liegt das Rauschen auch im Training an, wirkt es zusätzlich auf die gelernte Ab
 $\Omega$ bestraft große Ableitungen der Modellausgänge $\hat{f}_k$ nach den Eingängen und glättet die Abbildung. Kleine Verschiebungen von $\mathbf{x}$ ändern die Ausgabe eines so trainierten Modells weniger stark. Die Herleitung setzt kleines $\eta^2$ und eine differenzierbare Abbildung voraus. Für das Q-Netz, dessen Huber-Verlust um den Nullpunkt quadratisch verläuft (Abschnitt~\ref{sec:dqn_architektur}), und für das MLP gilt der Zusammenhang näherungsweise, für den Random Forest als stückweise konstantes Modell nicht. Bei 5\,dB erreicht die Rauschstandardabweichung im hier verwendeten Modell $0{,}31$ und übersteigt die Klassenstreuung $\sigma=0{,}20$ (Abschnitt~\ref{sec:awgn_kanal}). Dort taugt der Regularisierungsblick nur noch als qualitative Erklärung. Er begründet trotzdem, warum alle Modelle dieser Arbeit mit pro Fluss gemischtem SNR trainiert werden: Ein rein auf sauberen Merkmalen trainiertes Modell träfe im Test auf eine Verteilung, die es nie gesehen hat.
 
 Klassifikatoren mit unterschiedlicher Ausgangsleistung lassen sich über mehrere Rauschstufen nur fair vergleichen, wenn der Leistungsverlust auf die Ausgangsleistung bezogen wird. Ein Modell, das schon ohne Rauschen schwach ist, kann sonst allein wegen seines geringen Spielraums nach unten robust erscheinen. Sáez et al. führen dafür die Equalized Loss of Accuracy (ELA) ein \autocite{saezEvaluatingClassifierBehavior2016}. Abschnitt~\ref{sec:eval_metriken} überträgt dieses Maß auf den F1-Score.
+
+\section{Grundlagen des Reinforcement Learning}
+\label{sec:rl_grundlagen}
+
+Reinforcement Learning (RL) beschreibt das Lernen aus Interaktion mit einer Umgebung \autocite{suttonReinforcementLearningIntroduction2018}. Ein Agent beobachtet im Schritt $k$ den Zustand $s_k$, wählt eine Aktion $a_k$ und erhält eine Belohnung $r_{k+1}$ sowie den Folgezustand $s_{k+1}$. Formal ist das ein Markov-Entscheidungsprozess (MDP) $(\mathcal{S},\mathcal{A},\mathcal{P},\mathcal{R},\gamma)$ aus Zustandsraum, Aktionsraum, Übergangswahrscheinlichkeit $\mathcal{P}(s'\mid s,a)$, Belohnungsfunktion und Diskontierungsfaktor $\gamma\in[0,1)$. Gesucht ist eine Politik, also eine Zuordnung von Zuständen zu Aktionen, die den erwarteten Return
+\begin{equation}
+	G_k=\sum_{i=0}^{\infty}\gamma^{i}\,r_{k+i+1}
+\end{equation}
+maximiert.
+
+\subsection{Aktionswertfunktion und Q-Learning}
+Die Aktionswertfunktion $Q(s,a)$ gibt den erwarteten Return an, wenn im Zustand $s$ die Aktion $a$ gewählt und danach der Politik gefolgt wird. Für die optimale Politik gilt die Bellman-Optimalitätsgleichung
+\begin{equation}
+	Q^{*}(s,a)=\mathbb{E}\Bigl[r_{k+1}+\gamma\max_{a'}Q^{*}(s_{k+1},a')\Bigm| s_k=s,\ a_k=a\Bigr],
+	\label{eq:bellman}
+\end{equation}
+und die optimale Aktion ist $\arg\max_{a}Q^{*}(s,a)$. Q-Learning schätzt $Q^{*}$ aus beobachteten Übergängen $(s,a,r,s')$, indem es den aktuellen Schätzwert schrittweise in Richtung des Ziels $r+\gamma\max_{a'}Q(s',a')$ verschiebt \autocite{suttonReinforcementLearningIntroduction2018}. Weil dieses Ziel selbst wieder einen Schätzwert enthält, spricht man von Bootstrapping.
+
+\subsection{Deep Q-Network und Double DQN}
+Bei kontinuierlichem Zustandsraum ersetzt ein neuronales Netz $Q(s,a;\theta)$ die Wertetabelle. Mnih et al. stabilisieren das Training mit zwei Maßnahmen \autocite{mnihHumanlevelControlDeep2015}. Ein Replay-Puffer speichert vergangene Übergänge, und gleichverteilt gezogene Mini-Batches brechen deren zeitliche Korrelation auf. Ein Zielnetz mit den Parametern $\bar\theta$ wird nur periodisch mit dem Online-Netz $\theta$ synchronisiert und hält das Regressionsziel zwischen zwei Synchronisationen fest:
+\begin{equation}
+	Y^{\mathrm{DQN}}=r+\gamma\,(1-d)\max_{a'}Q(s',a';\bar\theta)
+	\label{eq:dqn_ziel}
+\end{equation}
+mit dem Terminal-Flag $d\in\{0,1\}$. Sind die Q-Schätzungen verrauscht, greift der $\max$-Operator bevorzugt Aktionen mit positivem Schätzfehler heraus, und das Ziel überschätzt den wahren Wert systematisch. Double DQN trennt deshalb die Aktionsauswahl durch das Online-Netz von der Bewertung durch das Zielnetz \autocite{vanhasseltDeepReinforcementLearning2016}:
+\begin{equation}
+	Y^{\mathrm{DDQN}}=r+\gamma\,(1-d)\,Q\bigl(s',\arg\max_{a'}Q(s',a';\theta);\bar\theta\bigr).
+	\label{eq:ddqn_ziel}
+\end{equation}
+
+\subsection{Spezialfall: Ein-Schritt-Episoden als kontextueller Bandit}
+Endet jede Episode nach einem Schritt ($d=1$), entfällt das Bootstrapping-Glied in den Gleichungen~\eqref{eq:dqn_ziel} und~\eqref{eq:ddqn_ziel}, und das Ziel reduziert sich auf $Y=r$. Das Problem ist dann ein kontextueller Bandit \autocite{suttonReinforcementLearningIntroduction2018}. Das Bild dahinter ist ein Spielautomat mit mehreren Hebeln: In jeder Runde wird ein Hebel gezogen und die Auszahlung sofort gutgeschrieben. Beim kontextuellen Banditen sieht der Spieler vor jeder Runde zusätzlich einen Hinweis, der die Auszahlung der Hebel beeinflusst. In dieser Arbeit ist jeder Netzwerkfluss eine Runde und der verrauschte Merkmalsvektor $\mathbf{y}$ der Hinweis. Die beiden Hebel sind die Entscheidungen Normal und DDoS, die Auszahlung legt die Reward-Matrix fest (Abschnitt~\ref{sec:gymnasium_umgebung}). Zielnetz und Double-Q-Ziel gehen in diesem Fall nicht in das Lernen ein (Abschnitt~\ref{sec:dqn_architektur}).

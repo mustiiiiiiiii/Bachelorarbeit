@@ -7,18 +7,15 @@ import matplotlib
 
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
-from matplotlib.ticker import FuncFormatter
+import plot_stil
 
-# Deutsches Dezimalkomma auf den Achsen
-KOMMA = FuncFormatter(lambda v, _: f"{v:.2f}".replace(".", ","))
+# LaTeX-Satz (Computer Modern) und deutsches Dezimalkomma auf den Achsen
+KOMMA = plot_stil.komma(2)
 
 HERE = Path(__file__).parent
 SNRS = [30, 20, 10, 5]
 
-plt.rcParams.update({
-    "font.family": "serif", "font.size": 10, "axes.labelsize": 11, "legend.fontsize": 9,
-    "pdf.fonttype": 42, "ps.fonttype": 42,
-})
+plot_stil.anwenden(**{"axes.labelsize": 11, "legend.fontsize": 9, "xtick.labelsize": 10, "ytick.labelsize": 10})
 
 
 def load(path, model=None):

@@ -91,7 +91,7 @@ Ein verpasster Angriff kostet doppelt so viel wie ein Fehlalarm. Diese Asymmetri
 \subsection{Formale Definition als Markov-Entscheidungsprozess}
 \label{sec:mdp_definition}
 
-Das Entscheidungsproblem ist ein Markov-Entscheidungsprozess $(\mathcal{S},\mathcal{A},\mathcal{P},\mathcal{R},\gamma)$ in der Notation von Sutton und Barto \autocite{suttonReinforcementLearningIntroduction2018} mit folgenden Komponenten:
+Das Entscheidungsproblem ist ein Markov-Entscheidungsprozess $(\mathcal{S},\mathcal{A},\mathcal{P},\mathcal{R},\gamma)$ in der Notation von Sutton und Barto \autocite{suttonReinforcementLearningIntroduction2018} (Abschnitt~\ref{sec:rl_grundlagen}) mit folgenden Komponenten:
 
 \begin{itemize}
 	\item \textbf{Zustandsraum:} $\mathcal{S}=\mathbb{R}^{8}$. Ein Zustand ist die verrauschte Beobachtung $\mathbf{y}=\mathbf{x}+\mathbf{n}$ mit $n_j\sim\mathcal{N}(0,\sigma_{n,j}^2)$ aus Abschnitt~\ref{sec:awgn_kanal}. Das Label $c$ gehört nicht zum Zustand, der Prozess ist bezüglich $c$ nur teilbeobachtbar.
@@ -162,17 +162,9 @@ Die Parameterzahl beträgt $(8\cdot128+128)+(128\cdot128+128)+(128\cdot2+2)=17\,
 	\label{fig:qnet_architektur}
 \end{figure}
 
-Die Ausgabeschicht ist linear, die zwei Ausgaben sind die Q-Werte $Q(\mathbf{y},0)$ und $Q(\mathbf{y},1)$. Online-Netz und Zielnetz haben dieselbe Struktur, das Zielnetz startet mit den Gewichten des Online-Netzes und wird nur kopiert, nie per Gradient trainiert. Zielnetz und Replay-Puffer gehen auf den DQN-Ansatz von Mnih et al. zurück, wo sie die Korrelation aufeinanderfolgender Transitionen aufbrechen und das Regressionsziel zwischen zwei Synchronisationen festhalten \autocite{mnihHumanlevelControlDeep2015}.
+Die Ausgabeschicht ist linear, die zwei Ausgaben sind die Q-Werte $Q(\mathbf{y},0)$ und $Q(\mathbf{y},1)$. Online-Netz und Zielnetz haben dieselbe Struktur, das Zielnetz startet mit den Gewichten des Online-Netzes und wird nur kopiert, nie per Gradient trainiert. Zielnetz und Replay-Puffer folgen dem DQN-Ansatz von Mnih et al. (Abschnitt~\ref{sec:rl_grundlagen}) \autocite{mnihHumanlevelControlDeep2015}.
 
-Im Standard-DQN wählt und bewertet dasselbe Zielnetz die Folgeaktion:
-\begin{equation}
-	Y^{\mathrm{DQN}} = r + \gamma\,(1-d)\,\max_{a'} Q(\mathbf{y}',a';\bar{\theta}).
-\end{equation}
-Sind die Q-Schätzungen verrauscht, greift der $\max$-Operator bevorzugt Aktionen mit positivem Schätzfehler heraus, und das Ziel überschätzt den wahren Wert systematisch. Das DDQN-Ziel nach van Hasselt et al. trennt deshalb Aktionsauswahl und Bewertung \autocite{vanhasseltDeepReinforcementLearning2016}:
-\begin{equation}
-	Y = r + \gamma\,(1-d)\;Q\!\left(\mathbf{y}',\ \arg\max_{a'} Q(\mathbf{y}',a';\theta);\ \bar{\theta}\right),
-\end{equation}
-wobei $\theta$ die Parameter des Online-Netzes, $\bar\theta$ die des Zielnetzes und $d\in\{0,1\}$ das Terminal-Flag sind. Der Verlust ist die Huber-Funktion (\texttt{smooth\_l1\_loss}) zwischen $Q(\mathbf{y},a;\theta)$ und $Y$, die Gradientennorm wird auf $10$ begrenzt.
+Die Implementierung verwendet das Double-DQN-Ziel $Y$ aus Gleichung~\eqref{eq:ddqn_ziel} (Abschnitt~\ref{sec:rl_grundlagen}) mit der Beobachtung $\mathbf{y}$ als Zustand. Dabei sind $\theta$ die Parameter des Online-Netzes, $\bar\theta$ die des Zielnetzes und $d\in\{0,1\}$ das Terminal-Flag. Der Verlust ist die Huber-Funktion (\texttt{smooth\_l1\_loss}) zwischen $Q(\mathbf{y},a;\theta)$ und $Y$, die Gradientennorm wird auf $10$ begrenzt.
 
 Weil jede Episode nach einem Schritt endet, gilt für alle gespeicherten Transitionen $d=1$ und damit $Y=r$. Abbildung~\ref{fig:backup} stellt den allgemeinen Fall und diesen Spezialfall als Backup-Diagramme gegenüber. Das Bootstrapping-Glied entfällt, der Diskontierungsfaktor $\gamma$ beeinflusst das Lernen nicht, und das Q-Netz regressiert den Sofort-Reward je Aktion (ein kontextuelles Banditenproblem). Online-/Zielnetz, Double-Q-Ziel und Replay-Puffer sind vollständig implementiert und bleiben im Code aktiv. Unter diesem Problemzuschnitt geht das Zielnetz wegen $d=1$ jedoch nie in $Y$ ein. Die Überschätzung, gegen die van Hasselt et al. das Double-Q-Ziel entwickelt haben, entsteht erst im Bootstrapping-Glied und kann hier nicht auftreten. Wirksam bleiben der Replay-Puffer, der die Mini-Batches dekorreliert, und die Huber-Regression auf den Sofort-Reward. Das ist bei der Interpretation der Ergebnisse zu berücksichtigen.
 
@@ -297,7 +289,28 @@ Das gemischte Training hat einen zweiten Effekt. Nach Bishop wirkt additives Ein
 \section{Trainings- und Optimierungsstrategie}
 \label{sec:training_optimierung}
 
-Das Training läuft über $20\,000$ Iterationen. In jeder Iteration entstehen $32$ Flüsse, der Agent wählt $\epsilon$-greedy Aktionen, die Transitionen gelangen in den Puffer, und es folgt ein Lernschritt, sobald der Puffer mindestens $1000$ Einträge enthält. Die Explorationsrate fällt linear von $1{,}0$ auf $0{,}02$ innerhalb der ersten $40\,\%$ der Iterationen ($8000$) und bleibt danach konstant. Der Optimierer ist Adam mit Lernrate $10^{-4}$, der die Schrittweite je Gewicht aus gleitenden Schätzungen des ersten und zweiten Gradientenmoments anpasst \autocite{kingmaAdamMethodStochastic2015}. Das Zielnetz wird alle $250$ Lernschritte hart synchronisiert. Weil der Puffer je Iteration $32$ Transitionen aufnimmt, erreicht er die Mindestfüllung in Iteration $32$. Über den gesamten Lauf führt der Agent damit $19\,969$ Lernschritte mit je $64$ Transitionen aus und synchronisiert das Zielnetz $79$-mal. Ab Iteration $1563$ ist der Puffer voll, und neue Transitionen überschreiben die ältesten. Pro Seed (0, 1, 2) beginnt der Lauf mit neu initialisierten Netzen und eigenem Zufallsgenerator für die Flüsse. Die Seeds setzen Python-, NumPy- und PyTorch-Generatoren (inklusive CUDA).
+Algorithmus~\ref{alg:training} fasst die Trainingsschleife je Seed zusammen. Die Explorationsrate fällt linear von $1{,}0$ auf $0{,}02$ innerhalb der ersten $40\,\%$ der Iterationen ($8000$) und bleibt danach konstant. Der Optimierer ist Adam mit Lernrate $10^{-4}$, der die Schrittweite je Gewicht aus gleitenden Schätzungen des ersten und zweiten Gradientenmoments anpasst \autocite{kingmaAdamMethodStochastic2015}. Das Zielnetz wird alle $250$ Lernschritte hart synchronisiert. Weil der Puffer je Iteration $32$ Transitionen aufnimmt, erreicht er die Mindestfüllung von $1000$ Einträgen in Iteration $32$. Über den gesamten Lauf führt der Agent damit $19\,969$ Lernschritte mit je $64$ Transitionen aus und synchronisiert das Zielnetz $79$-mal. Ab Iteration $1563$ ist der Puffer voll, und neue Transitionen überschreiben die ältesten. Pro Seed (0, 1, 2) beginnt der Lauf mit neu initialisierten Netzen und eigenem Zufallsgenerator für die Flüsse. Die Seeds setzen Python-, NumPy- und PyTorch-Generatoren (inklusive CUDA).
+
+\begin{algorithm}[htbp]
+	\small
+	\caption{DDQN-Training mit gemischtem SNR je Seed (entspricht \texttt{train} und \texttt{learn} in \texttt{train\_eval.py})}
+	\label{alg:training}
+	\Ein{$N=20\,000$ Iterationen, $B_{\mathrm{f}}=32$ Flüsse je Iteration, Mini-Batch $B=64$, Lernstart $L=1000$, Zielnetz-Takt $C=250$, Lernrate $\alpha=10^{-4}$}
+	\Aus{trainiertes Online-Netz $\theta$}
+	initialisiere $\theta$ zufällig, setze $\bar\theta\leftarrow\theta$ und leere den Replay-Puffer $\mathcal{D}$ (Kapazität $50\,000$)\;
+	\Fuer{$i=0,\dots,N-1$}{
+		$\epsilon\leftarrow\max\bigl(0{,}02;\ 1{,}0-0{,}98\,i/(0{,}4\,N)\bigr)$\;
+		ziehe $B_{\mathrm{f}}$ Flüsse $(\mathbf{x}_m,c_m)$ mit je zufälligem $\mathrm{SNR}_m\in\{30,20,10,5\}$\,dB und bilde $\mathbf{y}_m=\mathbf{x}_m+\mathbf{n}_m$\;
+		wähle $a_m$ $\epsilon$-greedy bezüglich $Q(\mathbf{y}_m,\cdot\,;\theta)$ und setze $r_m\leftarrow\mathcal{R}(a_m,c_m)$\;
+		lege die Transitionen $(\mathbf{y}_m,a_m,r_m,\mathbf{y}'_m=\mathbf{y}_m,d_m=1)$ in $\mathcal{D}$ ab\;
+		\Wenn{$|\mathcal{D}|\ge L$}{
+			ziehe $B$ Transitionen gleichverteilt aus $\mathcal{D}$\;
+			$Y_m\leftarrow r_m+\gamma\,(1-d_m)\,Q\bigl(\mathbf{y}'_m,\arg\max_{a'}Q(\mathbf{y}'_m,a';\theta);\bar\theta\bigr)$ \tcp*{$=r_m$, da $d_m=1$}
+			Adam-Schritt mit Lernrate $\alpha$ auf $\frac{1}{B}\sum_m\ell_{\mathrm{H}}\bigl(Q(\mathbf{y}_m,a_m;\theta)-Y_m\bigr)$, Gradientennorm $\le10$\;
+			\lWenn{Zahl der Lernschritte durch $C$ teilbar}{$\bar\theta\leftarrow\theta$}
+		}
+	}
+\end{algorithm}
 
 \section{Implementierung in der praktischen Pipeline}
 \label{sec:praktische_pipeline}

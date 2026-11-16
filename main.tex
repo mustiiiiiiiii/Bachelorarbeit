@@ -11,6 +11,7 @@
 \usepackage{xcolor}
 \usepackage{booktabs}
 \usepackage{array}
+\usepackage{longtable}
 % Linksbündige Absatzspalte für Tabellen (vermeidet gedehnte Wortabstände)
 \newcolumntype{L}[1]{>{\raggedright\arraybackslash}p{#1}}
 \usepackage{csquotes}
@@ -62,6 +63,8 @@
 % ---------------------------------------------------------------
 \usepackage[left=3cm, right=2.5cm, top=2.5cm, bottom=2.5cm]{geometry}
 \usepackage[hidelinks]{hyperref}
+% Pseudocode (deutsche Schlüsselwörter, Name "Algorithmus")
+\usepackage[german, ruled, vlined, linesnumbered, algochapter]{algorithm2e}
 \usepackage{scrlayer-scrpage}
 \pagestyle{scrheadings}
 \clearpairofpagestyles
@@ -122,6 +125,8 @@
 \listoffigures
 \clearpage
 \listoftables
+\clearpage
+\input{verzeichnisse}
 \clearpage
 \pagenumbering{arabic}
 \setcounter{page}{1}

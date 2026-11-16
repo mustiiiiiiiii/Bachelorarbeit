@@ -19,18 +19,16 @@ import matplotlib
 
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
-from matplotlib.ticker import FuncFormatter, MaxNLocator
+from matplotlib.ticker import MaxNLocator
 import numpy as np
 
 from bayes_referenz import PI, bayes_point, mahalanobis_sq
 from train_eval import SIGMA, SNR_LEVELS_DB
+import plot_stil
 
 HERE = Path(__file__).parent
 
-plt.rcParams.update({
-    "font.family": "serif", "font.size": 10, "axes.labelsize": 11, "legend.fontsize": 9,
-    "pdf.fonttype": 42, "ps.fonttype": 42,
-})
+plot_stil.anwenden(**{"axes.labelsize": 11, "legend.fontsize": 9})
 
 
 # ---------------------------------------------------------------- Messwerte
@@ -105,7 +103,7 @@ for ax, snr in zip(axes.flat, SNR_LEVELS_DB):
     ax.tick_params(labelsize=8.5)
     for axis in (ax.xaxis, ax.yaxis):
         axis.set_major_locator(MaxNLocator(5))
-        axis.set_major_formatter(FuncFormatter(lambda v, _: f"{v:.2f}".replace(".", ",")))
+        axis.set_major_formatter(plot_stil.komma(2))
 
 for ax in axes[1]:
     ax.set_xlabel("Recall")

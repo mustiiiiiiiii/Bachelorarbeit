@@ -1,0 +1,116 @@
+% ---------------------------------------------------------------
+% Abkürzungs- und Symbolverzeichnis (Vorspann)
+% ---------------------------------------------------------------
+\addchap{Abkürzungsverzeichnis}
+\begingroup
+\renewcommand{\theHtable}{abkverz.\arabic{table}}
+\small
+\renewcommand{\arraystretch}{1.12}
+\begin{longtable}{@{}p{2.3cm}p{12.4cm}@{}}
+A3C & Asynchronous Advantage Actor-Critic \\
+AC & Actor-Critic \\
+ACK & Acknowledgement (TCP-Flag) \\
+AE-RL & Adversarial Environment Reinforcement Learning \\
+AWGN & Additive White Gaussian Noise, additives weißes gaußsches Rauschen \\
+BIM & Basic Iterative Method \\
+C-LSTM & kombinierte CNN-LSTM-Architektur \\
+CNN & Convolutional Neural Network \\
+CSV & Comma-Separated Values \\
+CUDA & Compute Unified Device Architecture \\
+DDoS & Distributed Denial of Service \\
+DDPG & Deep Deterministic Policy Gradient \\
+DDQN & Double Deep Q-Network \\
+DQN & Deep Q-Network \\
+DRL & Deep Reinforcement Learning \\
+ELA & Equalized Loss of Accuracy \\
+FF & Forschungsfrage \\
+FGSM & Fast Gradient Sign Method \\
+FIN & Finish (TCP-Flag) \\
+FN & False Negative, verpasster Angriff \\
+FP & False Positive, Fehlalarm \\
+GPU & Graphics Processing Unit \\
+HTTP & Hypertext Transfer Protocol \\
+IDS & Intrusion Detection System \\
+IoT & Internet of Things \\
+IP & Internet Protocol \\
+KI & Künstliche Intelligenz \\
+$k$-NN & $k$-Nearest-Neighbors \\
+LSTM & Long Short-Term Memory \\
+MDP & Markov-Entscheidungsprozess (Markov Decision Process) \\
+ML & maschinelles Lernen (Machine Learning) \\
+MLP & Multilayer Perceptron \\
+MSE & mittlerer quadratischer Fehler (Mean Squared Error) \\
+NIDS & Network Intrusion Detection System \\
+NN & neuronales Netz \\
+PCAP & Packet Capture (Mitschnittformat) \\
+PG & Policy Gradient \\
+PPO & Proximal Policy Optimization \\
+RBF & radiale Basisfunktion \\
+ReLU & Rectified Linear Unit \\
+RF & Random Forest \\
+RNG & Zufallszahlengenerator (Random Number Generator) \\
+RL & Reinforcement Learning \\
+RLA & Relative Loss of Accuracy \\
+RNN & rekurrentes neuronales Netz \\
+RST & Reset (TCP-Flag) \\
+SA-MDP & State-Adversarial Markov Decision Process \\
+SDN & Software-Defined Networking \\
+SMOTE & Synthetic Minority Over-sampling Technique \\
+SNR & Signal-Rausch-Verhältnis (Signal-to-Noise Ratio) \\
+SVM & Support Vector Machine \\
+SYN & Synchronize (TCP-Flag) \\
+TCP & Transmission Control Protocol \\
+TN & True Negative \\
+TP & True Positive \\
+UDP & User Datagram Protocol \\
+XAI & Explainable AI \\
+\end{longtable}
+\endgroup
+
+\addchap{Symbolverzeichnis}
+\begingroup
+\renewcommand{\theHtable}{symverz.\arabic{table}}
+\small
+\renewcommand{\arraystretch}{1.18}
+\renewcommand{\arraystretch}{1.06}
+\begin{longtable}{@{}p{3.0cm}p{11.7cm}@{}}
+\multicolumn{2}{@{}l}{\textbf{Generatormodell und Kanal}}\\[2pt]
+$\mathbf{x}\in\mathbb{R}^{8}$ & unverrauschter Merkmalsvektor eines Flusses \\
+$\mathbf{y}\in\mathbb{R}^{8}$ & beobachteter, verrauschter Merkmalsvektor \\
+$\mathbf{n}$ & Rauschvektor des AWGN-Kanals \\
+$c$ & Klassenlabel, $0$ Normal, $1$ DDoS \\
+$\pi$ & Angriffsanteil (Prior der Klasse DDoS), $\pi=0{,}3$ \\
+$\boldsymbol{\mu}_c$, $\Delta\mu_j$ & Klassenmittelwerte, Mittelwertabstand im Merkmal $j$ \\
+$\sigma$ & intrinsische Klassenstreuung je Merkmal, $\sigma=0{,}20$ \\
+$P_j$ & Signalleistung des Merkmals $j$ \\
+$\sigma_{n,j}^2$, $\boldsymbol{\Sigma}_n$ & Rauschvarianz des Merkmals $j$, Kovarianzmatrix des Rauschens \\
+$h$ & Kanalfaktor, hier $h=1$ \\[4pt]
+\multicolumn{2}{@{}l}{\textbf{Entscheidungstheorie}}\\[2pt]
+$p$ & Angriffs-Posterior $P(\mathrm{DDoS}\mid\mathbf{y})$ \\
+$t$ & Posterior-Schwelle eines Modells, implizite Schwelle \\
+$D$, $D^2$ & Mahalanobis-Abstand der Klassenmittel \\
+$\Lambda(\mathbf{y})$ & Log-Likelihood-Verhältnis (Prüfgröße) \\
+$\mathbf{w}$ & Normalenvektor der Bayes-Grenze, $w_j=\Delta\mu_j/(\sigma^2+\sigma_{n,j}^2)$ \\
+$\lambda$ & Schwellenverschiebung durch den Prior, $\lambda=\ln\bigl((1-\pi)/\pi\bigr)$ \\
+$\tau(t)$ & Schwelle auf $\Lambda$, die der Posterior-Schwelle $t$ entspricht \\
+$P_e$, $P_e^{\pi}$ & Bayes-Fehlerwahrscheinlichkeit bei gleichen bzw. tatsächlichen Priors \\
+$Q_{\mathrm{G}}(z)$ & Gaußsche Q-Funktion \\[4pt]
+\multicolumn{2}{@{}l}{\textbf{Reinforcement Learning und Training}}\\[2pt]
+$s$, $s'$ & Zustand und Folgezustand im allgemeinen MDP \\
+$a$ & Aktion, hier die Entscheidung Normal ($0$) oder DDoS ($1$) \\
+$r$, $G_k$ & Reward, diskontierter Return ab Schritt $k$ \\
+$R_{\mathrm{TP}},\dots,R_{\mathrm{FN}}$ & Einträge der Reward-Matrix \\
+$\gamma$ & Diskontierungsfaktor \\
+$d$ & Terminal-Flag einer Transition \\
+$Q(\mathbf{y},a)$ & Aktionswertfunktion (Q-Wert) \\
+$Q_{\mathrm{H}}$ & Q-Wert bei Regression mit Huber-Verlust \\
+$\theta$, $\bar{\theta}$ & Parameter von Online- und Zielnetz \\
+$Y$ & Regressionsziel des Q-Netzes \\
+$\ell_{\mathrm{H}}$ & Huber-Verlust ($\beta=1$) \\
+$\epsilon$, $\alpha$ & Explorationsrate, Lernrate \\
+$\eta^2$, $\Omega$ & Varianz des Eingangsrauschens und Tikhonov-Strafterm nach Bishop \\[4pt]
+\multicolumn{2}{@{}l}{\textbf{Bewertung}}\\[2pt]
+$\mathrm{F1}_s$ & F1-Score bei der SNR-Stufe $s$ \\
+$\mathrm{RLA}_s$, $\mathrm{ELA}_s$ & Relative und Equalized Loss of Accuracy nach Sáez et al. \\
+\end{longtable}
+\endgroup

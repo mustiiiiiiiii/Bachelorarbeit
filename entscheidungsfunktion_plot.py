@@ -27,19 +27,16 @@ import torch
 from sklearn.metrics import precision_recall_fscore_support
 
 from bayes_referenz import huber_differenz, posterior, posterior_mischung
+import plot_stil
 from eval_baselines import N_TRAIN, make_models
 from train_eval import N_ACTIONS, N_FEATURES, SEEDS, SNR_LEVELS_DB, Config, QNet, sample_flows
 
 HERE = Path(__file__).parent
 SNRS = (30, 5)
 C_DDQN, C_MLP = "C0", "C3"          # wie Abb. 7.2/7.3
-KOMMA = FuncFormatter(lambda v, _: f"{v:.2f}".rstrip("0").rstrip(".").replace(".", ",").replace("-", "−"))
+KOMMA = plot_stil.komma(2, kuerzen=True)
 
-plt.rcParams.update({
-    "font.family": "serif", "font.size": 10, "axes.labelsize": 9.5, "legend.fontsize": 8,
-    "xtick.labelsize": 8.5, "ytick.labelsize": 8.5, "pdf.fonttype": 42, "ps.fonttype": 42,
-    "mathtext.fontset": "cm",
-})
+plot_stil.anwenden(**{"axes.labelsize": 9.5, "legend.fontsize": 8})
 
 
 def testfluesse(seed: int, snr: int, n: int):
@@ -123,7 +120,7 @@ def main() -> int:
         # DDQN
         ax = axes[0, col]
         xc, med, lo, hi = band(p, dq, edges)
-        ax.fill_between(xc, lo, hi, color=C_DDQN, alpha=0.22, lw=0, label="DDQN, 10–90 %")
+        ax.fill_between(xc, lo, hi, color=C_DDQN, alpha=0.22, lw=0, label=r"DDQN, 10--90\,\%")
         ax.plot(xc, med, color=C_DDQN, lw=1.6, label="DDQN, Median")
         pp = np.linspace(0, 1, 2)
         ax.plot(pp, 4.5 * pp - 1.5, color="0.1", lw=1.0, ls=(0, (5, 2.5)), label=r"Soll MSE: $4{,}5\,p-1{,}5$")
@@ -143,7 +140,7 @@ def main() -> int:
         # MLP
         ax = axes[1, col]
         xc, med, lo, hi = band(p, pm, edges)
-        ax.fill_between(xc, lo, hi, color=C_MLP, alpha=0.20, lw=0, label="MLP, 10–90 %")
+        ax.fill_between(xc, lo, hi, color=C_MLP, alpha=0.20, lw=0, label=r"MLP, 10--90\,\%")
         ax.plot(xc, med, color=C_MLP, lw=1.6, label="MLP, Median")
         ax.plot(pp, pp, color="0.1", lw=1.0, ls=(0, (5, 2.5)), label="Soll (kalibriert)")
         ax.axhline(0.5, color="0.45", lw=0.6)
@@ -167,7 +164,7 @@ def main() -> int:
         print("           Referenzen ohne SNR-Kenntnis: " + ", ".join(f"{k}: t={v:.3f}" for k, v in ref_t.items()))
     axes[0, 0].set_ylabel(r"$Q(\mathbf{y},1)-Q(\mathbf{y},0)$")
     axes[1, 0].set_ylabel(r"$P_{\mathrm{MLP}}(\mathrm{DDoS}\mid\mathbf{y})$")
-    axes[2, 0].set_ylabel("Anteil in %")
+    axes[2, 0].set_ylabel(r"Anteil in \%")
     for ax in axes.flat:
         ax.set_xlim(0, 1)
         ax.xaxis.set_major_locator(MaxNLocator(5))

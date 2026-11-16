@@ -31,13 +31,13 @@ Stilregeln für alle Texte: `CLAUDE.md`.
 
 ## Nachgerechnete Größen
 
-Bis auf die zwei als solche markierten Zeilen ohne neue Trainingsläufe.
+Bis auf die als solche markierten Zeilen ohne neue Trainingsläufe.
 
 | Größe | Quelle / Methode | Stelle |
 |---|---|---|
 | Bayes-Fehler bei π = 0,3: 6,2 / 6,6 / 10,4 / 16,2 % | analytisch aus Generatormodell | Tab. `tab:klassenueberlappung` |
 | Bayes-optimaler F1 je Schwelle | analytisch (LLR ~ N(±D²/2, D²)) | Tab. `tab:bayes_grenze` |
-| Mittlerer Reward je Fluss | aus P/R je Lauf + rekonstruierter Zahl der Angriffsflüsse (deterministische Test-RNGs) | Kap. 7, `sec:baseline_vergleich` |
+| Mittlerer Reward je Fluss, 4 Modelle × 4 SNR-Stufen (30 dB: DDQN 0,509, MLP 0,497, SVM 0,484, RF 0,465) | **reproduzierte Modelle**, direkt aus den Entscheidungen auf den Testflüssen, `reward_tabelle.py` (prüft vorher alle 144 P/R/F1-Werte beider CSVs, erzeugt `reward_tabelle.tex`) | Tab. `tab:reward` (7.3) |
 | RLA / ELA | aus mittleren F1-Werten der CSVs | Tab. `tab:rla_ela` |
 | 19 969 Lernschritte, 79 Zielnetz-Syncs | aus `Config` in `train_eval.py` | Kap. 5, `sec:training_optimierung` |
 | Bayes-PR-Kurven, Bayes-Punkte p > 1/2 und p > 1/3 | geschlossen aus LLR ~ N(±D²/2, D²), `pr_ebene_plot.py` | Abb. `fig:pr_ebene` (Kap. 7) |
@@ -46,6 +46,7 @@ Bis auf die zwei als solche markierten Zeilen ohne neue Trainingsläufe.
 | Nullstelle der Q-Differenz bei Huber-Verlust (β = 1): 3/7 ≈ 0,43 (MSE: 1/3) | geschlossen, `bayes_referenz.huber_differenz` | Kap. 5, `sec:dqn_architektur` |
 | Modellbasierte Nulldurchgänge: DDQN 0,42 (30 dB) / 0,37 (5 dB), MLP 0,54 / 0,40; ohne SNR-Kenntnis erwartet: Huber 0,45 / 0,40, MLP-Schwelle 0,535 / 0,44 | **neue Trainingsläufe, exakt reproduziert** (`modelle_nachtrainieren.py`), Auswertung `entscheidungsfunktion_plot.py` | Abb. `fig:entscheidungsfunktion`, `sec:reward_recall` |
 | MSE-Kontrolllauf Seed 0: Nulldurchgang 0,30–0,32; P/R/F1 bei 30 dB 0,8442/0,9286/0,8844 | **neuer Trainingslauf, nur Diagnose** (`kontrolle_mse_verlust.py`), ändert keine CSV | 7.1.1, 7.5, 8 (FF1) |
+| Bayes-Posterior entlang der DDQN-Grenze im Schnitt (y₁, y₄): 0,36–0,43 (30 dB), 0,30–0,41 (5 dB) | **reproduzierte Modelle** (Seed 0), Konsolenausgabe von `entscheidungsgrenzen_plot.py` | Abb. `fig:entscheidungsgrenzen` (7.5), 7.4 |
 
 ## Abbildungen
 
@@ -64,28 +65,40 @@ Bis auf die zwei als solche markierten Zeilen ohne neue Trainingsläufe.
   über der Bayes-Posterior. Braucht `modelle/ddqn_seed{0,1,2}.pt` aus `modelle_nachtrainieren.py`. Das MLP wird neu gefittet
   und gegen `baseline_results.csv` geprüft, bei Abweichung bricht das Skript ab.
 - TikZ: Abb. 5.3 (Backup-Diagramme, Sutton-Notation) in Kap. 5.3, Abb. 4.1 oben mit AWGN-Kanal als Addierer ⊕ (Proakis-Notation).
+- `entscheidungsgrenzen_plot.py` → `entscheidungsgrenzen_plot.pdf` (Abb. 7.5): Schnitt (y₁, y₄) durch den Merkmalsraum mit
+  RF-Regionen, Grenzen von DDQN und MLP, Bayes-Grenzen bei 1/2, 1/3 und 3/7 und Normalenvektor **w**. Modelle aus Seed 0, RF und MLP
+  werden gegen `baseline_results.csv` geprüft.
+- `reward_tabelle.py` → `reward_tabelle.tex` (Tab. 7.3, per `\input` eingebunden, **nicht von Hand ändern**).
+- `plot_stil.py`: gemeinsamer Stil aller Matplotlib-Abbildungen (LaTeX-Satz in Computer Modern wie der Fließtext,
+  Dezimalkomma). Genutzt von `generate_plot.py`, `pr_ebene_plot.py`, `llr_signalraum_plot.py`, `entscheidungsfunktion_plot.py`,
+  `entscheidungsgrenzen_plot.py`. `create_3d_plot.py` setzt usetex selbst.
 
 ## Build
 
-- `pdflatex → biber → pdflatex → pdflatex`, Ergebnis zuletzt: 52 Seiten, 0 Fehler, 0 Warnungen (LaTeX und biber), 0 Overfull, 0 Underfull.
+- `pdflatex → biber → pdflatex → pdflatex`, Ergebnis zuletzt: 58 Seiten, 0 Fehler, 0 Warnungen (LaTeX und biber), 0 Overfull, 0 Underfull.
 - `main.tex` enthält Spaltentyp `L{…}` (linksbündig, Paket `array`), URL-Umbrüche für biblatex und `\emergencystretch`.
 - `main.bcf`, `main.run.xml` und `main.pdf` sind nicht versioniert (Build-Artefakte, lokal kompilieren).
+- Zusatzpakete: `longtable` (Verzeichnisse in `verzeichnisse.tex`, eigene hyperref-Anker über `\theHtable`) und
+  `algorithm2e` mit den Optionen `german, ruled, vlined, linesnumbered, algochapter` (Algorithmus 5.1, deutsche Schlüsselwörter
+  `\Ein`, `\Aus`, `\Fuer`, `\Wenn`).
 
 ## Offen
 
-Inhaltlich und technisch keine offenen Punkte: Quellen geprüft, Kap. 7 und Fazit konsistent, Build sauber (50 Seiten, 0 Fehler, 0 Warnungen).
+Inhaltlich und technisch keine offenen Punkte: Quellen geprüft, Kap. 7 und Fazit konsistent, Build sauber (58 Seiten, 0 Fehler, 0 Warnungen).
+Offen sind die zwei Betreuer-Fragen (Abschnitt „Offene Fragen an den Betreuer“) und die Formalia unten.
 Hinweis: Henderson 2018 bleibt ohne Seitenzahlen (siehe Literatur), das Zitat ist über die DOI vollständig.
 
 ### Vor der Abgabe (manuell)
 
-1. **Deckblatt:** In `main.tex` gibt es eine eigene `titlepage` (Z. 78–101). Sie ist gegen die Vorgaben des Fachgebiets
+1. **Deckblatt:** In `main.tex` gibt es eine eigene `titlepage` (Z. 91–115). Sie ist gegen die Vorgaben des Fachgebiets
    Kommunikationsnetze bzw. der Fakultät EI der TU Ilmenau zu prüfen (Titel laut `Aufgabenstellung_Bachelorarbeit.pdf`,
    Betreuer, Matrikelnummer, Datum).
 2. **Eigenständigkeitserklärung:** Fehlt noch im LaTeX-Quelltext. Wortlaut und Position gemäß gültiger Prüfungsordnung
    der TU Ilmenau einfügen und unterschreiben. Eine ggf. geforderte Erklärung zum Einsatz von KI-Werkzeugen gehört dazu.
 3. **Letzter Textdurchgang:** Korrekturlesen auf Rechtschreibung, Stil (`CLAUDE.md`) und Abbildungs- und Tabellenverweise.
    Ein vollständiges Korrekturlesen fand in den Sitzungen nicht statt.
-4. Danach vollständig kompilieren und das PDF für die Abgabe erzeugen (`main.pdf` ist nicht versioniert).
+4. **Kurzfassung/Abstract:** fehlt noch. Prüfen, ob die Prüfungsordnung eine deutsche und/oder englische Kurzfassung verlangt.
+5. Danach vollständig kompilieren und das PDF für die Abgabe erzeugen (`main.pdf` ist nicht versioniert).
 
 ## Qualitäts- und Visualisierungsphase (ab 2026-11-15)
 
@@ -228,13 +241,33 @@ hängen von den Vorgaben der Prüfungsordnung ab.
 - Abbildungsnummern in Kap. 7 verschoben: Entscheidungsfunktion 7.2, F1-Vergleich 7.3, PR-Ebene 7.4.
 - `compressedPDFs/` (Screenshot-Sammlung, fremde Abbildungen) bleibt unversioniert und steht in der `.gitignore`.
 
-### Offene Frage an den Betreuer (Prof. Seitz)
+### Methodisch-didaktischer Audit Kap. 1–8 (2026-11-16)
+
+- **Neu:** Abschnitt 2.5 „Grundlagen des Reinforcement Learning“ (MDP, Return, Bellman-Gleichung, Q-Learning, DQN, Double DQN
+  mit Gl. 2.6/2.7, Ein-Schritt-Fall als kontextueller Bandit mit Spielautomat-Analogie). 5.3 verweist darauf, statt die Ziele
+  doppelt herzuleiten. Detektor-Analogie (Schwelle: Entdeckung gegen Fehlalarm) in 2.4.3.
+- **Neu:** Algorithmus 5.1 (Trainingsschleife), Zeile für Zeile gegen `train()`/`learn()` geprüft. Die Prosa in 5.5 ist gekürzt.
+- **Neu:** Tab. 7.3 (mittlerer Reward je Fluss) und Abb. 7.5 (Entscheidungsgrenzen im Schnitt). Abkürzungs- und
+  Symbolverzeichnis im Vorspann (S. V–VII).
+- **Typografie:** Alle Plots in Computer Modern (vorher DejaVu), Zahlenwerte unverändert.
+- **Symbole bereinigt:** Lernrate α (η ist bei Bishop die Rauschvarianz), Laufindex im Algorithmus m, „Zielnetz“ statt „Target-Netz“.
+- **Tabellennummern in Kap. 7 verschoben:** Mittlerer Reward 7.3, RLA/ELA 7.4, Bayes-Referenz 7.5. Abbildungen 7.1–7.4 unverändert,
+  neu ist Abb. 7.5.
+- **Bewusst weggelassen** (kein Erkenntnisgewinn oder irreführend): 3D-Decision-Regions, CNN-/Topologie-Diagramme,
+  Konfusionsmatrizen, Box-/Kreis-/Balkendiagramme, Spiel- und Physik-Analogien, weitere Herleitungen, externe Zeichenwerkzeuge.
+
+### Offene Fragen an den Betreuer (Prof. Seitz)
 
 - **Aufgabenstellung vs. synthetisches Modell:** Die Aufgabenstellung verlangt, „an einem Data Set, das den Netzverkehr mit einem
   DDoS-Angriff beschreibt, die Erkennung des Angriffs zu demonstrieren“. Die Arbeit evaluiert ausschließlich auf einem
   parametrischen Gauß-Flussmodell, das sich an DDoS-AT-2022 und IoT-DH orientiert (Begründung: kontrollierbares SNR,
   analytische Bayes-Grenze). Die Arbeit legt das offen (4.1, Kap. 8 Ausblick). Vor der Abgabe klären, ob das akzeptiert wird
   oder ob ein ergänzender Lauf auf einem der Originaldatensätze erwartet wird.
+- **Zahl der Seeds (n = 3):** Alle Mittelwerte und Streuungen beruhen auf drei Seeds. Die Abstände zwischen DDQN und MLP
+  (0,25–0,62 Prozentpunkte F1, 0,011–0,016 Reward je Fluss) liegen in der Größenordnung der Seed-Streuung, die Arbeit nennt
+  sie deshalb ausdrücklich nicht signifikant. Henderson et al. 2018 zeigen, dass schon 2 × 5 Seeds verschiedene Ergebnisse
+  liefern können. Ein Lauf mit 10 Seeds wäre technisch schnell machbar (DDQN ca. 2 min je Seed auf der RTX 2060, Baselines
+  wenige Minuten), würde aber alle Tabellen und Zahlen in Kap. 7 und 8 ändern. Vor der Abgabe klären, ob das erwartet wird.
 
 ### Vorgemerkt für das Ende des Seiten-Checks
 
@@ -242,7 +275,7 @@ hängen von den Vorgaben der Prüfungsordnung ab.
 
 ### Nächste Seiten
 
-Technische Qualitätsphase abgeschlossen. Offen sind nur die Betreuer-Frage und die manuellen Formalia (siehe „Vor der Abgabe“).
+Technische Qualitätsphase und Audit abgeschlossen. Offen sind nur die Betreuer-Fragen und die manuellen Formalia (siehe „Vor der Abgabe“).
 
 ## Arbeitsweise
 
