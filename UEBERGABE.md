@@ -321,6 +321,21 @@ Alle .tex-Dateien (Kap. 1–8, Anhang, `main.tex`, `verzeichnisse.tex`) vollstä
   Genitiv „eines Double Deep Q-Networks“ (Kap. 1), korrigiert. `.vscode/settings.json` setzt `ltex.language` auf `de-DE`;
   ohne diese Einstellung prüft LTeX+ die .tex-Dateien als Englisch.
 
+### Komplett-Audit vor der Abgabe (2026-11-17)
+
+Alle .tex-Dateien vollständig gelesen; 122 `\autocite` (140 Schlüsselnennungen) automatisch gegen alle 29 Quell-PDFs
+abgeglichen (Zahlen, Fachbegriffe) und jede Literaturzahl im PDF-Kontext nachgelesen; Plagiatsabgleich (gemeinsame
+7-Wort-Folgen mit allen Quellen: nur Fachbegriffe); Formeln numerisch nachgerechnet (Huber-Minimierer, Elkans p*,
+TikZ-Dichten Abb. 4.1); Implementierungsaussagen gegen `train_eval.py`; Stilstatistik; Sichtprüfung aller 63 Seiten.
+- **Umgesetzt:** Wiederholungen gestrichen (AE-RL-Absatz 3.4, π = 0,3/37 % in 4.5, Füllsatz 5.3, doppelte Einordnung in der
+  Überschrift von Tab. 3.2). Belege korrigiert: Entropie-Merkmale kommen in DDoS-AT-2022, IoT-DH und Rasas eigener
+  Merkmalsauswahl nicht vor (jetzt Paketrate, Zeitabstände, Flag-Zähler; Entropie nur noch als Ansatz aus Rasas
+  Literaturübersicht, 3.2.3 und 4.3), „frühe … NetFlow“ unbelegt (3.2), Henderson gilt für TRPO (7.1). XAI ausgeschrieben
+  („erklärbare Künstliche Intelligenz“). Doppelpunkt-Konstruktionen in 2.4.3, 7 und 8 aufgelöst.
+- **Bestätigt:** Alle Literaturzahlen stehen wörtlich in den PDFs. IoT-DH 37 %: Saif et al. haben die Konfusionsmatrix
+  (Tab. 3) vertauscht beschriftet; maßgeblich sind Tab. 2 (Support Klasse 1 = 748) und die Labeldefinition.
+- Layout per Vergleichsbuild unverändert: 63 Seiten, alle Kapitel- und Abschnittsanfänge auf denselben Seiten.
+
 ### Offene Fragen an den Betreuer (Prof. Seitz)
 
 - **Aufgabenstellung vs. synthetisches Modell:** Die Aufgabenstellung verlangt, „an einem Data Set, das den Netzverkehr mit einem

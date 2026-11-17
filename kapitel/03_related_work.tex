@@ -9,7 +9,7 @@ Die folgenden Abschnitte behandeln die vier Stränge in dieser Reihenfolge. Absc
 
 \section{Klassische Verfahren des maschinellen Lernens}
 
-Frühe lernbasierte DDoS-Detektoren arbeiten überwacht auf Merkmalen aus NetFlow-Daten oder Paketmitschnitten. Eingesetzt werden vor allem Entscheidungsbäume, Random Forests, SVM, $k$-NN und logistische Regression~\autocite{balaAITechniquesIoTbased2024}. Diese Modelle sind schnell trainiert, auf mittleren Datenmengen stabil und zum Teil direkt interpretierbar.
+Klassische lernbasierte DDoS-Detektoren arbeiten überwacht auf Fluss- oder Paketmerkmalen. Eingesetzt werden vor allem Entscheidungsbäume, Random Forests, SVM, $k$-NN und logistische Regression~\autocite{balaAITechniquesIoTbased2024}. Diese Modelle sind schnell trainiert, auf mittleren Datenmengen stabil und zum Teil direkt interpretierbar.
 
 \subsection{Entscheidungsbäume und Random Forests}
 
@@ -23,7 +23,7 @@ SVM legen die Entscheidungsgrenze so, dass der Abstand zu den nächstgelegenen T
 
 \subsection{Feature-basierte Netzwerkanalyse und statistische Modelle}
 
-Statistische Verfahren werten einzelne Flussgrößen direkt aus: Paketgrößen, Paketraten, SYN-Anteile oder die Entropie der Quelladressen, die bei verteilten Angriffen ansteigt. Logistische Regression oder gaußsche Klassenmodelle kombinieren wenige solcher Größen zu einer Entscheidung, und jede Auffälligkeit lässt sich einem Merkmal zuordnen. Überlappen legitimer Lastanstieg und Angriff in diesen Größen, wie beim Flash-Traffic in \mbox{DDoS-AT-2022}~\autocite{mittalDDoSAT2022DistributedDenial2023}, sinkt ihre Trennschärfe. Das Generatormodell dieser Arbeit ist selbst ein solches gaußsches Klassenmodell (Abschnitt~\ref{sec:generatormodell}).
+Statistische Verfahren werten einzelne Flussgrößen direkt aus, etwa Paketgrößen, Paketraten oder SYN-Anteile. Entropiebasierte Detektoren betrachten zusätzlich die Verteilung von Adressen und Ports, Raza et al. führen solche Ansätze für TCP-SYN- und ICMP-Floods in ihrer Literaturübersicht auf~\autocite{razaFeatureSelectionBasedDDoSAttack2024}. Logistische Regression oder gaußsche Klassenmodelle kombinieren wenige solcher Größen zu einer Entscheidung, und jede Auffälligkeit lässt sich einem Merkmal zuordnen. Überlappen legitimer Lastanstieg und Angriff in diesen Größen, wie beim Flash-Traffic in \mbox{DDoS-AT-2022}~\autocite{mittalDDoSAT2022DistributedDenial2023}, sinkt ihre Trennschärfe. Das Generatormodell dieser Arbeit ist selbst ein solches gaußsches Klassenmodell (Abschnitt~\ref{sec:generatormodell}).
 
 \section{Deep-Learning-Ansätze}
 \label{sec:rw_deep_learning}
@@ -49,8 +49,6 @@ Reinforcement Learning (RL) formuliert die Erkennung als Interaktion eines Agent
 Für die Angriffserkennung auf Flussmerkmalen ist die Arbeit von Lopez-Martin et al. der direkte Bezugspunkt~\autocite{lopez-martinApplicationDeepReinforcement2020}. Sie formulieren die überwachte Klassifikation eines Intrusion-Detection-Systems (IDS) als RL-Aufgabe: Der Zustand ist der Merkmalsvektor eines Datensatzeintrags, die Aktion ist das vorhergesagte Label, und der Reward bewertet die Übereinstimmung mit dem wahren Label. Auf NSL-KDD und AWID vergleichen sie Deep Q-Network (DQN), Double DQN (DDQN), Policy Gradient (PG) und Actor-Critic (AC). DDQN liefert dort die besten Ergebnisse, und die trainierten Agenten klassifizieren schneller als die verglichenen Alternativmodelle. Das Environment-Design dieser Arbeit (Zustand $\mathbf{y}\in\mathbb{R}^8$, Aktion $a\in\{0,1\}$, Ein-Schritt-Episode) folgt demselben Schema. Ausgewertet wird bei Lopez-Martin et al. jedoch ausschließlich auf ungestörten Merkmalen.
 
 Caminero et al. gehen einen Schritt weiter und ersetzen die passive Datenquelle durch einen zweiten, adversarialen Agenten~\autocite{camineroAdversarialEnvironmentReinforcement2019}. Ihr Verfahren AE-RL trainiert zwei DQN-Agenten parallel: Der Klassifikator-Agent sagt das Label voraus, der Umgebungs-Agent wählt die Angriffsklasse der nächsten Stichprobe so, dass der Klassifikator möglichst häufig falsch entscheidet. Das Ziel ist ein ausgewogenes Lernen auf stark unbalancierten Datensätzen. Evaluiert wird auf NSL-KDD und AWID, verglichen mit überwachten Verfahren (u.\,a. Random Forest, SVM, MLP) und den DRL-Algorithmen DDQN, Dueling DDQN und Asynchronous Advantage Actor-Critic (A3C). Die Schwierigkeit der Datenverteilung wird damit Teil des Trainings. Gestört wird aber die Auswahl der Stichproben, nicht der Wert der Merkmale.
-
-Adversariale RL-Ansätze modellieren die Erkennung als Spiel zwischen Angreifer und Verteidiger. Der Angreifer versucht, die Erkennung zu umgehen, der Verteidiger passt seine Entscheidungsregel an. AE-RL von Caminero et al. überträgt dieses Zwei-Spieler-Schema auf ein IDS~\autocite{camineroAdversarialEnvironmentReinforcement2019}: Der Umgebungs-Agent sucht gezielt die Stichproben, an denen der Klassifikator scheitert.
 
 Im Vergleich zu überwachten Verfahren ist der Aufwand höher. Zwei Agenten müssen gemeinsam konvergieren, die Simulationsumgebung muss das Angreiferverhalten glaubwürdig abbilden, und die Validierung braucht mehr als einen statischen Testsplit. Wie sich DRL-Detektoren verhalten, wenn nicht die Stichprobenauswahl, sondern die Merkmalswerte selbst gestört sind, behandelt Abschnitt~\ref{sec:rw_robustheit}.
 
@@ -112,7 +110,7 @@ Die vorgestellten Verfahren unterscheiden sich in ihren Einsatzszenarien, in den
 	\footnotesize
 	\setlength{\tabcolsep}{3pt}
 	\renewcommand{\arraystretch}{1.25}
-	\caption[Vergleich der KI-Ansätze zur DDoS-Erkennung]{Vergleich der KI-Ansätze zur DDoS-Erkennung nach Einsatzszenario, Voraussetzungen und Eignung für adaptive, verrauschte Netze. Die Bewertung der Rauschrobustheit und Adaptivität ist eine eigene Einschätzung.}
+	\caption[Vergleich der KI-Ansätze zur DDoS-Erkennung]{Vergleich der KI-Ansätze zur DDoS-Erkennung nach Einsatzszenario, Voraussetzungen und Eignung für adaptive, verrauschte Netze.}
 	\label{tab:ki_vergleich}
 	\begin{tabular}{L{0.13\textwidth}L{0.22\textwidth}L{0.19\textwidth}L{0.21\textwidth}L{0.15\textwidth}}
 		\toprule
