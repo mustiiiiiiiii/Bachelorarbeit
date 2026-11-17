@@ -1,6 +1,6 @@
 """Erzeugt das Begleitarchiv Bachelorarbeit_Begleitarchiv.zip aus den versionierten Dateien plus main.pdf.
 
-Nicht ins Archiv: Quellen-PDFs (QuellenLiteratur/), Arbeitsnotizen (UEBERGABE.md, CLAUDE.md), .github/, Themenblatt.
+Nicht ins Archiv: Quellen-PDFs (QuellenLiteratur/), Arbeitsnotizen (UEBERGABE.md, CLAUDE.md), .github/, .vscode/, Themenblatt.
 Voraussetzung: main.pdf ist aktuell gebaut. Aufruf: python abgabe_archiv.py
 """
 
@@ -11,7 +11,7 @@ from pathlib import Path
 
 HERE = Path(__file__).parent
 ZIEL = HERE / "Bachelorarbeit_Begleitarchiv.zip"
-AUSSCHLUSS_PRAEFIX = ("QuellenLiteratur/", ".github/")
+AUSSCHLUSS_PRAEFIX = ("QuellenLiteratur/", ".github/", ".vscode/")
 AUSSCHLUSS = {"UEBERGABE.md", "CLAUDE.md", ".gitignore", "13112025_Themenblatt_Bachelorarbeit_Mustafa_Al_Obaidi.pdf"}
 
 
