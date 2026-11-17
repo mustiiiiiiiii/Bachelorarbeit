@@ -316,6 +316,10 @@ Alle .tex-Dateien (Kap. 1–8, Anhang, `main.tex`, `verzeichnisse.tex`) vollstä
 - `nachweis_zahlen.py`: zwei Suchmuster angepasst (gamma, 37 %), weiterhin 203/203.
 - Fehlalarme von chktex (Leerzeichen vor `\label`, Satzabstände unter `\frenchspacing`, `\allowbreak`, Intervall `[0,1)`)
   bewusst nicht geändert.
+- **Kommaprüfung mit LanguageTool (LTeX+ 18.7, de-DE, CLI auf alle 9 Kapiteldateien):** keine echten Kommafehler. Gemeldet
+  wurden nur Fehlalarme (`\,\%` vor Satzzeichen, „Angriffe wie UDP-Floods“ ohne Nebensatz). Einzige echte Grammatikmeldung:
+  Genitiv „eines Double Deep Q-Networks“ (Kap. 1), korrigiert. `.vscode/settings.json` setzt `ltex.language` auf `de-DE`;
+  ohne diese Einstellung prüft LTeX+ die .tex-Dateien als Englisch.
 
 ### Offene Fragen an den Betreuer (Prof. Seitz)
 
