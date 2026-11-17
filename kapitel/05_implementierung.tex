@@ -91,7 +91,7 @@ Ein verpasster Angriff kostet doppelt so viel wie ein Fehlalarm. Diese Asymmetri
 \subsection{Formale Definition als Markov-Entscheidungsprozess}
 \label{sec:mdp_definition}
 
-Das Entscheidungsproblem ist ein Markov-Entscheidungsprozess $(\mathcal{S},\mathcal{A},\mathcal{P},\mathcal{R},\gamma)$ in der Notation von Sutton und Barto \autocite{suttonReinforcementLearningIntroduction2018} (Abschnitt~\ref{sec:rl_grundlagen}) mit folgenden Komponenten:
+Das Entscheidungsproblem ist ein Markov-Entscheidungsprozess $(\mathcal{S},\mathcal{A},\mathcal{P},\mathcal{R},\gamma)$ in der Notation von Sutton und Barto~\autocite{suttonReinforcementLearningIntroduction2018} (Abschnitt~\ref{sec:rl_grundlagen}) mit folgenden Komponenten:
 
 \begin{itemize}
 	\item \textbf{Zustandsraum:} $\mathcal{S}=\mathbb{R}^{8}$. Ein Zustand ist die verrauschte Beobachtung $\mathbf{y}=\mathbf{x}+\mathbf{n}$ mit $n_j\sim\mathcal{N}(0,\sigma_{n,j}^2)$ aus Abschnitt~\ref{sec:awgn_kanal}. Das Label $c$ gehört nicht zum Zustand, der Prozess ist bezüglich $c$ nur teilbeobachtbar.
@@ -123,9 +123,9 @@ Das Entscheidungsproblem ist ein Markov-Entscheidungsprozess $(\mathcal{S},\math
 	\item \textbf{Diskontierung:} $\gamma=0{,}99$. Wegen $d=1$ geht $\gamma$ nicht in das Ziel ein.
 \end{itemize}
 
-Die optimale Politik maximiert den erwarteten Sofort-Reward $\mathbb{E}[\mathcal{R}(a,c)\mid\mathbf{y}]$. Mit $p=P(c=1\mid\mathbf{y})$ gilt $a=1$ genau dann, wenn $p\,R_{\mathrm{TP}}+(1-p)\,R_{\mathrm{FP}}>p\,R_{\mathrm{FN}}+(1-p)\,R_{\mathrm{TN}}$, also $p>1/3$. Elkans Schwelle $p^*=(c_{10}-c_{00})/(c_{10}-c_{00}+c_{01}-c_{11})$ liefert mit den negierten Rewards als Kosten denselben Wert \autocite{elkanFoundationsCostSensitiveLearning2001}. Das ist die Soll-Schwelle, wenn das Q-Netz die bedingten Erwartungswerte des Rewards lernt. Der im Training verwendete Huber-Verlust verschiebt sie auf $3/7$ (Abschnitt~\ref{sec:dqn_architektur}), gemessen entscheidet der Agent bei impliziten Schwellen von $0{,}38$ bis $0{,}43$ (Abschnitt~\ref{sec:reward_recall}).
+Die optimale Politik maximiert den erwarteten Sofort-Reward $\mathbb{E}[\mathcal{R}(a,c)\mid\mathbf{y}]$. Mit $p=P(c=1\mid\mathbf{y})$ gilt $a=1$ genau dann, wenn $p\,R_{\mathrm{TP}}+(1-p)\,R_{\mathrm{FP}}>p\,R_{\mathrm{FN}}+(1-p)\,R_{\mathrm{TN}}$, also $p>1/3$. Elkans Schwelle $p^*=(c_{10}-c_{00})/(c_{10}-c_{00}+c_{01}-c_{11})$ liefert mit den negierten Rewards als Kosten denselben Wert~\autocite{elkanFoundationsCostSensitiveLearning2001}. Das ist die Soll-Schwelle, wenn das Q-Netz die bedingten Erwartungswerte des Rewards lernt. Der im Training verwendete Huber-Verlust verschiebt sie auf $3/7$ (Abschnitt~\ref{sec:dqn_architektur}), gemessen entscheidet der Agent bei impliziten Schwellen von $0{,}38$ bis $0{,}43$ (Abschnitt~\ref{sec:reward_recall}).
 
-Im Training werden die Flüsse nicht einzeln über \texttt{step} erzeugt, sondern als Batch von 32 Flüssen pro Iteration, wobei das SNR jedes Flusses zufällig aus $\{30,20,10,5\}$\,dB gezogen wird. Der Rewardvektor entsteht durch eine Tabellenabfrage \texttt{REWARD\_TABLE[label, action]} direkt auf dem Rechengerät.
+Im Training werden die Flüsse nicht einzeln über \texttt{step} erzeugt, sondern als Batch von 32 Flüssen pro Iteration, wobei das SNR jedes Flusses zufällig aus $\{30,20,10,5\}$\,dB gezogen wird. Der Reward-Vektor entsteht durch eine Tabellenabfrage \texttt{REWARD\_TABLE[label, action]} direkt auf dem Rechengerät.
 
 \section{DDQN-Architektur in PyTorch}
 \label{sec:dqn_architektur}
@@ -162,7 +162,7 @@ Die Parameterzahl beträgt $(8\cdot128+128)+(128\cdot128+128)+(128\cdot2+2)=17\,
 	\label{fig:qnet_architektur}
 \end{figure}
 
-Die Ausgabeschicht ist linear, die zwei Ausgaben sind die Q-Werte $Q(\mathbf{y},0)$ und $Q(\mathbf{y},1)$. Online-Netz und Zielnetz haben dieselbe Struktur, das Zielnetz startet mit den Gewichten des Online-Netzes und wird nur kopiert, nie per Gradient trainiert. Zielnetz und Replay-Puffer folgen dem DQN-Ansatz von Mnih et al. (Abschnitt~\ref{sec:rl_grundlagen}) \autocite{mnihHumanlevelControlDeep2015}.
+Die Ausgabeschicht ist linear, die zwei Ausgaben sind die Q-Werte $Q(\mathbf{y},0)$ und $Q(\mathbf{y},1)$. Online-Netz und Zielnetz haben dieselbe Struktur, das Zielnetz startet mit den Gewichten des Online-Netzes und wird nur kopiert, nie per Gradient trainiert. Zielnetz und Replay-Puffer folgen dem DQN-Ansatz von Mnih et al. (Abschnitt~\ref{sec:rl_grundlagen})~\autocite{mnihHumanlevelControlDeep2015}.
 
 Die Implementierung verwendet das Double-DQN-Ziel $Y$ aus Gleichung~\eqref{eq:ddqn_ziel} (Abschnitt~\ref{sec:rl_grundlagen}) mit der Beobachtung $\mathbf{y}$ als Zustand. Dabei sind $\theta$ die Parameter des Online-Netzes, $\bar\theta$ die des Zielnetzes und $d\in\{0,1\}$ das Terminal-Flag. Der Verlust ist die Huber-Funktion (\texttt{smooth\_l1\_loss}) zwischen $Q(\mathbf{y},a;\theta)$ und $Y$, die Gradientennorm wird auf $10$ begrenzt.
 
@@ -218,16 +218,16 @@ mit der Nullstelle $p=3/7\approx0{,}43$ statt $1/3$. Ein mit diesem Verlust trai
 			\node at (0.6,-3.95) {(b) diese Arbeit (Ein-Schritt-Episode)};
 		\end{scope}
 	\end{tikzpicture}
-	\caption[Backup-Diagramme des Lernziels]{Backup-Diagramme des Lernziels in der Notation von Sutton und Barto \autocite{suttonReinforcementLearningIntroduction2018} (offener Kreis: Zustand, Punkt: Aktion, Quadrat: Terminalzustand). (a) Im allgemeinen Fall bootstrappt das Double-DQN-Ziel über den Folgezustand $s'$: Das Online-Netz wählt $a'$, das Zielnetz bewertet sie. (b) In dieser Arbeit endet jede Episode nach einem Schritt. Der Bootstrapping-Zweig (grau) entfällt, das Ziel reduziert sich auf $Y=r$, und Zielnetz und Double-Q-Ziel gehen nicht in das Lernen ein.}
+	\caption[Backup-Diagramme des Lernziels]{Backup-Diagramme des Lernziels in der Notation von Sutton und Barto~\autocite{suttonReinforcementLearningIntroduction2018} (offener Kreis: Zustand, Punkt: Aktion, Quadrat: Terminalzustand). (a) Im allgemeinen Fall bootstrappt das Double-DQN-Ziel über den Folgezustand $s'$: Das Online-Netz wählt $a'$, das Zielnetz bewertet sie. (b) In dieser Arbeit endet jede Episode nach einem Schritt. Der Bootstrapping-Zweig (grau) entfällt, das Ziel reduziert sich auf $Y=r$, und Zielnetz und Double-Q-Ziel gehen nicht in das Lernen ein.}
 	\label{fig:backup}
 \end{figure}
 
-Der Replay-Puffer (\texttt{ReplayBuffer}) ist ein Ringpuffer mit $50\,000$ Einträgen nach dem Schema von Mnih et al. \autocite{mnihHumanlevelControlDeep2015}. Er hält Beobachtung, Aktion, Reward, Folgebeobachtung und Terminal-Flag als Tensoren auf dem Zielgerät und zieht gleichverteilte Mini-Batches der Größe $64$.
+Der Replay-Puffer (\texttt{ReplayBuffer}) ist ein Ringpuffer mit $50\,000$ Einträgen nach dem Schema von Mnih et al.~\autocite{mnihHumanlevelControlDeep2015}. Er hält Beobachtung, Aktion, Reward, Folgebeobachtung und Terminal-Flag als Tensoren auf dem Zielgerät und zieht gleichverteilte Mini-Batches der Größe $64$.
 
 \section{AWGN-Kanalmodell im Lernprozess}
 \label{sec:awgn_kanal}
 
-Der Agent beobachtet $\mathbf{y}=\mathbf{x}+\mathbf{n}$ mit $n_j\sim\mathcal{N}(0,\sigma_{n,j}^2)$ je Merkmal $j$. Das ist das AWGN-Kanalmodell der Nachrichtentechnik \autocite{proakisDigitalCommunications2008}, hier nicht auf ein Sendesignal, sondern auf den Merkmalsvektor angewendet (Abschnitt~\ref{sec:merkmalsrauschen}). Die Rauschvarianz richtet sich nach der Signalleistung $P_j=\mathbb{E}[x_j^2]$ des Merkmals und dem gewünschten SNR (Abschnitt~\ref{sec:generatormodell}):
+Der Agent beobachtet $\mathbf{y}=\mathbf{x}+\mathbf{n}$ mit $n_j\sim\mathcal{N}(0,\sigma_{n,j}^2)$ je Merkmal $j$. Das ist das AWGN-Kanalmodell der Nachrichtentechnik~\autocite{proakisDigitalCommunications2008}, hier nicht auf ein Sendesignal, sondern auf den Merkmalsvektor angewendet (Abschnitt~\ref{sec:merkmalsrauschen}). Die Rauschvarianz richtet sich nach der Signalleistung $P_j=\mathbb{E}[x_j^2]$ des Merkmals und dem gewünschten SNR (Abschnitt~\ref{sec:generatormodell}):
 \begin{equation}
 	\sigma_{n,j}^2=\frac{P_j}{10^{\mathrm{SNR_{dB}}/10}}.
 \end{equation}
@@ -244,11 +244,11 @@ Die Klassenmittelwerte bleiben fest, nur die Varianz wächst von $\sigma^2=0{,}0
 \begin{equation}
 	D^{2}=\sum_{j=1}^{8}\frac{\Delta\mu_j^{2}}{\sigma^{2}+\sigma_{n,j}^{2}},
 \end{equation}
-und die Bayes-Fehlerwahrscheinlichkeit für gleiche Priors ist $P_e=Q_{\mathrm{G}}(D/2)$ mit der Gaußschen Q-Funktion
+und die Bayes-Fehlerwahrscheinlichkeit für gleiche Priors ist $P_e=Q_{\mathrm{G}}(D/2)$ mit der gaußschen Q-Funktion
 \begin{equation}
 	Q_{\mathrm{G}}(z)=\frac{1}{\sqrt{2\pi}}\int_{z}^{\infty}e^{-t^{2}/2}\,\mathrm{d}t .
 \end{equation}
-Der Index G trennt sie von der Aktionswertfunktion $Q(\mathbf{y},a)$ des Agenten. Der Zusammenhang entspricht der Symbolfehlerwahrscheinlichkeit binärer Signale im AWGN-Kanal, bei der $D$ die Rolle des normierten Signalabstands übernimmt \autocite{proakisDigitalCommunications2008}. Mit dem tatsächlichen Angriffsanteil $\pi=0{,}3$ verschiebt die Bayes-Regel ihre Schwelle um $\lambda=\ln\bigl((1-\pi)/\pi\bigr)$ auf der Skala des Log-Likelihood-Verhältnisses, und die minimale Fehlerwahrscheinlichkeit lautet
+Der Index G trennt sie von der Aktionswertfunktion $Q(\mathbf{y},a)$ des Agenten. Der Zusammenhang entspricht der Symbolfehlerwahrscheinlichkeit binärer Signale im AWGN-Kanal, bei der $D$ die Rolle des normierten Signalabstands übernimmt~\autocite{proakisDigitalCommunications2008}. Mit dem tatsächlichen Angriffsanteil $\pi=0{,}3$ verschiebt die Bayes-Regel ihre Schwelle um $\lambda=\ln\bigl((1-\pi)/\pi\bigr)$ auf der Skala des Log-Likelihood-Verhältnisses, und die minimale Fehlerwahrscheinlichkeit lautet
 \begin{equation}
 	P_e^{\pi}=\pi\,Q_{\mathrm{G}}\!\left(\frac{D}{2}-\frac{\lambda}{D}\right)+(1-\pi)\,Q_{\mathrm{G}}\!\left(\frac{D}{2}+\frac{\lambda}{D}\right).
 \end{equation}
@@ -273,7 +273,7 @@ Für die Parameter aus \texttt{train\_eval.py} liefert die Auswertung die Werte 
 
 Zwischen $30$ und $20$\,dB ändert sich die Überlappung kaum, weil das Rauschen ($\sigma_{n,j}\le0{,}056$) neben $\sigma=0{,}20$ vernachlässigbar bleibt. Bei $5$\,dB sinkt $D$ auf $1{,}78$, die effektive Streuung steigt je nach Merkmal auf $0{,}30$ bis $0{,}37$, und die Fehlerwahrscheinlichkeit des Bayes-Klassifikators steigt gegenüber $30$\,dB auf fast das Dreifache. Beim tatsächlichen Angriffsanteil $\pi=0{,}3$ liegt sie auf jeder Stufe etwas niedriger, von $6{,}2\,\%$ bei $30$\,dB bis $16{,}2\,\%$ bei $5$\,dB. Diese Spalte ist die Referenz für alle weiteren Vergleiche mit der Bayes-Grenze. Das Training mit gemischtem SNR zwingt das Q-Netz auf eine Kompromiss-Entscheidungsgrenze, die für kein SNR exakt optimal ist.
 
-Abbildung~\ref{fig:llr_signalraum} zeigt dieselbe Rechnung als Signalraumdarstellung auf der Prüfgröße $\Lambda(\mathbf{y})=\ln\bigl(p(\mathbf{y}\mid\mathrm{DDoS})/p(\mathbf{y}\mid\mathrm{Normal})\bigr)$. Sie bündelt wie bei binären Signalen im AWGN-Kanal die gesamte Klasseninformation der acht Merkmale \autocite{proakisDigitalCommunications2008}. Bei der fehlerminimalen Schwelle $\tau(1/2)=\lambda$ ergeben beide Fehlerflächen zusammen genau $P_e^{\pi}$: bei $30$\,dB $3{,}5\,\%$ verpasste Angriffe und $2{,}7\,\%$ Fehlalarme, bei $5$\,dB $10{,}2$ und $6{,}0\,\%$, jeweils bezogen auf alle Flüsse. Die Soll-Schwelle $p>1/3$ der Reward-Matrix liegt um $\ln 2\approx0{,}69$ weiter links und tauscht verpasste Angriffe gegen Fehlalarme. Bei $5$\,dB sinkt der FN-Anteil auf $6{,}3\,\%$, der FP-Anteil steigt auf $11{,}5\,\%$. Der Gesamtfehler wächst dabei von $16{,}2$ auf $17{,}8\,\%$, die erwarteten Kosten unter der Reward-Matrix sinken.
+Abbildung~\ref{fig:llr_signalraum} zeigt dieselbe Rechnung als Signalraumdarstellung auf der Prüfgröße $\Lambda(\mathbf{y})=\ln\bigl(p(\mathbf{y}\mid\mathrm{DDoS})/p(\mathbf{y}\mid\mathrm{Normal})\bigr)$. Sie bündelt wie bei binären Signalen im AWGN-Kanal die gesamte Klasseninformation der acht Merkmale~\autocite{proakisDigitalCommunications2008}. Bei der fehlerminimalen Schwelle $\tau(1/2)=\lambda$ ergeben beide Fehlerflächen zusammen genau $P_e^{\pi}$: bei $30$\,dB $3{,}5\,\%$ verpasste Angriffe und $2{,}7\,\%$ Fehlalarme, bei $5$\,dB $10{,}2$ und $6{,}0\,\%$, jeweils bezogen auf alle Flüsse. Die Soll-Schwelle $p>1/3$ der Reward-Matrix liegt um $\ln 2\approx0{,}69$ weiter links und tauscht verpasste Angriffe gegen Fehlalarme. Bei $5$\,dB sinkt der FN-Anteil auf $6{,}3\,\%$, der FP-Anteil steigt auf $11{,}5\,\%$. Der Gesamtfehler wächst dabei von $16{,}2$ auf $17{,}8\,\%$, die erwarteten Kosten unter der Reward-Matrix sinken.
 
 \begin{figure}[htbp]
 	\centering
@@ -284,12 +284,12 @@ Abbildung~\ref{fig:llr_signalraum} zeigt dieselbe Rechnung als Signalraumdarstel
 
 Im Training trifft der Agent pro Fluss auf ein zufällig gewähltes SNR. Er lernt dadurch eine einzige Entscheidungsfunktion für alle vier Kanalqualitäten, ohne das SNR als Eingabe zu erhalten. Die Evaluation erfolgt dagegen getrennt je SNR-Stufe (Kapitel~\ref{chap:evaluierung}).
 
-Das gemischte Training hat einen zweiten Effekt. Nach Bishop wirkt additives Eingangsrauschen im Training wie ein Tikhonov-Strafterm auf die Ableitungen der gelernten Abbildung (Abschnitt~\ref{sec:merkmalsrauschen}) \autocite{bishopTrainingNoiseEquivalent1995}. Das Q-Netz wird also gezwungen, $Q(\mathbf{y},a)$ glatt über $\mathbf{y}$ zu halten, und reagiert im Test weniger empfindlich auf einzelne Rauschausreißer. Apruzzese et al. nutzen dasselbe Prinzip mit gezielt gestörten Flussmerkmalen, um Detektoren gegen Evasion zu härten \autocite{apruzzeseDeepReinforcementAdversarial2020}. Streng gilt Bishops Äquivalenz nur für kleine Rauschvarianz. Bei $30$ und $20$\,dB ist diese Bedingung erfüllt ($\sigma_{n,j}\le0{,}056$), bei $5$\,dB mit $\sigma_{n,j}$ bis $0{,}31$ nicht mehr. Auf dieser Stufe bleibt die Regularisierungsdeutung eine qualitative Erklärung.
+Das gemischte Training hat einen zweiten Effekt. Nach Bishop wirkt additives Eingangsrauschen im Training wie ein Tikhonov-Strafterm auf die Ableitungen der gelernten Abbildung (Abschnitt~\ref{sec:merkmalsrauschen})~\autocite{bishopTrainingNoiseEquivalent1995}. Das Q-Netz wird also gezwungen, $Q(\mathbf{y},a)$ glatt über $\mathbf{y}$ zu halten, und reagiert im Test weniger empfindlich auf einzelne Rauschausreißer. Apruzzese et al. nutzen dasselbe Prinzip mit gezielt gestörten Flussmerkmalen, um Detektoren gegen Evasion zu härten~\autocite{apruzzeseDeepReinforcementAdversarial2020}. Streng gilt Bishops Äquivalenz nur für kleine Rauschvarianz. Bei $30$ und $20$\,dB ist diese Bedingung erfüllt ($\sigma_{n,j}\le0{,}056$), bei $5$\,dB mit $\sigma_{n,j}$ bis $0{,}31$ nicht mehr. Auf dieser Stufe bleibt die Regularisierungsdeutung eine qualitative Erklärung.
 
 \section{Trainings- und Optimierungsstrategie}
 \label{sec:training_optimierung}
 
-Algorithmus~\ref{alg:training} fasst die Trainingsschleife je Seed zusammen. Die Explorationsrate fällt linear von $1{,}0$ auf $0{,}02$ innerhalb der ersten $40\,\%$ der Iterationen ($8000$) und bleibt danach konstant. Der Optimierer ist Adam mit Lernrate $10^{-4}$, der die Schrittweite je Gewicht aus gleitenden Schätzungen des ersten und zweiten Gradientenmoments anpasst \autocite{kingmaAdamMethodStochastic2015}. Das Zielnetz wird alle $250$ Lernschritte hart synchronisiert. Weil der Puffer je Iteration $32$ Transitionen aufnimmt, erreicht er die Mindestfüllung von $1000$ Einträgen in Iteration $32$. Über den gesamten Lauf führt der Agent damit $19\,969$ Lernschritte mit je $64$ Transitionen aus und synchronisiert das Zielnetz $79$-mal. Ab Iteration $1563$ ist der Puffer voll, und neue Transitionen überschreiben die ältesten. Pro Seed (0, 1, 2) beginnt der Lauf mit neu initialisierten Netzen und eigenem Zufallsgenerator für die Flüsse. Die Seeds setzen Python-, NumPy- und PyTorch-Generatoren (inklusive CUDA).
+Algorithmus~\ref{alg:training} fasst die Trainingsschleife je Seed zusammen. Die Explorationsrate fällt linear von $1{,}0$ auf $0{,}02$ innerhalb der ersten $40\,\%$ der Iterationen ($8000$) und bleibt danach konstant. Der Optimierer ist Adam mit Lernrate $10^{-4}$, der die Schrittweite je Gewicht aus gleitenden Schätzungen des ersten und zweiten Gradientenmoments anpasst~\autocite{kingmaAdamMethodStochastic2015}. Das Zielnetz wird alle $250$ Lernschritte hart synchronisiert. Weil der Puffer je Iteration $32$ Transitionen aufnimmt, erreicht er die Mindestfüllung von $1000$ Einträgen in Iteration $32$. Über den gesamten Lauf führt der Agent damit $19\,969$ Lernschritte mit je $64$ Transitionen aus und synchronisiert das Zielnetz $79$-mal. Ab Iteration $1563$ ist der Puffer voll, und neue Transitionen überschreiben die ältesten. Pro Seed (0, 1, 2) beginnt der Lauf mit neu initialisierten Netzen und eigenem Zufallsgenerator für die Flüsse. Die Seeds setzen Python-, NumPy- und PyTorch-Generatoren (inklusive CUDA).
 
 \begin{algorithm}[htbp]
 	\small

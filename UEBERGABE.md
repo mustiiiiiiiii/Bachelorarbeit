@@ -1,6 +1,6 @@
 # Übergabe: Stand der Bachelorarbeit
 
-Stand: 2026-11-16, Branch `main` (lokale Sitzung in VS Code nach der Cloud-Sitzung bis `374a34a`).
+Stand: 2026-11-17, Branch `main` (lokale Sitzung in VS Code nach der Cloud-Sitzung bis `374a34a`).
 **Status: inhaltlich und technisch endgültig abgeschlossen.** Offen sind nur die manuellen Formalia und zwei Betreuer-Fragen
 (Abschnitt „Offen“).
 Diese Notiz fasst den Arbeitsstand zusammen, damit eine neue Sitzung
@@ -111,8 +111,9 @@ Hinweis: Henderson 2018 bleibt ohne Seitenzahlen (siehe Literatur), das Zitat is
    Betreuer, Matrikelnummer, Datum).
 2. **Eigenständigkeitserklärung:** Fehlt noch im LaTeX-Quelltext. Wortlaut und Position gemäß gültiger Prüfungsordnung
    der TU Ilmenau einfügen und unterschreiben. Eine ggf. geforderte Erklärung zum Einsatz von KI-Werkzeugen gehört dazu.
-3. **Letzter Textdurchgang:** Korrekturlesen auf Rechtschreibung, Stil (`CLAUDE.md`) und Abbildungs- und Tabellenverweise.
-   Ein vollständiges Korrekturlesen fand in den Sitzungen nicht statt.
+3. **Letzter Textdurchgang:** Erledigt am 2026-11-17 (alle .tex-Dateien vollständig im Quelltext gelesen, chktex,
+   Musterprüfungen; Befunde siehe „Sprach- und Typografie-Durchgang“). LTeX+ wurde bewusst nicht eingesetzt. Optional vor der
+   Abgabe: ein Durchgang mit LanguageTool nur für die Kommasetzung in langen Sätzen, dort prüft ein Werkzeug systematischer.
 4. **Kurzfassung/Abstract:** fehlt noch. Prüfen, ob die Prüfungsordnung eine deutsche und/oder englische Kurzfassung verlangt.
 5. Danach vollständig kompilieren und das PDF für die Abgabe erzeugen (`main.pdf` ist nicht versioniert).
 
@@ -297,6 +298,25 @@ Prüfung in fünf Dimensionen (Aufgabenstellung, Datenintegrität, Quellen, Stil
   Mirkovic & Reiher belegt (NBS-2, Nachteil „Threshold setting“: niedrige Schwelle → viele Fehlalarme, hohe Schwelle →
   geringere Empfindlichkeit, im PDF wörtlich geprüft).
 
+### Sprach- und Typografie-Durchgang (2026-11-17)
+
+Alle .tex-Dateien (Kap. 1–8, Anhang, `main.tex`, `verzeichnisse.tex`) vollständig gelesen, dazu chktex und Musterprüfungen
+(Striche, Anführungszeichen, Einheiten, Abkürzungen, Doppelwörter, Leerzeichen vor `\ref`/`\autocite`). Keine Tippfehler gefunden.
+- **Satzfehler im PDF:** `\texttt{gamma="scale"}` erschien als „gamma=ßcale"“, weil babel-ngerman `"s` als ß setzt.
+  Jetzt `\texttt{gamma=\string"scale\string"}` (6.1). **Regel: kein `"` im Quelltext, auch nicht in `\texttt`.**
+- **Rechtschreibung/Grammatik:** „gaußsche/-s/-n“ statt „Gaußsche“ (3.2.3, 5.4.1, Symbolverzeichnis; Duden seit 2006),
+  „des Angriffsanteils von 37 %“ (4.4), SDN-Satz umformuliert (2.3.1), „liefern die Ergebnisse nicht“ statt unklarem „sie“
+  (7.6), „Kleiner ist besser.“ nach Doppelpunkt (6.2.1).
+- **Vereinheitlicht:** Reward-Vektor, „aufwendig“, „Botnetz-…“, durchgekoppelt „Intrusion-Detection-Systems“ und
+  „Network-Intrusion-Detection-Systemen“, keine Sätze mit Formelzeichen am Anfang („Der Strafterm $\Omega$“, „Die Kovarianz $\boldsymbol\Sigma$“).
+- **Typografie:** `~\autocite` an 110 Stellen im Fließtext und in Bildunterschriften. In Tabellenzellen (Tab. 3.1/3.2)
+  bleibt das normale Leerzeichen. Vorher begannen zwei Zeilen mit einer Quellennummer („[1].“ S. 3, „[2].“ S. 4). Die dadurch
+  in 2.1.3 entstandene Zusatzzeile hätte 2.3–2.5 je eine Seite verschoben. Ausgeglichen mit „bis zum Ausfall des Dienstes“
+  (statt „vollständigen Ausfall“), Seitenumbrüche per Vergleichsbuild identisch mit dem Stand davor.
+- `nachweis_zahlen.py`: zwei Suchmuster angepasst (gamma, 37 %), weiterhin 203/203.
+- Fehlalarme von chktex (Leerzeichen vor `\label`, Satzabstände unter `\frenchspacing`, `\allowbreak`, Intervall `[0,1)`)
+  bewusst nicht geändert.
+
 ### Offene Fragen an den Betreuer (Prof. Seitz)
 
 - **Aufgabenstellung vs. synthetisches Modell:** Die Aufgabenstellung verlangt, „an einem Data Set, das den Netzverkehr mit einem
@@ -316,8 +336,8 @@ Prüfung in fünf Dimensionen (Aufgabenstellung, Datenintegrität, Quellen, Stil
 
 ### Nächste Seiten
 
-Inhaltliche und technische Arbeit endgültig abgeschlossen, Master-Audit einschließlich Punkt 4 umgesetzt. Vor der Abgabe
-bleiben nur die manuellen Formalia (siehe „Vor der Abgabe“) und die Klärung der zwei Betreuer-Fragen.
+Inhaltliche und technische Arbeit endgültig abgeschlossen, Master-Audit einschließlich Punkt 4 und Sprachdurchgang
+umgesetzt. Vor der Abgabe bleiben nur die manuellen Formalia (siehe „Vor der Abgabe“) und die Klärung der zwei Betreuer-Fragen.
 
 ## Arbeitsweise
 

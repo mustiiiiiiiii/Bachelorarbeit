@@ -372,7 +372,7 @@ def main() -> int:
     pr.bed((DMU > 0).sum() == 4 and (DMU < 0).sum() == 4, "Kap. 4: je vier Merkmale mit positivem/negativem dmu")
     pr.text(K4, r"nur um $", Z(np.abs(DMU).min(), 2), r"$ bis $", Z(np.abs(DMU).max(), 2), "$ und liegen")
     pr.text(K4, r"Der Angriffsanteil beträgt $\pi=", Z(PI, 1), "$")
-    pr.text(K4, "der ", Z(100 * IOT_DH_TEST[0] / IOT_DH_TEST[1], 0), r"\,\% Angriffsanteil im Testsplit")
+    pr.text(K4, "des Angriffsanteils von ", Z(100 * IOT_DH_TEST[0] / IOT_DH_TEST[1], 0), r"\,\% im Testsplit")
     pr.text(K4, r"($\mu_{\text{Normal},1}=", Z(MU_NORMAL[0], 2), r"$, $\mu_{\text{DDoS},1}=", Z(MU_ATTACK[0], 2), "$)")
     pr.text(K4, r"bleibt $\sigma_{n,1}\approx", Z(sn(30)[0], 3), r"$ neben $\sigma=", Z(SIG, 2), "$")
     pr.text(K4, r"\sqrt{\sigma^2+\sigma_{n,1}^2}\approx", Z(seff(5)[0], 2), "$")
@@ -466,7 +466,7 @@ def main() -> int:
     pr.text(K6, "trainieren aber überwacht auf ", Z(N_TRAIN, 0), " Flüssen")
     pr.text(K6, "besteht aus ", Z(rf0.n_estimators, 0), " Bäumen mit mindestens fünf Trainingsbeispielen je Blatt")
     pr.bed(rf0.min_samples_leaf == 5, "Kap. 6: min_samples_leaf = 5")
-    pr.text(K6, r"RBF-Kernel mit $C=", Z(svc0.C, 0), r'$ und \texttt{gamma="scale"}, nach der Standardisierung also '
+    pr.text(K6, r"RBF-Kernel mit $C=", Z(svc0.C, 0), r'$ und \texttt{gamma=\string"scale\string"}, nach der Standardisierung also '
             r"$\gamma\approx1/8$")
     pr.bed(svc0.gamma == "scale" and abs(gamma_scale - 1 / 8) < 1e-3, "Kap. 6: gamma='scale' ergibt 1/8",
            f"{gamma_scale:.6f}")
